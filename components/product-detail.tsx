@@ -1,22 +1,60 @@
 // components/product-detail.tsx
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, AlertTriangle, MapPin, ShoppingBag } from "lucide-react";
 import type { Product, AdapterType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/lib/cart-context";
+import type { CartItem } from "@/lib/cart-types";
+import { Toast } from "@/components/toast";
 
 export function ProductDetail({ product }: { product: Product }) {
   const [selectedAdapter, setSelectedAdapter] = useState<AdapterType | null>(null);
+  const [selectedColour, setSelectedColour] = useState<string>(product.colours[0] ?? "");
   const [fixtureNotes, setFixtureNotes] = useState("");
+  const [customisationNotes, setCustomisationNotes] = useState("");
+  const [toastVisible, setToastVisible] = useState(false);
+
+  const { addItem } = useCart();
 
   // Use adapters from the product DTO (populated from Shopify or mock data)
   const adapterOptions: AdapterType[] =
     product.adapters.length > 0
       ? product.adapters
       : ["B22", "E27", "Clipsal No. 530", "Other / not sure"];
+
+  const canAdd =
+    selectedAdapter !== null &&
+    (selectedAdapter !== "Other / not sure" || fixtureNotes.trim().length > 0);
+
+  const handleAddToCart = useCallback(() => {
+    if (!selectedAdapter || !canAdd) return;
+
+    const item: CartItem = {
+      productId: product.id,
+      variantId: product.shopifyVariantId ?? null,
+      handle: product.handle,
+      title: product.title,
+      variantTitle: "",
+      imageUrl: product.images[0] ?? "",
+      unitPrice: product.price,
+      currency: product.currency,
+      quantity: 1,
+      selectedAdapter,
+      bulbTypeConfirmed: false,
+      fixtureNotes: fixtureNotes.trim(),
+      customisationNotes: customisationNotes.trim(),
+      material: product.material,
+      colour: selectedColour,
+      metadata: null,
+    };
+
+    addItem(item);
+    setToastVisible(true);
+  }, [selectedAdapter, canAdd, product, fixtureNotes, customisationNotes, selectedColour, addItem]);
 
   return (
     <>
@@ -87,6 +125,30 @@ export function ProductDetail({ product }: { product: Product }) {
                 )}
               </div>
 
+              {/* Colour selector */}
+              {product.colours.length > 1 && (
+                <div className="mt-6 border-t border-charcoal/10 pt-6">
+                  <label className="text-sm font-semibold text-charcoal">Colour</label>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {product.colours.map((colour) => (
+                      <button
+                        key={colour}
+                        type="button"
+                        onClick={() => setSelectedColour(colour)}
+                        className={cn(
+                          "rounded-lg border px-3 py-2 text-sm font-medium transition-all",
+                          selectedColour === colour
+                            ? "border-charcoal bg-charcoal text-warm-white"
+                            : "border-charcoal/20 text-charcoal hover:border-charcoal/40",
+                        )}
+                      >
+                        {colour}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Adapter Selector */}
               <div className="mt-6 border-t border-charcoal/10 pt-6">
                 <label className="text-sm font-semibold text-charcoal">
@@ -131,8 +193,31 @@ export function ProductDetail({ product }: { product: Product }) {
                       className="mt-3 w-full rounded-lg border border-charcoal/20 bg-warm-white px-3 py-2 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
                       rows={3}
                     />
+                    {fixtureNotes.trim().length === 0 && (
+                      <p className="mt-2 text-xs text-red-600">
+                        Fixture notes are required when &quot;Other / not sure&quot; is selected.
+                      </p>
+                    )}
                   </div>
                 )}
+              </div>
+
+              {/* Customisation notes */}
+              <div className="mt-6 border-t border-charcoal/10 pt-6">
+                <label className="text-sm font-semibold text-charcoal">
+                  Customisation notes{" "}
+                  <span className="font-normal text-charcoal/40">(optional)</span>
+                </label>
+                <p className="mt-1 text-xs text-charcoal/50">
+                  Any special requests for size, finish, or design modifications.
+                </p>
+                <textarea
+                  value={customisationNotes}
+                  onChange={(e) => setCustomisationNotes(e.target.value)}
+                  placeholder="e.g. slightly larger opening, matte finish, specific colour match..."
+                  className="mt-3 w-full rounded-lg border border-charcoal/20 bg-warm-white px-3 py-2 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
+                  rows={3}
+                />
               </div>
 
               {/* Safety note */}
@@ -161,16 +246,21 @@ export function ProductDetail({ product }: { product: Product }) {
               {/* Add to cart */}
               <button
                 type="button"
-                disabled={!selectedAdapter}
+                disabled={!canAdd}
+                onClick={handleAddToCart}
                 className={cn(
                   "mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-sm font-semibold transition-all",
-                  selectedAdapter
+                  canAdd
                     ? "bg-charcoal text-warm-white hover:bg-charcoal/90"
                     : "cursor-not-allowed bg-charcoal/20 text-charcoal/40",
                 )}
               >
                 <ShoppingBag className="h-4 w-4" />
-                {selectedAdapter ? "Add to cart" : "Select a fitting adapter to continue"}
+                {!selectedAdapter
+                  ? "Select a fitting adapter to continue"
+                  : selectedAdapter === "Other / not sure" && fixtureNotes.trim().length === 0
+                    ? "Add fixture notes to continue"
+                    : "Add to cart"}
               </button>
 
               {/* Custom CTA */}
@@ -186,6 +276,13 @@ export function ProductDetail({ product }: { product: Product }) {
           </div>
         </div>
       </section>
+
+      {/* Toast notification */}
+      <Toast
+        message={`${product.title} added to cart`}
+        visible={toastVisible}
+        onClose={() => setToastVisible(false)}
+      />
     </>
   );
 }
