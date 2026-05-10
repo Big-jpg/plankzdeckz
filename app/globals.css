@@ -2,15 +2,14 @@
 
 /* Lumenform Studio — Brand Palette */
 :root {
-  --background: #ffffff;
+  --background: #faf8f5;
   --foreground: #1c1c1c;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: "Inter", system-ui, sans-serif;
 
   /* Brand colours */
   --color-charcoal: #1c1c1c;
@@ -21,6 +20,8 @@
   --color-frosted-blue: #8ab4c7;
   --color-filament-beige: #d4c5a9;
   --color-copper: #b87333;
+  --color-muted-charcoal: #2a2a2a;
+  --color-soft-gray: #3a3a3a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -33,5 +34,16 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection colour */
+::selection {
+  background-color: #c9943e33;
+  color: #1c1c1c;
 }

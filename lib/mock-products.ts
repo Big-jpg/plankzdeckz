@@ -1,0 +1,198 @@
+// lib/mock-products.ts
+import type { Product } from "./types";
+
+export const products: Product[] = [
+  {
+    id: "prod-01",
+    handle: "meridian-bloom",
+    title: "Meridian Bloom",
+    price: 89,
+    currency: "AUD",
+    category: "Pleated shades",
+    description:
+      "A softly pleated shell form inspired by coastal geometry. The Meridian Bloom diffuses warm LED light evenly through its layered petals, casting gentle scalloped shadows on surrounding surfaces.",
+    material: "PLA (polylactic acid), matte finish",
+    dimensions: "Ø 280mm × H 220mm",
+    colours: ["Warm White", "Soft Ivory", "Pale Grey"],
+    images: ["/products/product-01.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-02",
+    handle: "cobalt-veil",
+    title: "Cobalt Veil",
+    price: 95,
+    currency: "AUD",
+    category: "Faceted / geometric shades",
+    description:
+      "A translucent geometric shade with smooth flowing curves. The Cobalt Veil captures and refracts light through its deep blue form, creating dramatic interior reflections.",
+    material: "PETG (translucent), gloss finish",
+    dimensions: "Ø 300mm × H 180mm",
+    colours: ["Cobalt Blue", "Frosted Clear", "Smoke Grey"],
+    images: ["/products/product-02.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-03",
+    handle: "lotus-bloom",
+    title: "Lotus Bloom",
+    price: 110,
+    currency: "AUD",
+    category: "Floral / petal shades",
+    description:
+      "Organic petal forms unfurl from a central axis, creating a botanical silhouette. The Lotus Bloom casts intricate petal shadows when illuminated, transforming any ceiling rose into a living garden.",
+    material: "PLA (polylactic acid), silk finish",
+    dimensions: "Ø 320mm × H 250mm",
+    colours: ["Silk White", "Blush Pink", "Sage Green"],
+    images: ["/products/product-03.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-04",
+    handle: "starfield-dome",
+    title: "Starfield Dome",
+    price: 105,
+    currency: "AUD",
+    category: "Starfield / perforated shades",
+    description:
+      "Hundreds of precisely placed perforations transform this dome into a constellation projector. The Starfield Dome scatters pinpoints of light across walls and ceiling, creating an ambient night-sky effect.",
+    material: "PLA (polylactic acid), matte finish",
+    dimensions: "Ø 260mm × H 200mm",
+    colours: ["Charcoal Black", "Midnight Navy", "Deep Forest"],
+    images: ["/products/product-04.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-05",
+    handle: "tessera-prism",
+    title: "Tessera Prism",
+    price: 98,
+    currency: "AUD",
+    category: "Faceted / geometric shades",
+    description:
+      "A mathematically tessellated surface creates a crystalline form that refracts and redirects light through its angular facets. Each face catches light at a different angle, producing a dynamic visual texture.",
+    material: "PETG (translucent), satin finish",
+    dimensions: "Ø 240mm × H 220mm",
+    colours: ["Frosted Clear", "Amber Tint", "Ice Blue"],
+    images: ["/products/product-05.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-06",
+    handle: "ripple-diffuser",
+    title: "Ripple Diffuser",
+    price: 85,
+    currency: "AUD",
+    category: "Textured diffuser shades",
+    description:
+      "Concentric ripple patterns create a water-like texture that softens and diffuses LED output. The Ripple Diffuser eliminates harsh glare while maintaining high lumen transmission.",
+    material: "PLA (polylactic acid), textured finish",
+    dimensions: "Ø 250mm × H 160mm",
+    colours: ["Natural White", "Warm Cream", "Pale Aqua"],
+    images: ["/products/product-06.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-07",
+    handle: "helix-lantern",
+    title: "Helix Lantern",
+    price: 120,
+    currency: "AUD",
+    category: "Experimental prototypes",
+    description:
+      "A spiralling double-helix structure that wraps light in a continuous ascending motion. The Helix Lantern is an experimental form exploring the boundaries of FDM printing and structural lighting.",
+    material: "PLA (polylactic acid), matte finish",
+    dimensions: "Ø 200mm × H 340mm",
+    colours: ["Matte Black", "Copper Silk", "Stone Grey"],
+    images: ["/products/product-07.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-08",
+    handle: "aurora-fold",
+    title: "Aurora Fold",
+    price: 92,
+    currency: "AUD",
+    category: "Pleated shades",
+    description:
+      "Sharp geometric folds create a rhythmic pattern of light and shadow. The Aurora Fold channels illumination downward through its pleated aperture while casting angular patterns on the ceiling above.",
+    material: "PLA (polylactic acid), matte finish",
+    dimensions: "Ø 280mm × H 190mm",
+    colours: ["Warm White", "Dusty Rose", "Slate Blue"],
+    images: ["/products/product-08.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-09",
+    handle: "coral-cluster",
+    title: "Coral Cluster",
+    price: 135,
+    currency: "AUD",
+    category: "Floral / petal shades",
+    description:
+      "Inspired by deep-sea coral formations, this shade features dozens of tubular protrusions that scatter light in organic patterns. A statement piece that transforms any pendant into a sculptural object.",
+    material: "PLA (polylactic acid), silk finish",
+    dimensions: "Ø 300mm × H 280mm",
+    colours: ["Coral Pink", "Ocean White", "Sand Beige"],
+    images: ["/products/product-09.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-10",
+    handle: "woven-lattice",
+    title: "Woven Lattice",
+    price: 88,
+    currency: "AUD",
+    category: "Textured diffuser shades",
+    description:
+      "An interlocking lattice pattern creates a woven textile effect in rigid form. The Woven Lattice provides even diffusion while maintaining visual interest through its repeating geometric weave.",
+    material: "PLA (polylactic acid), textured finish",
+    dimensions: "Ø 260mm × H 180mm",
+    colours: ["Natural White", "Warm Linen", "Charcoal"],
+    images: ["/products/product-10.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+  {
+    id: "prod-11",
+    handle: "void-sphere",
+    title: "Void Sphere",
+    price: 145,
+    currency: "AUD",
+    category: "Experimental prototypes",
+    description:
+      "A near-complete sphere with strategically placed voids that channel light in unexpected directions. The Void Sphere is an exploration of negative space and controlled illumination leakage.",
+    material: "PETG (translucent), satin finish",
+    dimensions: "Ø 280mm × H 280mm",
+    colours: ["Smoke Grey", "Frosted White", "Midnight Black"],
+    images: ["/products/product-11.png"],
+    adapters: ["B22", "E27", "Clipsal No. 530", "Other / not sure"],
+    inStock: true,
+  },
+];
+
+export function getProductByHandle(handle: string): Product | undefined {
+  return products.find((p) => p.handle === handle);
+}
+
+export function getProductsByCategory(category: string): Product[] {
+  return products.filter((p) => p.category === category);
+}
+
+export const categories = [
+  "Pleated shades",
+  "Faceted / geometric shades",
+  "Floral / petal shades",
+  "Textured diffuser shades",
+  "Starfield / perforated shades",
+  "Experimental prototypes",
+] as const;
