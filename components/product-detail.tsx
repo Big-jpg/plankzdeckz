@@ -8,11 +8,15 @@ import { ArrowLeft, AlertTriangle, MapPin, ShoppingBag } from "lucide-react";
 import type { Product, AdapterType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const adapterOptions: AdapterType[] = ["B22", "E27", "Clipsal No. 530", "Other / not sure"];
-
 export function ProductDetail({ product }: { product: Product }) {
   const [selectedAdapter, setSelectedAdapter] = useState<AdapterType | null>(null);
   const [fixtureNotes, setFixtureNotes] = useState("");
+
+  // Use adapters from the product DTO (populated from Shopify or mock data)
+  const adapterOptions: AdapterType[] =
+    product.adapters.length > 0
+      ? product.adapters
+      : ["B22", "E27", "Clipsal No. 530", "Other / not sure"];
 
   return (
     <>
@@ -53,7 +57,8 @@ export function ProductDetail({ product }: { product: Product }) {
                 {product.title}
               </h1>
               <p className="mt-2 text-2xl font-semibold text-charcoal">
-                ${product.price} <span className="text-base font-normal text-charcoal/50">AUD</span>
+                ${product.price}{" "}
+                <span className="text-base font-normal text-charcoal/50">{product.currency}</span>
               </p>
 
               <p className="mt-6 text-base leading-relaxed text-charcoal/70">
@@ -74,6 +79,12 @@ export function ProductDetail({ product }: { product: Product }) {
                   <span className="text-charcoal/50">Available colours</span>
                   <span className="font-medium text-charcoal">{product.colours.join(", ")}</span>
                 </div>
+                {product.designFamily && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-charcoal/50">Design family</span>
+                    <span className="font-medium text-charcoal">{product.designFamily}</span>
+                  </div>
+                )}
               </div>
 
               {/* Adapter Selector */}

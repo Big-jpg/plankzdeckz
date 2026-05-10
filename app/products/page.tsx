@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { products, categories } from "@/lib/mock-products";
+import { getProducts, getCategories } from "@/lib/catalogue";
 
 export const metadata: Metadata = {
   title: "Shop",
@@ -10,7 +10,10 @@ export const metadata: Metadata = {
     "Browse our collection of custom 3D printed lampshades. Parametric designs for B22, E27, and Clipsal fittings.",
 };
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const products = await getProducts();
+  const categories = getCategories();
+
   return (
     <>
       {/* Header */}
@@ -72,7 +75,7 @@ export default function ProductsPage() {
                   </p>
                   <p className="mt-3 text-sm font-semibold text-charcoal">
                     ${product.price}{" "}
-                    <span className="text-xs font-normal text-charcoal/50">AUD</span>
+                    <span className="text-xs font-normal text-charcoal/50">{product.currency}</span>
                   </p>
                 </div>
               </Link>

@@ -1,7 +1,7 @@
 // app/products/[handle]/page.tsx
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProductByHandle, products } from "@/lib/mock-products";
+import { getProductByHandle, getProducts } from "@/lib/catalogue";
 import { ProductDetail } from "@/components/product-detail";
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = await params;
-  const product = getProductByHandle(handle);
+  const product = await getProductByHandle(handle);
   if (!product) return { title: "Product Not Found" };
   return {
     title: product.title,
@@ -18,13 +18,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const products = await getProducts();
   return products.map((p) => ({ handle: p.handle }));
 }
 
 export default async function ProductPage({ params }: Props) {
   const { handle } = await params;
-  const product = getProductByHandle(handle);
+  const product = await getProductByHandle(handle);
   if (!product) notFound();
 
   return <ProductDetail product={product} />;

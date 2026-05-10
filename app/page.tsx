@@ -2,9 +2,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Lightbulb, Layers, MapPin, Repeat, Ruler } from "lucide-react";
-import { products } from "@/lib/mock-products";
+import { getProducts } from "@/lib/catalogue";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await getProducts();
+
   return (
     <>
       {/* Hero Section */}
@@ -75,7 +77,9 @@ export default function HomePage() {
                 </div>
                 <div className="mt-3">
                   <h3 className="text-sm font-medium text-charcoal">{product.title}</h3>
-                  <p className="mt-1 text-sm text-charcoal/50">${product.price} AUD</p>
+                  <p className="mt-1 text-sm text-charcoal/50">
+                    ${product.price} {product.currency}
+                  </p>
                 </div>
               </Link>
             ))}
