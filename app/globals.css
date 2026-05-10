@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+/* Lumenform Studio — Brand Palette */
+:root {
+  --background: #ffffff;
+  --foreground: #1c1c1c;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Brand colours */
+  --color-charcoal: #1c1c1c;
+  --color-warm-black: #0f0f0f;
+  --color-ivory: #f5f0e8;
+  --color-warm-white: #faf8f5;
+  --color-amber: #c9943e;
+  --color-frosted-blue: #8ab4c7;
+  --color-filament-beige: #d4c5a9;
+  --color-copper: #b87333;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f0f0f;
+    --foreground: #f5f0e8;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
