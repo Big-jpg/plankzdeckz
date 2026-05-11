@@ -23,8 +23,8 @@ export default async function ProductsPage() {
           </h1>
 
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-            Contemporary shades and lighting forms, made to order and supplied
-            with the appropriate fitting adapter.
+            Contemporary shades and lighting forms, made to order and supplied with the appropriate
+            fitting adapter.
           </p>
         </div>
       </section>
@@ -52,9 +52,8 @@ export default async function ProductsPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 max-w-3xl">
             <p className="text-sm leading-relaxed text-charcoal/70">
-              Each piece is developed as part of a small-batch studio collection.
-              Minor variations in surface finish, translucency, and material
-              character may occur between pieces.
+              Each piece is developed as part of a small-batch studio collection. Minor variations
+              in surface finish, translucency, and material character may occur between pieces.
             </p>
           </div>
 
@@ -80,9 +79,7 @@ export default async function ProductsPage() {
                     {product.category}
                   </p>
 
-                  <h3 className="mt-1 text-base font-medium text-charcoal">
-                    {product.title}
-                  </h3>
+                  <h3 className="mt-1 text-base font-medium text-charcoal">{product.title}</h3>
 
                   <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-charcoal/60">
                     {product.description}

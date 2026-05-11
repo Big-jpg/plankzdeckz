@@ -388,6 +388,24 @@ export async function getOrderById(orderId: string): Promise<OrderWithItems | nu
 }
 
 /**
+ * Retrieve a single order with its items by Stripe checkout session ID.
+ */
+export async function getOrderByCheckoutSession(
+  stripeCheckoutSessionId: string,
+): Promise<OrderWithItems | null> {
+  const row = await queryOne<Order & { items: OrderItem[] | string }>(
+    `SELECT * FROM get_order_by_checkout_session($1)`,
+    [stripeCheckoutSessionId],
+  );
+  if (!row) return null;
+
+  // items comes back as jsonb; pg driver may return it as parsed or string
+  const items = typeof row.items === "string" ? (JSON.parse(row.items) as OrderItem[]) : row.items;
+
+  return { ...row, items };
+}
+
+/**
  * Retrieve all orders for a given email address.
  */
 export async function getOrdersForEmail(

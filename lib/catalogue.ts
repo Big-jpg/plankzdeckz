@@ -18,15 +18,7 @@ function hasRealEnvValue(value: string | undefined): value is string {
 
   const normalised = value.trim().toLowerCase();
 
-  return ![
-    "null",
-    "undefined",
-    "none",
-    "nil",
-    "false",
-    "0",
-    "",
-  ].includes(normalised);
+  return !["null", "undefined", "none", "nil", "false", "0", ""].includes(normalised);
 }
 
 function isShopifyConfigured(): boolean {

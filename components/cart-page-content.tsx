@@ -1,6 +1,8 @@
 // components/cart-page-content.tsx
+
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
@@ -8,9 +10,60 @@ import { useCart } from "@/lib/cart-context";
 import { cartItemKey } from "@/lib/cart-types";
 import { cn } from "@/lib/utils";
 
+interface CheckoutCreateSessionResponse {
+  sessionId?: string;
+  url?: string;
+  error?: string;
+  details?: Array<{ message?: string }>;
+}
+
+function checkoutErrorMessage(payload: CheckoutCreateSessionResponse): string {
+  const firstDetail = payload.details?.find((detail) => detail.message)?.message;
+  return firstDetail ?? payload.error ?? "Checkout could not be started. Please review your cart.";
+}
+
 export function CartPageContent() {
   const { state, itemCount, subtotal, currency, removeItem, setQuantity, setLedAcknowledged } =
     useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  async function handleCheckout(): Promise<void> {
+    setCheckoutError(null);
+
+    if (!state.ledAcknowledged) {
+      setCheckoutError("You must acknowledge LED bulb usage before checkout.");
+      return;
+    }
+
+    setIsCheckingOut(true);
+
+    try {
+      const response = await fetch("/api/checkout/create-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: state.items,
+          ledAcknowledged: state.ledAcknowledged,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as CheckoutCreateSessionResponse;
+
+      if (!response.ok || !payload.url) {
+        setCheckoutError(checkoutErrorMessage(payload));
+        setIsCheckingOut(false);
+        return;
+      }
+
+      window.location.assign(payload.url);
+    } catch (error) {
+      setCheckoutError(
+        error instanceof Error ? error.message : "Checkout could not be started. Please try again.",
+      );
+      setIsCheckingOut(false);
+    }
+  }
 
   if (state.items.length === 0) {
     return (
@@ -202,7 +255,7 @@ export function CartPageContent() {
 
               {/* LED bulb acknowledgement */}
               <div className="mt-6 rounded-lg border border-amber/20 bg-amber/5 p-4">
-                <label className="flex items-start gap-3 cursor-pointer">
+                <label className="flex cursor-pointer items-start gap-3">
                   <input
                     type="checkbox"
                     checked={state.ledAcknowledged}
@@ -219,20 +272,30 @@ export function CartPageContent() {
               {/* Checkout button */}
               <button
                 type="button"
-                disabled={!state.ledAcknowledged}
+                disabled={!state.ledAcknowledged || isCheckingOut}
+                onClick={handleCheckout}
+                aria-busy={isCheckingOut}
                 className={cn(
                   "mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-sm font-semibold transition-all",
-                  state.ledAcknowledged
+                  state.ledAcknowledged && !isCheckingOut
                     ? "bg-charcoal text-warm-white hover:bg-charcoal/90"
                     : "cursor-not-allowed bg-charcoal/20 text-charcoal/40",
                 )}
               >
-                {state.ledAcknowledged
-                  ? "Proceed to checkout"
-                  : "Confirm LED bulb usage to continue"}
+                {isCheckingOut
+                  ? "Starting secure checkout..."
+                  : state.ledAcknowledged
+                    ? "Proceed to checkout"
+                    : "Confirm LED bulb usage to continue"}
               </button>
 
-              {!state.ledAcknowledged && (
+              {checkoutError && (
+                <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-center text-xs text-red-700">
+                  {checkoutError}
+                </p>
+              )}
+
+              {!state.ledAcknowledged && !checkoutError && (
                 <p className="mt-2 text-center text-xs text-charcoal/40">
                   You must acknowledge LED bulb usage before checkout.
                 </p>
