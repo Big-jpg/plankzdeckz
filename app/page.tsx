@@ -28,7 +28,7 @@ export default async function HomePage() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-warm-black text-warm-white">
         <div className="absolute inset-0 opacity-[0.03]">
-          <div className="h-full w-full bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] bg-[length:24px_24px]" />
+          <div className="h-full w-full bg-[radial-gradient(circle_at_center,white_1px,transparent_1px)] bg-[length:24px_24px]" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8 lg:py-40">
@@ -263,7 +263,7 @@ export default async function HomePage() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="rounded-xl border border-ivory/10 bg-white/[0.02] p-6"
+                className="rounded-xl border border-ivory/10 bg-white/2 p-6"
               >
                 <item.icon className="h-6 w-6 text-amber" />
 
