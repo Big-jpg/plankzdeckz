@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { CartProvider } from "@/lib/cart-context";
 import { CartDrawer } from "@/components/cart-drawer";
 import { SessionProvider } from "@/components/session-provider";
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -40,6 +41,7 @@ export default function RootLayout({
           </CartProvider>
         </SessionProvider>
       </body>
+      <Analytics />
     </html>
   );
 }
