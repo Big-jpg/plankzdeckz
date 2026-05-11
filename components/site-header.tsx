@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/lib/cart-context";
 
 const navLinks = [
   { href: "/products", label: "Shop" },
@@ -15,6 +16,7 @@ const navLinks = [
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { itemCount, openDrawer } = useCart();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-charcoal/10 bg-warm-white/95 backdrop-blur-sm">
@@ -41,13 +43,19 @@ export function SiteHeader() {
 
         {/* Right side: cart + mobile toggle */}
         <div className="flex items-center gap-4">
-          <Link
-            href="/cart"
+          <button
+            type="button"
+            onClick={openDrawer}
             className="relative flex items-center justify-center rounded-full p-2 text-charcoal/70 transition-colors hover:text-charcoal"
-            aria-label="Cart"
+            aria-label={`Cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
           >
             <ShoppingBag className="h-5 w-5" />
-          </Link>
+            {itemCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-charcoal text-[10px] font-bold text-warm-white">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            )}
+          </button>
 
           <button
             type="button"
