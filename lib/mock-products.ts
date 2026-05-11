@@ -6,7 +6,7 @@ export const products: Product[] = [
     id: "prod-01",
     handle: "meridian-bloom",
     title: "Meridian Bloom",
-    price: 89,
+    price: 1,
     currency: "AUD",
     category: "Pleated shades",
     description:
@@ -26,7 +26,7 @@ export const products: Product[] = [
     id: "prod-02",
     handle: "cobalt-veil",
     title: "Cobalt Veil",
-    price: 95,
+    price: 35,
     currency: "AUD",
     category: "Faceted / geometric shades",
     description:
@@ -46,7 +46,7 @@ export const products: Product[] = [
     id: "prod-03",
     handle: "lotus-bloom",
     title: "Lotus Bloom",
-    price: 110,
+    price: 45,
     currency: "AUD",
     category: "Floral / petal shades",
     description:
@@ -66,7 +66,7 @@ export const products: Product[] = [
     id: "prod-04",
     handle: "starfield-dome",
     title: "Starfield Dome",
-    price: 105,
+    price: 42,
     currency: "AUD",
     category: "Starfield / perforated shades",
     description:
@@ -86,7 +86,7 @@ export const products: Product[] = [
     id: "prod-05",
     handle: "tessera-prism",
     title: "Tessera Prism",
-    price: 98,
+    price: 38,
     currency: "AUD",
     category: "Faceted / geometric shades",
     description:
@@ -106,7 +106,7 @@ export const products: Product[] = [
     id: "prod-06",
     handle: "ripple-diffuser",
     title: "Ripple Diffuser",
-    price: 85,
+    price: 35,
     currency: "AUD",
     category: "Textured diffuser shades",
     description:
@@ -126,7 +126,7 @@ export const products: Product[] = [
     id: "prod-07",
     handle: "helix-lantern",
     title: "Helix Lantern",
-    price: 120,
+    price: 55,
     currency: "AUD",
     category: "Experimental prototypes",
     description:
@@ -146,7 +146,7 @@ export const products: Product[] = [
     id: "prod-08",
     handle: "aurora-fold",
     title: "Aurora Fold",
-    price: 92,
+    price: 38,
     currency: "AUD",
     category: "Pleated shades",
     description:
@@ -166,7 +166,7 @@ export const products: Product[] = [
     id: "prod-09",
     handle: "coral-cluster",
     title: "Coral Cluster",
-    price: 135,
+    price: 52,
     currency: "AUD",
     category: "Floral / petal shades",
     description:
@@ -186,7 +186,7 @@ export const products: Product[] = [
     id: "prod-10",
     handle: "woven-lattice",
     title: "Woven Lattice",
-    price: 88,
+    price: 36,
     currency: "AUD",
     category: "Textured diffuser shades",
     description:
@@ -206,7 +206,7 @@ export const products: Product[] = [
     id: "prod-11",
     handle: "void-sphere",
     title: "Void Sphere",
-    price: 145,
+    price: 55,
     currency: "AUD",
     category: "Experimental prototypes",
     description:
