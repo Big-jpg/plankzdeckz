@@ -12,6 +12,14 @@ import { queryOne } from "@/server/db/client";
 // ---------------------------------------------------------------------------
 
 interface DbUser {
+  out_id: string;
+  out_name: string | null;
+  out_email: string;
+  out_email_verified: string | null;
+  out_image: string | null;
+}
+
+interface DbUserDirect {
   id: string;
   name: string | null;
   email: string;
@@ -31,6 +39,13 @@ interface DbSession {
 }
 
 interface DbSessionRow {
+  out_id: string;
+  out_session_token: string;
+  out_user_id: string;
+  out_expires: string;
+}
+
+interface DbSessionRowDirect {
   id: string;
   session_token: string;
   user_id: string;
@@ -38,12 +53,22 @@ interface DbSessionRow {
 }
 
 interface DbVerificationToken {
-  identifier: string;
-  token: string;
-  expires: string;
+  out_identifier: string;
+  out_token: string;
+  out_expires: string;
 }
 
 function toAdapterUser(row: DbUser): AdapterUser {
+  return {
+    id: row.out_id,
+    name: row.out_name,
+    email: row.out_email,
+    emailVerified: row.out_email_verified ? new Date(row.out_email_verified) : null,
+    image: row.out_image,
+  };
+}
+
+function toAdapterUserDirect(row: DbUserDirect): AdapterUser {
   return {
     id: row.id,
     name: row.name,
@@ -54,6 +79,14 @@ function toAdapterUser(row: DbUser): AdapterUser {
 }
 
 function toAdapterSession(row: DbSessionRow): AdapterSession {
+  return {
+    sessionToken: row.out_session_token,
+    userId: row.out_user_id,
+    expires: new Date(row.out_expires),
+  };
+}
+
+function toAdapterSessionDirect(row: DbSessionRowDirect): AdapterSession {
   return {
     sessionToken: row.session_token,
     userId: row.user_id,
@@ -94,14 +127,14 @@ export function LumenformAdapter(): Adapter {
 
     async getUserByAccount({ provider, providerAccountId }) {
       // No stored procedure for this in Phase 4; use direct SQL read.
-      const row = await queryOne<DbUser>(
+      const row = await queryOne<DbUserDirect>(
         `SELECT u.id, u.name, u.email, u.email_verified, u.image
          FROM users u
          JOIN accounts a ON a.user_id = u.id
          WHERE a.provider = $1 AND a.provider_account_id = $2`,
         [provider, providerAccountId],
       );
-      return row ? toAdapterUser(row) : null;
+      return row ? toAdapterUserDirect(row) : null;
     },
 
     async updateUser(user) {
@@ -189,14 +222,14 @@ export function LumenformAdapter(): Adapter {
 
     async updateSession(session) {
       // No stored procedure for update_session in Phase 4; use direct SQL.
-      const row = await queryOne<DbSessionRow>(
+      const row = await queryOne<DbSessionRowDirect>(
         `UPDATE sessions
          SET expires = COALESCE($2, expires)
          WHERE session_token = $1
          RETURNING id, session_token, user_id, expires`,
         [session.sessionToken, session.expires?.toISOString() ?? null],
       );
-      return row ? toAdapterSession(row) : null;
+      return row ? toAdapterSessionDirect(row) : null;
     },
 
     async deleteSession(sessionToken) {
@@ -218,9 +251,9 @@ export function LumenformAdapter(): Adapter {
       );
       if (!row) return null;
       return {
-        identifier: row.identifier,
-        token: row.token,
-        expires: new Date(row.expires),
+        identifier: row.out_identifier,
+        token: row.out_token,
+        expires: new Date(row.out_expires),
       } satisfies VerificationToken;
     },
 
@@ -231,9 +264,9 @@ export function LumenformAdapter(): Adapter {
       );
       if (!row) return null;
       return {
-        identifier: row.identifier,
-        token: row.token,
-        expires: new Date(row.expires),
+        identifier: row.out_identifier,
+        token: row.out_token,
+        expires: new Date(row.out_expires),
       } satisfies VerificationToken;
     },
   };

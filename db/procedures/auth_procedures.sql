@@ -16,11 +16,11 @@ CREATE OR REPLACE FUNCTION create_user(
   p_image          text DEFAULT NULL
 )
 RETURNS TABLE (
-  id             uuid,
-  name           text,
-  email          text,
-  email_verified timestamptz,
-  image          text
+  out_id             uuid,
+  out_name           text,
+  out_email          text,
+  out_email_verified timestamptz,
+  out_image          text
 )
 LANGUAGE plpgsql
 AS $$
@@ -47,11 +47,11 @@ $$;
 -- =============================================================================
 CREATE OR REPLACE FUNCTION get_user_by_id(p_user_id uuid)
 RETURNS TABLE (
-  id             uuid,
-  name           text,
-  email          text,
-  email_verified timestamptz,
-  image          text
+  out_id             uuid,
+  out_name           text,
+  out_email          text,
+  out_email_verified timestamptz,
+  out_image          text
 )
 LANGUAGE plpgsql
 AS $$
@@ -68,11 +68,11 @@ $$;
 -- =============================================================================
 CREATE OR REPLACE FUNCTION get_user_by_email(p_email text)
 RETURNS TABLE (
-  id             uuid,
-  name           text,
-  email          text,
-  email_verified timestamptz,
-  image          text
+  out_id             uuid,
+  out_name           text,
+  out_email          text,
+  out_email_verified timestamptz,
+  out_image          text
 )
 LANGUAGE plpgsql
 AS $$
@@ -138,10 +138,10 @@ CREATE OR REPLACE FUNCTION create_session(
   p_expires       timestamptz
 )
 RETURNS TABLE (
-  id            uuid,
-  session_token text,
-  user_id       uuid,
-  expires       timestamptz
+  out_id            uuid,
+  out_session_token text,
+  out_user_id       uuid,
+  out_expires       timestamptz
 )
 LANGUAGE plpgsql
 AS $$
@@ -216,9 +216,9 @@ CREATE OR REPLACE FUNCTION create_verification_token(
   p_expires    timestamptz
 )
 RETURNS TABLE (
-  identifier text,
-  token      text,
-  expires    timestamptz
+  out_identifier text,
+  out_token      text,
+  out_expires    timestamptz
 )
 LANGUAGE plpgsql
 AS $$
@@ -242,9 +242,9 @@ CREATE OR REPLACE FUNCTION use_verification_token(
   p_token      text
 )
 RETURNS TABLE (
-  identifier text,
-  token      text,
-  expires    timestamptz
+  out_identifier text,
+  out_token      text,
+  out_expires    timestamptz
 )
 LANGUAGE plpgsql
 AS $$
@@ -287,11 +287,11 @@ CREATE OR REPLACE FUNCTION update_user(
   p_image          text DEFAULT NULL
 )
 RETURNS TABLE (
-  id             uuid,
-  name           text,
-  email          text,
-  email_verified timestamptz,
-  image          text
+  out_id             uuid,
+  out_name           text,
+  out_email          text,
+  out_email_verified timestamptz,
+  out_image          text
 )
 LANGUAGE plpgsql
 AS $$
