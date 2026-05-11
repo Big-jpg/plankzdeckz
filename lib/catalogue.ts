@@ -13,8 +13,31 @@ import type { Product, ProductCategory } from "./types";
 // Data source detection
 // ---------------------------------------------------------------------------
 
+function hasRealEnvValue(value: string | undefined): value is string {
+  if (!value) return false;
+
+  const normalised = value.trim().toLowerCase();
+
+  return ![
+    "null",
+    "undefined",
+    "none",
+    "nil",
+    "false",
+    "0",
+    "",
+  ].includes(normalised);
+}
+
 function isShopifyConfigured(): boolean {
-  return Boolean(process.env.SHOPIFY_STORE_DOMAIN && process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN);
+  const domain = process.env.SHOPIFY_STORE_DOMAIN?.trim();
+
+  return (
+    hasRealEnvValue(domain) &&
+    !domain.startsWith("http://") &&
+    !domain.startsWith("https://") &&
+    hasRealEnvValue(process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN)
+  );
 }
 
 // ---------------------------------------------------------------------------
