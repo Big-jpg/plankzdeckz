@@ -1,217 +1,297 @@
 // app/page.tsx
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Lightbulb, Layers, MapPin, Repeat, Ruler } from "lucide-react";
+import type { Metadata } from "next";
+import {
+  ArrowRight,
+  Box,
+  Lightbulb,
+  MapPin,
+  Repeat,
+  Ruler,
+  Sparkles,
+} from "lucide-react";
+
 import { getProducts } from "@/lib/catalogue";
+
+export const metadata: Metadata = {
+  title: "Lumenform Studio",
+  description:
+    "Contemporary lighting objects designed and produced locally. Parametric forms for B22, E27, and Clipsal fittings.",
+};
 
 export default async function HomePage() {
   const products = await getProducts();
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative bg-warm-black text-warm-white">
-        <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8 lg:py-40">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-warm-black text-warm-white">
+        <div className="absolute inset-0 opacity-[0.03]">
+          <div className="h-full w-full bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] bg-[length:24px_24px]" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8 lg:py-40">
           <div className="max-w-3xl">
-            <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
-              Custom lampshades designed for the lights you already own.
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-amber">
+              Lumenform Studio
+            </p>
+
+            <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+              Contemporary lighting objects for the fittings you already own.
             </h1>
-            <p className="mt-6 text-lg leading-relaxed text-ivory/80 sm:text-xl">
-              Parametric lighting objects with included B22, E27, and Clipsal-compatible adapters.
+
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ivory/75 sm:text-xl">
+              Parametrically developed shades and sculptural forms designed for
+              domestic interiors, supplied with compatible B22, E27, and Clipsal
+              fitting adapters.
             </p>
-            <p className="mt-3 text-base font-medium tracking-wide text-amber">
-              Lightweight. Local. Customisable.
-            </p>
+
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
                 href="/products"
                 className="inline-flex items-center gap-2 rounded-lg bg-amber px-6 py-3 text-sm font-semibold text-warm-black transition-colors hover:bg-amber/90"
               >
-                Shop lampshades
+                Shop collection
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link
-                href="/fitting-guide"
-                className="inline-flex items-center gap-2 rounded-lg border border-ivory/30 px-6 py-3 text-sm font-semibold text-ivory transition-colors hover:bg-ivory/10"
-              >
-                Choose your fitting
-              </Link>
+
               <Link
                 href="/custom"
-                className="inline-flex items-center gap-2 rounded-lg border border-ivory/30 px-6 py-3 text-sm font-semibold text-ivory transition-colors hover:bg-ivory/10"
+                className="inline-flex items-center gap-2 rounded-lg border border-ivory/20 px-6 py-3 text-sm font-semibold text-ivory transition-colors hover:bg-ivory/10"
               >
-                Request a custom design
+                Request custom work
               </Link>
+            </div>
+
+            <div className="mt-12 flex flex-wrap gap-6 text-sm text-ivory/55">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Designed and produced locally
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Box className="h-4 w-4" />
+                Lightweight domestic shipping
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Customisable geometry and fittings
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Product Gallery */}
+      {/* Collection */}
       <section className="bg-warm-white py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
+          <div className="max-w-3xl">
             <h2 className="text-2xl font-semibold tracking-tight text-charcoal sm:text-3xl">
-              Designed Lighting Objects
+              Studio Collection
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-charcoal/60">
-              Each shade is parametrically generated and 3D printed to order. Browse the collection
-              or request a custom form.
+
+            <p className="mt-4 text-base leading-relaxed text-charcoal/65">
+              A rotating collection of contemporary lighting objects developed
+              through computational geometry, material experimentation, and small-
+              batch production.
             </p>
           </div>
+
           <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 lg:gap-6">
             {products.slice(0, 8).map((product) => (
               <Link
                 key={product.id}
                 href={`/products/${product.handle}`}
-                className="group relative overflow-hidden rounded-xl bg-ivory/50 p-4 transition-all hover:shadow-lg hover:shadow-charcoal/5"
+                className="group overflow-hidden rounded-xl border border-charcoal/10 bg-ivory/30 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-charcoal/5"
               >
-                <div className="relative aspect-square overflow-hidden rounded-lg">
+                <div className="relative aspect-square overflow-hidden bg-ivory/40">
                   <Image
                     src={product.images[0]}
                     alt={product.title}
                     fill
-                    className="object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />
                 </div>
-                <div className="mt-3">
-                  <h3 className="text-sm font-medium text-charcoal">{product.title}</h3>
-                  <p className="mt-1 text-sm text-charcoal/50">
-                    ${product.price} {product.currency}
+
+                <div className="p-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-charcoal/40">
+                    {product.category}
                   </p>
+
+                  <h3 className="mt-1 text-sm font-medium text-charcoal">
+                    {product.title}
+                  </h3>
+
+                  <div className="mt-3 flex items-end justify-between gap-3">
+                    <p className="text-sm font-semibold text-charcoal">
+                      ${product.price}{" "}
+                      <span className="text-xs font-normal text-charcoal/45">
+                        {product.currency}
+                      </span>
+                    </p>
+
+                    <span className="text-xs font-medium text-charcoal/40 transition-colors group-hover:text-charcoal/70">
+                      View piece
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
-          <div className="mt-10 text-center">
+
+          <div className="mt-10">
             <Link
               href="/products"
               className="inline-flex items-center gap-2 text-sm font-medium text-charcoal transition-colors hover:text-amber"
             >
-              View all products
+              View full collection
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Process Section */}
+      {/* Process */}
       <section className="border-t border-charcoal/5 bg-ivory py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
+          <div className="max-w-3xl">
             <h2 className="text-2xl font-semibold tracking-tight text-charcoal sm:text-3xl">
-              How It Works
+              The Process
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-charcoal/60">
-              From design selection to local pickup in five simple steps.
+
+            <p className="mt-4 text-base leading-relaxed text-charcoal/65">
+              Each order moves through a small studio workflow from fitting
+              selection through to local collection or dispatch.
             </p>
           </div>
+
           <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-5">
             {[
               {
                 step: "01",
-                title: "Choose a design",
-                desc: "Browse the collection or request a custom parametric form.",
+                title: "Choose a piece",
+                desc: "Browse the studio collection or request a custom-developed form.",
               },
               {
                 step: "02",
-                title: "Select your adapter",
-                desc: "B22, E27, Clipsal No. 530, or provide your fitting details.",
+                title: "Confirm the fitting",
+                desc: "Select B22, E27, Clipsal No. 530, or provide fitting details.",
               },
               {
                 step: "03",
-                title: "Confirm LED bulb",
-                desc: "All shades are designed for LED bulbs only. Confirm your bulb type.",
+                title: "Review and prepare",
+                desc: "The order is checked for fitting compatibility and production requirements.",
               },
               {
                 step: "04",
-                title: "Purchase",
-                desc: "Secure checkout. Adapter included in the price at no extra cost.",
+                title: "Studio production",
+                desc: "The piece is produced, finished, and prepared for dispatch or collection.",
               },
               {
                 step: "05",
-                title: "Local pickup",
-                desc: "Collect your shade locally. Shipping coming soon.",
+                title: "Delivery or pickup",
+                desc: "Receive the finished object through local collection or domestic shipping.",
               },
             ].map((item) => (
               <div key={item.step} className="text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-charcoal text-sm font-semibold text-warm-white">
                   {item.step}
                 </div>
-                <h3 className="mt-4 text-sm font-semibold text-charcoal">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-charcoal/60">{item.desc}</p>
+
+                <h3 className="mt-4 text-sm font-semibold text-charcoal">
+                  {item.title}
+                </h3>
+
+                <p className="mt-2 text-sm leading-relaxed text-charcoal/60">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Why 3D Printed Section */}
+      {/* Philosophy */}
       <section className="bg-warm-black py-16 text-warm-white sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
+          <div className="max-w-3xl">
             <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Why 3D Printed Shades?
+              A Different Production Model
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-              Parametric manufacturing enables forms impossible with traditional materials — at a
-              fraction of the cost and lead time.
+
+            <p className="mt-4 text-base leading-relaxed text-ivory/70">
+              Lumenform is built around localised, responsive production rather
+              than mass inventory and offshore tooling.
             </p>
           </div>
+
           <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                icon: Layers,
-                title: "Custom geometry",
-                desc: "Every shade is generated from parametric models. Modify curves, density, aperture, and form to suit your space.",
-              },
-              {
                 icon: Lightbulb,
-                title: "Low-cost experimentation",
-                desc: "Try a new look without committing to expensive glass, metal, or fabric. Replace or iterate affordably.",
+                title: "Adaptable forms",
+                desc: "Parametric geometry allows proportion, density, and light behaviour to evolve without redesigning from the beginning.",
               },
               {
                 icon: Repeat,
-                title: "Rapid iteration",
-                desc: "Design to finished object in days, not weeks. Adjust and reprint without tooling costs.",
+                title: "Iterative production",
+                desc: "Objects can be refined, adjusted, or replaced without expensive tooling or long manufacturing cycles.",
               },
               {
                 icon: Ruler,
-                title: "Lightweight replacement",
-                desc: "Printed shades weigh a fraction of traditional materials. Easy to install, easy to swap.",
+                title: "Lightweight construction",
+                desc: "The resulting forms are lightweight, durable, and practical for domestic installation and shipping.",
               },
               {
                 icon: MapPin,
-                title: "Local production",
-                desc: "Made locally, collected locally. No international shipping delays or carbon-heavy logistics.",
+                title: "Local fabrication",
+                desc: "Designed and produced locally with shorter supply chains and direct oversight of the finished object.",
               },
               {
-                icon: Layers,
-                title: "Sustainable materials",
-                desc: "PLA is plant-derived and biodegradable. PETG is fully recyclable. Minimal waste in production.",
+                icon: Box,
+                title: "Efficient packaging",
+                desc: "Minimal, paper-based packaging systems reduce unnecessary waste while protecting the object in transit.",
+              },
+              {
+                icon: Sparkles,
+                title: "Custom development",
+                desc: "Specific fittings, dimensions, and spatial requirements can be incorporated into custom-developed works.",
               },
             ].map((item) => (
-              <div key={item.title} className="rounded-xl border border-ivory/10 p-6">
+              <div
+                key={item.title}
+                className="rounded-xl border border-ivory/10 bg-white/[0.02] p-6"
+              >
                 <item.icon className="h-6 w-6 text-amber" />
-                <h3 className="mt-4 text-base font-semibold">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ivory/70">{item.desc}</p>
+
+                <h3 className="mt-4 text-base font-semibold">
+                  {item.title}
+                </h3>
+
+                <p className="mt-2 text-sm leading-relaxed text-ivory/70">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="border-t border-charcoal/5 bg-ivory py-16 sm:py-24">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <h2 className="text-2xl font-semibold tracking-tight text-charcoal sm:text-3xl">
-            Need something unique?
+            Need something more specific?
           </h2>
-          <p className="mt-4 text-base leading-relaxed text-charcoal/60">
-            We design custom parametric shades for specific spaces, fittings, and aesthetic
-            requirements. Share your vision and we will generate a form to match.
+
+          <p className="mt-4 text-base leading-relaxed text-charcoal/65">
+            Custom work can be developed around existing fittings, room scale,
+            spatial constraints, and particular aesthetic requirements.
           </p>
+
           <div className="mt-8">
             <Link
               href="/custom"

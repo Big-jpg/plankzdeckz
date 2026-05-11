@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "About Lumenform Studio — the maker, the process, and the philosophy.",
+  description: "About Lumenform Studio; the maker, the process, and the philosophy.",
 };
 
 export default function AboutPage() {
@@ -17,7 +17,7 @@ export default function AboutPage() {
             About Lumenform Studio
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-            Parametric lighting objects, locally made.
+            Contemporary lighting objects, designed and made locally.
           </p>
         </div>
       </section>
@@ -26,51 +26,63 @@ export default function AboutPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="prose prose-charcoal max-w-none space-y-6 text-charcoal/80">
             <p className="text-lg leading-relaxed">
-              Lumenform Studio is a small-batch lighting design practice specialising in 3D printed
-              lampshades and parametric lighting objects. Every product is designed, generated, and
-              manufactured locally using FDM additive manufacturing.
+              Lumenform Studio is a small-batch lighting design practice focused on
+              sculptural lampshades and contemporary lighting objects. Each piece is
+              developed and produced locally using digitally driven fabrication methods
+              that allow for precision, flexibility, and highly individual forms.
             </p>
 
             <h2 className="text-xl font-semibold text-charcoal">The Maker</h2>
             <p className="leading-relaxed">
-              Founded by a designer-maker with a background in computational geometry and industrial
-              design, Lumenform exists at the intersection of digital fabrication and domestic
-              lighting. The studio operates from a dedicated workshop equipped with multiple FDM
-              printers optimised for large-format, thin-wall printing.
+              Founded by a designer-maker with a background in computational design,
+              systems engineering, and industrial fabrication, Lumenform exists at the
+              intersection of mathematics, material, and light. The studio operates from
+              a dedicated workshop in Western Australia where every object is produced,
+              assembled, and refined in-house.
             </p>
 
             <h2 className="text-xl font-semibold text-charcoal">The Process</h2>
             <p className="leading-relaxed">
-              Each shade begins as a parametric model — a set of mathematical rules that define
-              form, curvature, density, and aperture. These parameters can be adjusted to create
-              unique variations without starting from scratch. The model is then sliced for FDM
-              printing and produced in PLA or PETG, depending on the desired optical properties.
+              Each piece begins as a parametric model — a living design system governed
+              by geometry, proportion, curvature, density, and light diffusion. Rather
+              than creating a single static form, these systems allow subtle variations
+              and adaptations to emerge naturally while preserving the intent of the
+              original design.
             </p>
+
             <p className="leading-relaxed">
-              Print times range from 8 to 36 hours depending on complexity and scale.
-              Post-processing is minimal by design — the layer lines and material texture are
-              considered part of the aesthetic, not defects to be hidden.
+              Materials are selected for both optical behaviour and tactile quality,
+              producing surfaces that interact with light in ways traditional shade
+              construction often cannot. The resulting forms possess a softness,
+              translucency, and geometric complexity that would be difficult or
+              prohibitively expensive to manufacture through conventional methods.
             </p>
 
             <h2 className="text-xl font-semibold text-charcoal">The Philosophy</h2>
             <p className="leading-relaxed">
-              Traditional lampshades rely on expensive tooling, imported materials, and long supply
-              chains. Lumenform replaces this with local, on-demand production. If a design does not
-              work in a space, it can be modified and reprinted in days rather than weeks. If a
-              shade is damaged, replacement is affordable and fast.
-            </p>
-            <p className="leading-relaxed">
-              The goal is not to replicate what already exists in fabric, glass, or metal — it is to
-              explore forms that are only possible through additive manufacturing. Geometries that
-              would be prohibitively expensive to mould or cast become trivial to print.
+              Lumenform was founded on the belief that contemporary manufacturing should
+              be local, adaptable, and transparent. Traditional homewares production
+              often relies on offshore tooling, large inventory commitments, and long
+              supply chains. Lumenform instead embraces responsive, small-batch
+              production where objects can evolve over time rather than remain fixed.
             </p>
 
-            <h2 className="text-xl font-semibold text-charcoal">Safety and Compatibility</h2>
             <p className="leading-relaxed">
-              All Lumenform shades are designed exclusively for LED bulbs. The materials used (PLA
-              and PETG) have lower heat tolerance than glass or metal, making them unsuitable for
-              incandescent or halogen bulbs. Every shade ships with a compatible fitting adapter —
-              B22, E27, or Clipsal No. 530 — included in the purchase price.
+              This approach allows designs to be refined, customised, and replaced
+              without the waste and inertia associated with mass production. The goal is
+              not to imitate glass, fabric, or metal, but to explore an emerging design
+              language shaped by computation, light, and modern fabrication techniques.
+            </p>
+
+            <h2 className="text-xl font-semibold text-charcoal">
+              Safety and Compatibility
+            </h2>
+
+            <p className="leading-relaxed">
+              All Lumenform shades are designed exclusively for LED bulbs. Every piece
+              is tested for compatibility with low-heat lighting applications and ships
+              with the required fitting adapter included in the purchase price,
+              supporting B22, E27, and Clipsal No. 530 fittings.
             </p>
           </div>
 
