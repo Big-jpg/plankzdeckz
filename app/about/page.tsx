@@ -26,63 +26,59 @@ export default function AboutPage() {
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="prose prose-charcoal max-w-none space-y-6 text-charcoal/80">
             <p className="text-lg leading-relaxed">
-              Lumenform Studio is a small-batch lighting design practice focused on
-              sculptural lampshades and contemporary lighting objects. Each piece is
-              developed and produced locally using digitally driven fabrication methods
-              that allow for precision, flexibility, and highly individual forms.
+              Lumenform Studio is a small-batch lighting design practice focused on sculptural
+              lampshades and contemporary lighting objects. Each piece is developed and produced
+              locally using digitally driven fabrication methods that allow for precision,
+              flexibility, and highly individual forms.
             </p>
 
             <h2 className="text-xl font-semibold text-charcoal">The Maker</h2>
             <p className="leading-relaxed">
-              Founded by a designer-maker with a background in computational design,
-              systems engineering, and industrial fabrication, Lumenform exists at the
-              intersection of mathematics, material, and light. The studio operates from
-              a dedicated workshop in Western Australia where every object is produced,
-              assembled, and refined in-house.
+              Founded by a designer-maker with a background in computational design, systems
+              engineering, and industrial fabrication, Lumenform exists at the intersection of
+              mathematics, material, and light. The studio operates from a dedicated workshop in
+              Western Australia where every object is produced, assembled, and refined in-house.
             </p>
 
             <h2 className="text-xl font-semibold text-charcoal">The Process</h2>
             <p className="leading-relaxed">
-              Each piece begins as a parametric model — a living design system governed
-              by geometry, proportion, curvature, density, and light diffusion. Rather
-              than creating a single static form, these systems allow subtle variations
-              and adaptations to emerge naturally while preserving the intent of the
-              original design.
+              Each piece begins as a parametric model — a living design system governed by geometry,
+              proportion, curvature, density, and light diffusion. Rather than creating a single
+              static form, these systems allow subtle variations and adaptations to emerge naturally
+              while preserving the intent of the original design.
             </p>
 
             <p className="leading-relaxed">
-              Materials are selected for both optical behaviour and tactile quality,
-              producing surfaces that interact with light in ways traditional shade
-              construction often cannot. The resulting forms possess a softness,
-              translucency, and geometric complexity that would be difficult or
-              prohibitively expensive to manufacture through conventional methods.
+              Materials are selected for both optical behaviour and tactile quality, producing
+              surfaces that interact with light in ways traditional shade construction often cannot.
+              The resulting forms possess a softness, translucency, and geometric complexity that
+              would be difficult or prohibitively expensive to manufacture through conventional
+              methods.
             </p>
 
             <h2 className="text-xl font-semibold text-charcoal">The Philosophy</h2>
             <p className="leading-relaxed">
-              Lumenform was founded on the belief that contemporary manufacturing should
-              be local, adaptable, and transparent. Traditional homewares production
-              often relies on offshore tooling, large inventory commitments, and long
-              supply chains. Lumenform instead embraces responsive, small-batch
-              production where objects can evolve over time rather than remain fixed.
+              Lumenform was founded on the belief that contemporary manufacturing should be local,
+              adaptable, and transparent. Traditional homewares production often relies on offshore
+              tooling, large inventory commitments, and long supply chains. Lumenform instead
+              embraces responsive, small-batch production where objects can evolve over time rather
+              than remain fixed.
             </p>
 
             <p className="leading-relaxed">
-              This approach allows designs to be refined, customised, and replaced
-              without the waste and inertia associated with mass production. The goal is
-              not to imitate glass, fabric, or metal, but to explore an emerging design
-              language shaped by computation, light, and modern fabrication techniques.
+              This approach allows designs to be refined, customised, and replaced without the waste
+              and inertia associated with mass production. The goal is not to imitate glass, fabric,
+              or metal, but to explore an emerging design language shaped by computation, light, and
+              modern fabrication techniques.
             </p>
 
-            <h2 className="text-xl font-semibold text-charcoal">
-              Safety and Compatibility
-            </h2>
+            <h2 className="text-xl font-semibold text-charcoal">Safety and Compatibility</h2>
 
             <p className="leading-relaxed">
-              All Lumenform shades are designed exclusively for LED bulbs. Every piece
-              is tested for compatibility with low-heat lighting applications and ships
-              with the required fitting adapter included in the purchase price,
-              supporting B22, E27, and Clipsal No. 530 fittings.
+              All Lumenform shades are designed exclusively for LED bulbs. Every piece is tested for
+              compatibility with low-heat lighting applications and ships with the required fitting
+              adapter included in the purchase price, supporting B22, E27, and Clipsal No. 530
+              fittings.
             </p>
           </div>
 

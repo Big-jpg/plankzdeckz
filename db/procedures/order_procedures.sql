@@ -335,6 +335,77 @@ END;
 $$;
 
 -- =============================================================================
+-- get_order_by_checkout_session
+-- Returns order row joined with its items for a Stripe checkout session.
+-- =============================================================================
+CREATE OR REPLACE FUNCTION get_order_by_checkout_session(p_stripe_checkout_session_id text)
+RETURNS TABLE (
+  id                          uuid,
+  user_id                     uuid,
+  email                       text,
+  buyer_name                  text,
+  phone                       text,
+  stripe_checkout_session_id  text,
+  stripe_payment_intent_id    text,
+  status                      text,
+  fulfilment_method           text,
+  subtotal_amount             integer,
+  total_amount                integer,
+  currency                    text,
+  pickup_status               text,
+  created_at                  timestamptz,
+  updated_at                  timestamptz,
+  items                       jsonb
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+    SELECT
+      o.id,
+      o.user_id,
+      o.email,
+      o.buyer_name,
+      o.phone,
+      o.stripe_checkout_session_id,
+      o.stripe_payment_intent_id,
+      o.status,
+      o.fulfilment_method,
+      o.subtotal_amount,
+      o.total_amount,
+      o.currency,
+      o.pickup_status,
+      o.created_at,
+      o.updated_at,
+      COALESCE(
+        (SELECT jsonb_agg(
+          jsonb_build_object(
+            'id', oi.id,
+            'shopify_product_id', oi.shopify_product_id,
+            'shopify_variant_id', oi.shopify_variant_id,
+            'title', oi.title,
+            'variant_title', oi.variant_title,
+            'quantity', oi.quantity,
+            'unit_amount', oi.unit_amount,
+            'total_amount', oi.total_amount,
+            'image_url', oi.image_url,
+            'selected_adapter', oi.selected_adapter,
+            'bulb_type_confirmed', oi.bulb_type_confirmed,
+            'fixture_notes', oi.fixture_notes,
+            'customisation_notes', oi.customisation_notes,
+            'material', oi.material,
+            'colour', oi.colour,
+            'metadata', oi.metadata
+          )
+        ) FROM order_items oi WHERE oi.order_id = o.id),
+        '[]'::jsonb
+      ) AS items
+    FROM orders o
+    WHERE o.stripe_checkout_session_id = p_stripe_checkout_session_id;
+END;
+$$;
+
+-- =============================================================================
 -- get_orders_for_email
 -- Returns all orders for a given email, most recent first.
 -- =============================================================================

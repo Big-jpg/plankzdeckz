@@ -2,15 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import {
-  ArrowRight,
-  Box,
-  Lightbulb,
-  MapPin,
-  Repeat,
-  Ruler,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Box, Lightbulb, MapPin, Repeat, Ruler, Sparkles } from "lucide-react";
 
 import { getProducts } from "@/lib/catalogue";
 
@@ -42,9 +34,8 @@ export default async function HomePage() {
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ivory/75 sm:text-xl">
-              Parametrically developed shades and sculptural forms designed for
-              domestic interiors, supplied with compatible B22, E27, and Clipsal
-              fitting adapters.
+              Parametrically developed shades and sculptural forms designed for domestic interiors,
+              supplied with compatible B22, E27, and Clipsal fitting adapters.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">
@@ -93,9 +84,8 @@ export default async function HomePage() {
             </h2>
 
             <p className="mt-4 text-base leading-relaxed text-charcoal/65">
-              A rotating collection of contemporary lighting objects developed
-              through computational geometry, material experimentation, and small-
-              batch production.
+              A rotating collection of contemporary lighting objects developed through computational
+              geometry, material experimentation, and small- batch production.
             </p>
           </div>
 
@@ -121,9 +111,7 @@ export default async function HomePage() {
                     {product.category}
                   </p>
 
-                  <h3 className="mt-1 text-sm font-medium text-charcoal">
-                    {product.title}
-                  </h3>
+                  <h3 className="mt-1 text-sm font-medium text-charcoal">{product.title}</h3>
 
                   <div className="mt-3 flex items-end justify-between gap-3">
                     <p className="text-sm font-semibold text-charcoal">
@@ -163,8 +151,8 @@ export default async function HomePage() {
             </h2>
 
             <p className="mt-4 text-base leading-relaxed text-charcoal/65">
-              Each order moves through a small studio workflow from fitting
-              selection through to local collection or dispatch.
+              Each order moves through a small studio workflow from fitting selection through to
+              local collection or dispatch.
             </p>
           </div>
 
@@ -201,13 +189,9 @@ export default async function HomePage() {
                   {item.step}
                 </div>
 
-                <h3 className="mt-4 text-sm font-semibold text-charcoal">
-                  {item.title}
-                </h3>
+                <h3 className="mt-4 text-sm font-semibold text-charcoal">{item.title}</h3>
 
-                <p className="mt-2 text-sm leading-relaxed text-charcoal/60">
-                  {item.desc}
-                </p>
+                <p className="mt-2 text-sm leading-relaxed text-charcoal/60">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -223,8 +207,8 @@ export default async function HomePage() {
             </h2>
 
             <p className="mt-4 text-base leading-relaxed text-ivory/70">
-              Lumenform is built around localised, responsive production rather
-              than mass inventory and offshore tooling.
+              Lumenform is built around localised, responsive production rather than mass inventory
+              and offshore tooling.
             </p>
           </div>
 
@@ -261,19 +245,12 @@ export default async function HomePage() {
                 desc: "Specific fittings, dimensions, and spatial requirements can be incorporated into custom-developed works.",
               },
             ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-xl border border-ivory/10 bg-white/2 p-6"
-              >
+              <div key={item.title} className="rounded-xl border border-ivory/10 bg-white/2 p-6">
                 <item.icon className="h-6 w-6 text-amber" />
 
-                <h3 className="mt-4 text-base font-semibold">
-                  {item.title}
-                </h3>
+                <h3 className="mt-4 text-base font-semibold">{item.title}</h3>
 
-                <p className="mt-2 text-sm leading-relaxed text-ivory/70">
-                  {item.desc}
-                </p>
+                <p className="mt-2 text-sm leading-relaxed text-ivory/70">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -288,8 +265,8 @@ export default async function HomePage() {
           </h2>
 
           <p className="mt-4 text-base leading-relaxed text-charcoal/65">
-            Custom work can be developed around existing fittings, room scale,
-            spatial constraints, and particular aesthetic requirements.
+            Custom work can be developed around existing fittings, room scale, spatial constraints,
+            and particular aesthetic requirements.
           </p>
 
           <div className="mt-8">
