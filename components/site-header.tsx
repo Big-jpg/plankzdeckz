@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Menu, X, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
+import { UserMenu } from "@/components/user-menu";
 
 const navLinks = [
   { href: "/products", label: "Shop" },
@@ -41,8 +42,12 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        {/* Right side: cart + mobile toggle */}
-        <div className="flex items-center gap-4">
+        {/* Right side: user menu + cart + mobile toggle */}
+        <div className="flex items-center gap-3">
+          {/* User menu (desktop and mobile) */}
+          <UserMenu />
+
+          {/* Cart button */}
           <button
             type="button"
             onClick={openDrawer}
@@ -57,6 +62,7 @@ export function SiteHeader() {
             )}
           </button>
 
+          {/* Mobile menu toggle */}
           <button
             type="button"
             className="md:hidden flex items-center justify-center rounded-full p-2 text-charcoal/70 transition-colors hover:text-charcoal"
