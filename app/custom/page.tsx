@@ -1,6 +1,7 @@
 // app/custom/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CustomDesignRequestForm } from "@/components/custom-design-request-form";
 
 export const metadata: Metadata = {
   title: "Custom Design",
@@ -119,60 +120,7 @@ export default function CustomPage() {
                 response will be.
               </p>
 
-              <form className="mt-6 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-charcoal">Name</label>
-                  <input
-                    type="text"
-                    placeholder="Your name"
-                    className="mt-1 w-full rounded-lg border border-charcoal/20 bg-warm-white px-3 py-2.5 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal">Email</label>
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    className="mt-1 w-full rounded-lg border border-charcoal/20 bg-warm-white px-3 py-2.5 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal">
-                    Describe the space and design direction
-                  </label>
-                  <textarea
-                    placeholder="Tell us about the room, the fitting, the approximate dimensions, and the kind of light or form you are looking for..."
-                    rows={5}
-                    className="mt-1 w-full rounded-lg border border-charcoal/20 bg-warm-white px-3 py-2.5 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-charcoal">
-                    Fitting type, if known
-                  </label>
-                  <select className="mt-1 w-full rounded-lg border border-charcoal/20 bg-warm-white px-3 py-2.5 text-sm text-charcoal focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal">
-                    <option value="">Select...</option>
-                    <option value="B22">B22 bayonet</option>
-                    <option value="E27">E27 Edison screw</option>
-                    <option value="clipsal-530">Clipsal No. 530</option>
-                    <option value="other">Other / not sure</option>
-                  </select>
-                </div>
-
-                <button
-                  type="button"
-                  className="w-full rounded-lg bg-charcoal px-6 py-3 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
-                >
-                  Submit request
-                </button>
-
-                <p className="text-center text-xs leading-relaxed text-charcoal/40">
-                  Form is not yet functional. Contact Lumenform directly in the meantime.
-                </p>
-              </form>
+              <CustomDesignRequestForm />
             </div>
           </div>
 
