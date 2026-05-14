@@ -63,7 +63,7 @@ export default async function HomePage() {
 
               <div className="flex items-center gap-2">
                 <Box className="h-4 w-4" />
-                Lightweight domestic shipping
+                Lightweight domestic delivery
               </div>
 
               <div className="flex items-center gap-2">

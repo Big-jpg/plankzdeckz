@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Lumenform Studio product Open Graph placeholder</title>
+  <desc id="desc">Warm ivory product placeholder with layered lamp-shade silhouette and gold accents.</desc>
+  <defs>
+    <linearGradient id="shade" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fffaf0"/>
+      <stop offset="100%" stop-color="#ead8b8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#f7efe3"/>
+  <rect x="72" y="72" width="1056" height="486" rx="34" fill="#fffaf0" stroke="#c7a45d" stroke-width="3"/>
+  <path d="M748 148C832 172 894 238 912 322C929 401 887 470 812 494C731 520 641 491 598 420C557 352 569 258 630 202C660 174 702 153 748 148Z" fill="url(#shade)" stroke="#c7a45d" stroke-width="5"/>
+  <path d="M678 178C635 253 640 392 702 482" fill="none" stroke="#c7a45d" stroke-width="4" opacity="0.55"/>
+  <path d="M758 150C724 246 727 392 782 494" fill="none" stroke="#c7a45d" stroke-width="4" opacity="0.55"/>
+  <path d="M840 208C789 282 779 406 821 488" fill="none" stroke="#c7a45d" stroke-width="4" opacity="0.55"/>
+  <circle cx="888" cy="164" r="72" fill="#c7a45d" opacity="0.14"/>
+  <text x="132" y="188" fill="#2d2926" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="4">LUMENFORM STUDIO</text>
+  <text x="132" y="290" fill="#2d2926" font-family="Inter, Arial, sans-serif" font-size="64" font-weight="700">Parametric shade</text>
+  <text x="132" y="366" fill="#2d2926" font-family="Inter, Arial, sans-serif" font-size="64" font-weight="700">for domestic light</text>
+  <text x="132" y="438" fill="#625950" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="400">Adapter-selected, LED-only, made to order.</text>
+  <text x="132" y="508" fill="#2d2926" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="600">Placeholder social image pending final product photography</text>
+</svg>
