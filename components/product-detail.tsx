@@ -203,7 +203,14 @@ export function ProductDetail({ product }: { product: Product }) {
                 </label>
                 <p className="mt-1 text-xs text-charcoal/50">
                   Included with your shade at no extra cost. Select the adapter for your light
-                  fitting.
+                  fitting. If unsure, read the{" "}
+                  <Link
+                    href="/fitting-guide"
+                    className="text-charcoal underline underline-offset-2"
+                  >
+                    fitting guide
+                  </Link>
+                  .
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {adapterOptions.map((adapter) => (
@@ -274,7 +281,12 @@ export function ProductDetail({ product }: { product: Product }) {
                   <p className="text-sm font-medium text-charcoal">LED bulbs only</p>
                   <p className="mt-0.5 text-xs text-charcoal/60">
                     This shade is designed for LED bulbs only. Not compatible with incandescent or
-                    halogen bulbs. Customer must confirm bulb type and fitting compatibility.
+                    halogen bulbs. Customer must confirm bulb type and fitting compatibility. Read
+                    the{" "}
+                    <Link href="/safety" className="text-charcoal underline underline-offset-2">
+                      full safety note
+                    </Link>
+                    .
                   </p>
                 </div>
               </div>
