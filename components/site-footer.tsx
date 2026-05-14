@@ -8,14 +8,17 @@ const footerSections = [
       { href: "/products", label: "All Products" },
       { href: "/custom", label: "Custom Design" },
       { href: "/fitting-guide", label: "Fitting Guide" },
+      { href: "/materials", label: "Materials" },
     ],
   },
   {
     title: "Information",
     links: [
       { href: "/about", label: "About" },
+      { href: "/production", label: "Production & Turnaround" },
       { href: "/pickup", label: "Local Pickup" },
       { href: "/shipping", label: "Shipping" },
+      { href: "/faq", label: "FAQ" },
       { href: "/contact", label: "Contact" },
     ],
   },
@@ -24,6 +27,8 @@ const footerSections = [
     links: [
       { href: "/privacy", label: "Privacy Policy" },
       { href: "/terms", label: "Terms & Conditions" },
+      { href: "/returns", label: "Returns & Refunds" },
+      { href: "/safety", label: "LED Bulb Safety" },
     ],
   },
 ];

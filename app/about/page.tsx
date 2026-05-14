@@ -75,10 +75,10 @@ export default function AboutPage() {
             <h2 className="text-xl font-semibold text-charcoal">Safety and Compatibility</h2>
 
             <p className="leading-relaxed">
-              All Lumenform shades are designed exclusively for LED bulbs. Every piece is tested for
-              compatibility with low-heat lighting applications and ships with the required fitting
-              adapter included in the purchase price, supporting B22, E27, and Clipsal No. 530
-              fittings.
+              All Lumenform shades are designed exclusively for LED bulbs. Every piece is checked
+              for compatibility with low-heat lighting applications and is supplied with the
+              required fitting adapter included in the purchase price, supporting B22, E27, and
+              Clipsal No. 530 fittings.
             </p>
           </div>
 
