@@ -9,6 +9,7 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:smoke": "playwright test",
     "db:migrate": "psql $DATABASE_URL -f db/migrations/001_initial_schema.sql",
     "db:procedures": "psql $DATABASE_URL -f db/procedures/order_procedures.sql && psql $DATABASE_URL -f db/procedures/auth_procedures.sql && psql $DATABASE_URL -f db/procedures/pickup_procedures.sql",
     "db:setup": "pnpm db:migrate && pnpm db:procedures"
@@ -28,6 +29,7 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",

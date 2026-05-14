@@ -8,6 +8,23 @@ export const metadata: Metadata = {
   title: "Shop",
   description:
     "Browse the Lumenform Studio collection of contemporary lighting objects for B22, E27, and Clipsal fittings.",
+  alternates: {
+    canonical: "/products",
+  },
+  openGraph: {
+    title: "Shop Lumenform Studio Lighting Objects",
+    description:
+      "Browse made-to-order 3D printed lampshades supplied with B22, E27, and Clipsal-compatible fitting adapters.",
+    url: "/products",
+    images: [
+      {
+        url: "/og-product-placeholder.svg",
+        width: 1200,
+        height: 630,
+        alt: "Lumenform Studio catalogue Open Graph placeholder",
+      },
+    ],
+  },
 };
 
 export default async function ProductsPage() {
