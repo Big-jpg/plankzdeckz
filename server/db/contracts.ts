@@ -102,6 +102,12 @@ export interface CustomDesignRequest {
   created_at: string;
 }
 
+export interface AdminDashboardOverview {
+  recent_orders_count: number;
+  pending_pickups_count: number;
+  new_custom_requests_count: number;
+}
+
 export interface User {
   id: string;
   name: string | null;
@@ -338,6 +344,45 @@ export async function createCustomDesignRequest(
   return result?.create_custom_design_request ?? null;
 }
 
+/**
+ * Retrieve custom design requests for admin review.
+ */
+export async function getCustomDesignRequestsAdmin(
+  limit = 50,
+  offset = 0,
+  statusFilter: string | null = null,
+): Promise<CustomDesignRequest[]> {
+  return queryRows<CustomDesignRequest>(
+    `SELECT * FROM get_custom_design_requests_admin($1, $2, $3)`,
+    [limit, offset, statusFilter],
+  );
+}
+
+/**
+ * Retrieve one custom design request by ID for admin mutation context.
+ */
+export async function getCustomDesignRequestById(
+  requestId: string,
+): Promise<CustomDesignRequest | null> {
+  return queryOne<CustomDesignRequest>(`SELECT * FROM get_custom_design_request_by_id($1)`, [
+    requestId,
+  ]);
+}
+
+/**
+ * Update a custom design request status through the stored procedure.
+ * Valid statuses: new, reviewing, quoted, accepted, rejected, completed
+ */
+export async function updateCustomDesignRequestStatus(
+  requestId: string,
+  newStatus: string,
+): Promise<CustomDesignRequest | null> {
+  return queryOne<CustomDesignRequest>(
+    `SELECT * FROM update_custom_design_request_status($1, $2)`,
+    [requestId, newStatus],
+  );
+}
+
 // =============================================================================
 // Buyer Event Contracts
 // =============================================================================
@@ -370,6 +415,13 @@ export async function recordBuyerEvent(params: RecordBuyerEventParams): Promise<
 // =============================================================================
 // Order Query Contracts
 // =============================================================================
+
+/**
+ * Retrieve admin dashboard counts.
+ */
+export async function getAdminDashboardOverview(): Promise<AdminDashboardOverview | null> {
+  return queryOne<AdminDashboardOverview>(`SELECT * FROM get_admin_dashboard_overview()`);
+}
 
 /**
  * Retrieve a single order with its items.
