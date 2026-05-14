@@ -18,7 +18,18 @@ export function ProductDetail({ product }: { product: Product }) {
   const [customisationNotes, setCustomisationNotes] = useState("");
   const [toastVisible, setToastVisible] = useState(false);
 
-  const { addItem } = useCart();
+  const { addItem, itemCount } = useCart();
+
+  const sendBuyerEvent = useCallback(
+    (eventType: "adapter_selected" | "cart_created", payload: Record<string, unknown>) => {
+      void fetch("/api/buyer-events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ event_type: eventType, payload }),
+      }).catch(() => undefined);
+    },
+    [],
+  );
 
   // Use adapters from the product DTO (populated from Shopify or mock data)
   const adapterOptions: AdapterType[] =
@@ -29,6 +40,19 @@ export function ProductDetail({ product }: { product: Product }) {
   const canAdd =
     selectedAdapter !== null &&
     (selectedAdapter !== "Other / not sure" || fixtureNotes.trim().length > 0);
+
+  const handleAdapterSelect = useCallback(
+    (adapter: AdapterType) => {
+      setSelectedAdapter(adapter);
+      sendBuyerEvent("adapter_selected", {
+        product_id: product.id,
+        product_handle: product.handle,
+        product_title: product.title,
+        adapter_type: adapter,
+      });
+    },
+    [product.handle, product.id, product.title, sendBuyerEvent],
+  );
 
   const handleAddToCart = useCallback(() => {
     if (!selectedAdapter || !canAdd) return;
@@ -53,8 +77,31 @@ export function ProductDetail({ product }: { product: Product }) {
     };
 
     addItem(item);
+
+    if (itemCount === 0) {
+      sendBuyerEvent("cart_created", {
+        product_id: product.id,
+        product_handle: product.handle,
+        product_title: product.title,
+        selected_adapter: selectedAdapter,
+        item_count: 1,
+        currency: product.currency,
+        subtotal_amount: Math.round(product.price * 100),
+      });
+    }
+
     setToastVisible(true);
-  }, [selectedAdapter, canAdd, product, fixtureNotes, customisationNotes, selectedColour, addItem]);
+  }, [
+    selectedAdapter,
+    canAdd,
+    product,
+    fixtureNotes,
+    customisationNotes,
+    selectedColour,
+    addItem,
+    itemCount,
+    sendBuyerEvent,
+  ]);
 
   return (
     <>
@@ -163,7 +210,7 @@ export function ProductDetail({ product }: { product: Product }) {
                     <button
                       key={adapter}
                       type="button"
-                      onClick={() => setSelectedAdapter(adapter)}
+                      onClick={() => handleAdapterSelect(adapter)}
                       className={cn(
                         "rounded-lg border px-3 py-2.5 text-sm font-medium transition-all",
                         selectedAdapter === adapter

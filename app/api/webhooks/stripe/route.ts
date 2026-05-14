@@ -9,6 +9,7 @@ import {
   markStripeEventProcessed,
   recordStripeEvent,
 } from "@/server/db/contracts";
+import { onOrderCreated, onPaymentConfirmed } from "@/server/hooks/buyer-events";
 import { getStripeClient, getStripeWebhookSecret } from "@/server/stripe/client";
 
 export const runtime = "nodejs";
@@ -165,6 +166,31 @@ async function persistCheckoutSessionOrder(session: Stripe.Checkout.Session): Pr
       },
     });
   }
+
+  await onPaymentConfirmed({
+    order_id: order.id,
+    stripe_checkout_session_id: session.id,
+    stripe_payment_intent_id: stripeObjectId(session.payment_intent),
+    email,
+    phone: checkoutPhone(session),
+    amount_total: session.amount_total,
+    currency: (session.currency ?? lineItems.data[0]?.currency ?? "aud").toUpperCase(),
+    payment_status: session.payment_status,
+  });
+
+  await onOrderCreated({
+    order_id: order.id,
+    email,
+    phone: checkoutPhone(session),
+    stripe_checkout_session_id: session.id,
+    stripe_payment_intent_id: stripeObjectId(session.payment_intent),
+    status: order.status,
+    total_amount:
+      session.amount_total ??
+      lineItems.data.reduce((total, lineItem) => total + (lineItem.amount_total ?? 0), 0),
+    currency: (session.currency ?? lineItems.data[0]?.currency ?? "aud").toUpperCase(),
+    item_count: lineItems.data.length,
+  });
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<WebhookResponse>> {

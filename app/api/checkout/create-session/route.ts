@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { validateCartForCheckout, type VerifiedCartItem } from "@/server/cart/validation";
+import { onCheckoutStarted } from "@/server/hooks/buyer-events";
 import { getStripeClient } from "@/server/stripe/client";
 
 export const runtime = "nodejs";
@@ -176,6 +177,18 @@ export async function POST(
   if (!session.url) {
     return NextResponse.json({ error: "Stripe did not return a checkout URL." }, { status: 502 });
   }
+
+  await onCheckoutStarted({
+    stripe_checkout_session_id: session.id,
+    item_count: validation.verifiedItems.length,
+    subtotal_amount: session.amount_subtotal ?? Math.round(validation.verifiedSubtotal * 100),
+    total_amount: session.amount_total ?? Math.round(validation.verifiedSubtotal * 100),
+    currency: validation.currency,
+    selected_adapters: Array.from(
+      new Set(validation.verifiedItems.map((item) => item.selectedAdapter)),
+    ),
+    cart_fingerprint: cartFingerprint(validation.verifiedItems),
+  });
 
   return NextResponse.json({ sessionId: session.id, url: session.url }, { status: 200 });
 }
