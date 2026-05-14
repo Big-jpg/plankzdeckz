@@ -464,6 +464,7 @@ RETURNS TABLE (
   id                          uuid,
   email                       text,
   buyer_name                  text,
+  stripe_checkout_session_id  text,
   status                      text,
   fulfilment_method           text,
   total_amount                integer,
@@ -480,6 +481,7 @@ BEGIN
       o.id,
       o.email,
       o.buyer_name,
+      o.stripe_checkout_session_id,
       o.status,
       o.fulfilment_method,
       o.total_amount,
@@ -536,6 +538,159 @@ BEGIN
   RETURNING custom_design_requests.id INTO v_id;
 
   RETURN v_id;
+END;
+$$;
+
+-- =============================================================================
+-- get_admin_dashboard_overview
+-- Counts used by the Admin-Lite dashboard.
+-- =============================================================================
+CREATE OR REPLACE FUNCTION get_admin_dashboard_overview()
+RETURNS TABLE (
+  recent_orders_count       bigint,
+  pending_pickups_count     bigint,
+  new_custom_requests_count bigint
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+    SELECT
+      (SELECT COUNT(*) FROM orders o WHERE o.created_at >= now() - interval '30 days') AS recent_orders_count,
+      (SELECT COUNT(*) FROM orders o WHERE o.fulfilment_method = 'local_pickup' AND o.pickup_status IN ('pending', 'ready')) AS pending_pickups_count,
+      (SELECT COUNT(*) FROM custom_design_requests cdr WHERE cdr.status = 'new') AS new_custom_requests_count;
+END;
+$$;
+
+-- =============================================================================
+-- get_custom_design_requests_admin
+-- Returns custom design requests for admin review, most recent first.
+-- =============================================================================
+CREATE OR REPLACE FUNCTION get_custom_design_requests_admin(
+  p_limit integer DEFAULT 50,
+  p_offset integer DEFAULT 0,
+  p_status_filter text DEFAULT NULL
+)
+RETURNS TABLE (
+  id           uuid,
+  user_id      uuid,
+  email        text,
+  name         text,
+  phone        text,
+  fixture_type text,
+  adapter_type text,
+  design_notes text,
+  budget_range text,
+  status       text,
+  created_at   timestamptz
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+    SELECT
+      cdr.id,
+      cdr.user_id,
+      cdr.email,
+      cdr.name,
+      cdr.phone,
+      cdr.fixture_type,
+      cdr.adapter_type,
+      cdr.design_notes,
+      cdr.budget_range,
+      cdr.status,
+      cdr.created_at
+    FROM custom_design_requests cdr
+    WHERE (p_status_filter IS NULL OR cdr.status = p_status_filter)
+    ORDER BY cdr.created_at DESC
+    LIMIT p_limit
+    OFFSET p_offset;
+END;
+$$;
+
+-- =============================================================================
+-- get_custom_design_request_by_id
+-- =============================================================================
+CREATE OR REPLACE FUNCTION get_custom_design_request_by_id(p_request_id uuid)
+RETURNS TABLE (
+  id           uuid,
+  user_id      uuid,
+  email        text,
+  name         text,
+  phone        text,
+  fixture_type text,
+  adapter_type text,
+  design_notes text,
+  budget_range text,
+  status       text,
+  created_at   timestamptz
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+    SELECT
+      cdr.id,
+      cdr.user_id,
+      cdr.email,
+      cdr.name,
+      cdr.phone,
+      cdr.fixture_type,
+      cdr.adapter_type,
+      cdr.design_notes,
+      cdr.budget_range,
+      cdr.status,
+      cdr.created_at
+    FROM custom_design_requests cdr
+    WHERE cdr.id = p_request_id;
+END;
+$$;
+
+-- =============================================================================
+-- update_custom_design_request_status
+-- All custom design request status writes must go through this procedure.
+-- Valid statuses: new, reviewing, quoted, accepted, rejected, completed
+-- =============================================================================
+CREATE OR REPLACE FUNCTION update_custom_design_request_status(
+  p_request_id uuid,
+  p_new_status text
+)
+RETURNS TABLE (
+  id           uuid,
+  user_id      uuid,
+  email        text,
+  name         text,
+  phone        text,
+  fixture_type text,
+  adapter_type text,
+  design_notes text,
+  budget_range text,
+  status       text,
+  created_at   timestamptz
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF p_new_status NOT IN ('new', 'reviewing', 'quoted', 'accepted', 'rejected', 'completed') THEN
+    RAISE EXCEPTION 'Invalid custom design request status: %. Must be one of: new, reviewing, quoted, accepted, rejected, completed', p_new_status;
+  END IF;
+
+  RETURN QUERY
+    UPDATE custom_design_requests cdr
+    SET status = p_new_status
+    WHERE cdr.id = p_request_id
+    RETURNING
+      cdr.id,
+      cdr.user_id,
+      cdr.email,
+      cdr.name,
+      cdr.phone,
+      cdr.fixture_type,
+      cdr.adapter_type,
+      cdr.design_notes,
+      cdr.budget_range,
+      cdr.status,
+      cdr.created_at;
 END;
 $$;
 

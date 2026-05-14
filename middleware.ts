@@ -1,6 +1,7 @@
 // middleware.ts
 // Lumenform Studio — Next.js middleware for route protection.
-// Protects /account/* routes by redirecting unauthenticated users to /login.
+// Protects /account/* and /admin/* routes by redirecting unauthenticated users to /login.
+// Admin email allowlist enforcement happens server-side via Auth.js session checks.
 // Guest checkout (/cart, /checkout/*) is NOT protected.
 // All other public routes pass through unmodified.
 
@@ -15,8 +16,8 @@ const SESSION_COOKIE_NAMES = ["authjs.session-token", "__Secure-authjs.session-t
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only protect /account routes
-  if (pathname.startsWith("/account")) {
+  // Only protect account and admin routes.
+  if (pathname.startsWith("/account") || pathname.startsWith("/admin")) {
     const hasSession = SESSION_COOKIE_NAMES.some((name) => request.cookies.get(name)?.value);
 
     if (!hasSession) {
@@ -30,6 +31,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Only run middleware on /account routes. Exclude API routes, static files, etc.
-  matcher: ["/account/:path*"],
+  // Only run middleware on protected page routes. Exclude API routes, static files, etc.
+  matcher: ["/account/:path*", "/admin/:path*"],
 };

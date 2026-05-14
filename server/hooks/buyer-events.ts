@@ -12,7 +12,8 @@ export type BuyerEventType =
   | "pickup_requested"
   | "order_ready_for_pickup"
   | "order_collected"
-  | "custom_design_requested";
+  | "custom_design_requested"
+  | "custom_design_status_updated";
 
 export interface BuyerHookResult {
   eventId: string | null;
@@ -121,6 +122,18 @@ export interface OnCustomDesignRequestedParams {
   desired_shade_style?: string | null;
   dimensions?: string | null;
   colour_material_preference?: string | null;
+}
+
+export interface OnCustomDesignStatusChangedParams {
+  custom_design_request_id: string;
+  email: string;
+  phone?: string | null;
+  user_id?: string | null;
+  previous_status?: string | null;
+  status: string;
+  name?: string | null;
+  fixture_type?: string | null;
+  adapter_type?: string | null;
 }
 
 function normalizePayload(payload: object | undefined): Record<string, unknown> {
@@ -284,6 +297,18 @@ export function onCustomDesignRequested(
 ): Promise<BuyerHookResult> {
   return runBuyerHook({
     eventType: "custom_design_requested",
+    email: params.email,
+    phone: params.phone,
+    userId: params.user_id,
+    payload: params,
+  });
+}
+
+export function onCustomDesignStatusChanged(
+  params: OnCustomDesignStatusChangedParams,
+): Promise<BuyerHookResult> {
+  return runBuyerHook({
+    eventType: "custom_design_status_updated",
     email: params.email,
     phone: params.phone,
     userId: params.user_id,
