@@ -1,124 +1,45 @@
 // app/safety/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, ShieldCheck, ThermometerSun } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "LED Bulb Safety",
-  description:
-    "Safety guidance for Lumenform Studio lampshades, including LED-only bulb requirements and fitting adapter limitations.",
+  title: "Safety | PLANKZ DECKZ",
+  description: "Board safety and use guidance for PLANKZ DECKZ handmade skateboard and longboard deckz.",
 };
 
-const safeUse = [
-  "Use modern LED bulbs only.",
-  "Keep the bulb within the wattage and temperature limits printed on your existing fixture.",
-  "Use the supplied adapter only as a mechanical support for the shade.",
-  "Ask a qualified electrician if the fitting, wiring, or installation environment appears damaged or unusual.",
-];
+const sections = [{'title': 'Inspect before riding', 'text': 'Check deck condition, trucks, wheels, fasteners, grip, and any visible damage before each ride.'}, {'title': 'Ride within limits', 'text': 'Use appropriate protective gear, ride in safe areas, and do not exceed the intended use discussed for the build.'}, {'title': 'Reclaimed material', 'text': 'Recovered timber can carry unique grain and marks. Structural suitability must be confirmed for the intended use.'}, {'title': 'Display builds', 'text': 'If a board is made as wall art or display, do not treat it as a ride-ready deck unless explicitly confirmed.'}];
 
-const unsafeUse = [
-  "Do not use incandescent bulbs.",
-  "Do not use halogen bulbs.",
-  "Do not use heat lamps, appliance bulbs, or other high-temperature bulbs.",
-  "Do not modify wiring, sockets, or fixed electrical infrastructure to make a shade fit.",
-];
-
-export default function SafetyPage() {
+export default function Page() {
   return (
-    <>
-      <section className="bg-warm-black py-16 text-warm-white sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber">
-            Product safety
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            LED Bulb Safety Note
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-            Lumenform shades are decorative lighting accessories designed for low-heat LED bulbs.
-            The bulb limitation is part of the product, not an optional recommendation.
-          </p>
+    <main className="bg-warm-white">
+      <section className="border-b border-charcoal/10 bg-weathered-grey/30 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">PLANKZ DECKZ</p>
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-gold sm:text-6xl">Safety & Use</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-charcoal/75">Handmade reclaimed timber deckz require normal skateboard judgement, inspection, and maintenance before riding.</p>
         </div>
       </section>
-
-      <section className="bg-warm-white py-12 sm:py-16">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl border border-amber/30 bg-amber/5 p-6 sm:p-8">
-            <div className="flex items-start gap-4">
-              <AlertTriangle className="mt-1 h-7 w-7 shrink-0 text-amber" />
-              <div>
-                <h2 className="text-xl font-semibold text-charcoal">Use LED bulbs only</h2>
-                <p className="mt-3 text-sm leading-relaxed text-charcoal/75">
-                  All Lumenform shades must be used with LED bulbs only. Incandescent, halogen, heat
-                  lamp, appliance, or other high-temperature bulbs must not be used under any
-                  circumstance. High heat can deform printed materials, shorten product life, and
-                  create an unsafe installation condition.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-            <section className="rounded-2xl border border-charcoal/10 bg-ivory/40 p-6">
-              <CheckCircle2 className="h-6 w-6 text-charcoal/50" />
-              <h2 className="mt-4 text-lg font-semibold text-charcoal">Safe use checklist</h2>
-              <ul className="mt-4 space-y-3 text-sm leading-relaxed text-charcoal/70">
-                {safeUse.map((item) => (
-                  <li key={item} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section className="rounded-2xl border border-charcoal/10 bg-warm-white p-6">
-              <ThermometerSun className="h-6 w-6 text-charcoal/50" />
-              <h2 className="mt-4 text-lg font-semibold text-charcoal">Do not use</h2>
-              <ul className="mt-4 space-y-3 text-sm leading-relaxed text-charcoal/70">
-                {unsafeUse.map((item) => (
-                  <li key={item} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-charcoal/40" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-
-          <section className="mt-8 rounded-2xl border border-charcoal/10 bg-ivory/40 p-6 sm:p-8">
-            <ShieldCheck className="h-6 w-6 text-charcoal/50" />
-            <h2 className="mt-4 text-xl font-semibold text-charcoal">What the adapter does</h2>
-            <div className="mt-4 space-y-4 text-sm leading-relaxed text-charcoal/70">
-              <p>
-                The supplied fitting adapter is a mechanical support component. It helps the shade
-                sit correctly on the compatible fitting type you select at checkout.
-              </p>
-              <p>
-                The adapter does not alter wiring, electrical contacts, insulation, earthing, or the
-                certified electrical infrastructure already installed in the room. If your fitting
-                is loose, damaged, cracked, discoloured, overheating, or otherwise questionable,
-                resolve that electrical issue before using any decorative shade.
-              </p>
-            </div>
-          </section>
-
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/fitting-guide"
-              className="inline-flex justify-center rounded-lg bg-charcoal px-6 py-3 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
-            >
-              Choose a fitting adapter
-            </Link>
-            <Link
-              href="/faq"
-              className="inline-flex justify-center rounded-lg border border-charcoal/15 px-6 py-3 text-sm font-semibold text-charcoal transition-colors hover:border-charcoal/30"
-            >
-              Read safety FAQ
-            </Link>
-          </div>
+      <section className="px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+          {sections.map((section) => (
+            <article key={section.title} className="rounded-3xl border border-charcoal/10 bg-ivory/80 p-6 shadow-sm">
+              <h2 className="font-display text-2xl tracking-wide text-brand-gold">{section.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-charcoal/70">{section.text}</p>
+            </article>
+          ))}
         </div>
       </section>
-    </>
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-charcoal p-8 text-warm-white sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-display text-2xl tracking-wide text-brand-gold">Hand-Crafted Skateboard Deckz — Recycled. Reclaimed. One of a Kind.</p>
+            <p className="mt-2 text-sm text-warm-white/70">Custom local pickup builds from repurposed landfill materials.</p>
+          </div>
+          <Link href="/custom" className="inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-charcoal hover:bg-primary/90">
+            Start a custom deck
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }

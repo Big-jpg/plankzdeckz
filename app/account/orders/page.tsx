@@ -7,7 +7,7 @@ import { Package, ArrowRight, ChevronLeft } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Order History",
-  description: "View your Lumenform Studio order history.",
+  description: "View your PLANKZ DECKZ order history.",
 };
 
 function formatCurrency(amount: number, currency: string): string {

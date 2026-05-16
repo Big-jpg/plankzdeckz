@@ -58,7 +58,7 @@ export default async function AdminOrdersPage() {
         <div>
           <h2 className="font-serif text-3xl font-semibold text-charcoal">Orders</h2>
           <p className="mt-2 text-sm text-charcoal/60">
-            Most recent first. Open an order to inspect adapter, material, colour, and fixture
+            Most recent first. Open an order to inspect board type, material, finish, and build
             notes.
           </p>
         </div>

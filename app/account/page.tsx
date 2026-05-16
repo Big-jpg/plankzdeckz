@@ -7,7 +7,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 
 export const metadata: Metadata = {
   title: "Account",
-  description: "Manage your Lumenform Studio account.",
+  description: "Manage your PLANKZ DECKZ account.",
 };
 
 export default async function AccountPage() {

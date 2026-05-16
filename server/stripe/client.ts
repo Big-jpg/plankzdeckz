@@ -1,5 +1,5 @@
 // server/stripe/client.ts
-// Lumenform Studio — Server-side Stripe client helpers.
+// PLANKZ DECKZ — Server-side Stripe client helpers.
 
 import "server-only";
 
@@ -16,7 +16,7 @@ export function getStripeClient(): Stripe {
 
   stripeClient ??= new Stripe(secretKey, {
     appInfo: {
-      name: "Lumenform Studio",
+      name: "PLANKZ DECKZ",
     },
   });
 

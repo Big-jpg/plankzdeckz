@@ -76,11 +76,11 @@ export async function getProductByHandle(handle: string): Promise<Product | null
  */
 export function getCategories(): ProductCategory[] {
   return [
-    "Pleated shades",
-    "Faceted / geometric shades",
-    "Floral / petal shades",
-    "Textured diffuser shades",
-    "Starfield / perforated shades",
+    "Reclaimed cruisers",
+    "Surfskate deckz",
+    "Longboard deckz",
+    "Custom builds",
+    "Merch",
     "Experimental prototypes",
   ];
 }

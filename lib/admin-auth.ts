@@ -1,5 +1,5 @@
 // lib/admin-auth.ts
-// Lumenform Studio — Admin authorization helpers for server components and route handlers.
+// PLANKZ DECKZ — Admin authorization helpers for server components and route handlers.
 
 import { auth } from "@/auth";
 import type { Session } from "next-auth";

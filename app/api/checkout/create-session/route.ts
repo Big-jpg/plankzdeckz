@@ -1,5 +1,5 @@
 // app/api/checkout/create-session/route.ts
-// Creates a Stripe Checkout session from a server-validated Lumenform cart.
+// Creates a Stripe Checkout session from a server-validated PLANKZ DECKZ cart.
 
 import { createHash } from "node:crypto";
 
@@ -102,7 +102,7 @@ function buildLineItemMetadata(
 
 function buildSessionMetadata(items: VerifiedCartItem[]): Stripe.MetadataParam {
   return {
-    source: "lumenform_studio",
+    source: "plankz_deckz",
     checkout_payload_version: "phase_6_v1",
     item_count: String(items.length),
     selected_adapters: uniqueJoined(items.map((item) => item.selectedAdapter)),

@@ -14,7 +14,7 @@ type CustomDesignRequestResponse = {
   fieldErrors?: Record<string, string>;
 };
 
-const ADAPTER_TYPES = ["B22", "E27", "Clipsal No. 530", "Other"] as const;
+const ADAPTER_TYPES = ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"] as const;
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -62,16 +62,16 @@ function buildDesignNotes(params: {
   uploadInstructionAcknowledged: boolean;
 }): string {
   return [
-    `Fixture type: ${params.fixtureType}`,
-    `Adapter type: ${params.adapterType}`,
-    `Desired shade style: ${params.desiredShadeStyle}`,
+    `Intended use: ${params.fixtureType}`,
+    `Board type: ${params.adapterType}`,
+    `Desired deck style: ${params.desiredShadeStyle}`,
     `Dimensions if known: ${params.dimensions ?? "Not supplied"}`,
-    `Colour/material preference: ${params.colourMaterialPreference ?? "Not supplied"}`,
+    `Timber/finish preference: ${params.colourMaterialPreference ?? "Not supplied"}`,
     `Notes: ${params.notes ?? "Not supplied"}`,
-    `Photo upload: ${
+    `Reference images: ${
       params.uploadInstructionAcknowledged
-        ? "Customer was instructed to email fixture or space photos."
-        : "Customer has not acknowledged the photo email instruction."
+        ? "Customer was instructed to email reference photos or sketches."
+        : "Customer has not acknowledged the reference image email instruction."
     }`,
   ].join("\n");
 }
@@ -132,7 +132,7 @@ export async function POST(
 
   if (Object.keys(fieldErrors).length > 0) {
     return NextResponse.json(
-      { ok: false, error: "Custom design request validation failed.", fieldErrors },
+      { ok: false, error: "Custom deck request validation failed.", fieldErrors },
       { status: 422 },
     );
   }

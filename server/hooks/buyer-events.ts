@@ -1,5 +1,5 @@
 // server/hooks/buyer-events.ts
-// Lumenform Studio — Phase 7 buyer event hooks and operational notification stubs.
+// PLANKZ DECKZ — Buyer event hooks and operational notification stubs.
 
 import { recordBuyerEvent } from "@/server/db/contracts";
 

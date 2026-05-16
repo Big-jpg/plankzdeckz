@@ -145,8 +145,8 @@ export default async function AdminDashboardPage() {
                     </span>
                   </div>
                   <p className="mt-3 text-sm text-charcoal/60">
-                    {request.fixture_type ?? "Fixture not supplied"} ·{" "}
-                    {request.adapter_type ?? "Adapter not supplied"} ·{" "}
+                    {request.fixture_type ?? "Use not supplied"} ·{" "}
+                    {request.adapter_type ?? "Board type not supplied"} ·{" "}
                     {formatDate(request.created_at)}
                   </p>
                 </div>

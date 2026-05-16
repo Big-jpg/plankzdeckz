@@ -1,5 +1,5 @@
 // server/db/client.ts
-// Lumenform Studio — PostgreSQL connection pool and query helper.
+// PLANKZ DECKZ — PostgreSQL connection pool and query helper.
 // Uses the `pg` package (node-postgres). No ORM.
 
 import { Pool, QueryResult, QueryResultRow } from "pg";

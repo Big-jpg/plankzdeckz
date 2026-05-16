@@ -41,7 +41,7 @@ export default async function AdminCustomRequestsPage() {
         <div>
           <h2 className="font-serif text-3xl font-semibold text-charcoal">Custom requests</h2>
           <p className="mt-2 text-sm text-charcoal/60">
-            Review fixture details, adapter needs, design notes, contact details, and request
+            Review intended use, board type, design notes, contact details, and request
             status.
           </p>
         </div>
@@ -79,8 +79,8 @@ export default async function AdminCustomRequestsPage() {
               </div>
 
               <div className="mt-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                <Field label="Fixture type" value={request.fixture_type} />
-                <Field label="Adapter type" value={request.adapter_type} />
+                <Field label="Intended use" value={request.fixture_type} />
+                <Field label="Board type" value={request.adapter_type} />
                 <Field label="Budget range" value={request.budget_range} />
                 <Field label="User ID" value={request.user_id} />
               </div>

@@ -1,12 +1,12 @@
 // auth.ts
-// Lumenform Studio — Auth.js (NextAuth v5) configuration.
+// PLANKZ DECKZ — Auth.js (NextAuth v5) configuration.
 // Email magic link provider with custom PostgreSQL adapter.
 // Database session strategy (not JWT) using public schema tables.
 
 import NextAuth from "next-auth";
 import Nodemailer from "next-auth/providers/nodemailer";
 import type { NextAuthConfig } from "next-auth";
-import { LumenformAdapter } from "@/server/auth/adapter";
+import { PlankzAdapter } from "@/server/auth/adapter";
 
 // ---------------------------------------------------------------------------
 // Email transport configuration
@@ -28,14 +28,14 @@ function getEmailServer(): string | undefined {
 }
 
 const emailServer = getEmailServer();
-const emailFrom = process.env.EMAIL_FROM || "Lumenform Studio <noreply@lumenform.studio>";
+const emailFrom = process.env.EMAIL_FROM || "PLANKZ DECKZ <noreply@plankzdeckz.com>";
 
 // ---------------------------------------------------------------------------
 // Auth configuration
 // ---------------------------------------------------------------------------
 
 const authConfig: NextAuthConfig = {
-  adapter: LumenformAdapter(),
+  adapter: PlankzAdapter(),
 
   // Use database sessions (not JWT) — matches our sessions table.
   session: {
@@ -66,7 +66,7 @@ const authConfig: NextAuthConfig = {
         : {
             sendVerificationRequest: async ({ identifier, url }) => {
               console.log("\n╔══════════════════════════════════════════════════════════════╗");
-              console.log("║  LUMENFORM STUDIO — Magic Link (dev mode, no SMTP)         ║");
+              console.log("║  PLANKZ DECKZ — Magic Link (dev mode, no SMTP)             ║");
               console.log("╠══════════════════════════════════════════════════════════════╣");
               console.log(`║  Email: ${identifier}`);
               console.log(`║  Link:  ${url}`);

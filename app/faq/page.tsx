@@ -3,113 +3,43 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "FAQ",
-  description:
-    "Frequently asked questions about fittings, adapters, LED bulb safety, local pickup, production timing, shipping status, and customisation at Lumenform Studio.",
+  title: "FAQ | PLANKZ DECKZ",
+  description: "Frequently asked questions about PLANKZ DECKZ custom skateboard and longboard builds.",
 };
 
-const faqs = [
-  {
-    question: "What fitting do I need?",
-    answer:
-      "Choose B22 if your bulb has two side pins and pushes in before twisting. Choose E27 if the bulb screws in with a threaded base. Choose Clipsal No. 530 if your light is a round batten holder fixed directly to the ceiling. If none of those descriptions feel certain, select Other / not sure.",
-  },
-  {
-    question: "What if I do not know my fixture type?",
-    answer:
-      "Select Other / not sure during product configuration and add a short fixture note. A clear photo of the socket or ceiling holder can be used to confirm compatibility before production. Do not dismantle wiring or fixed electrical parts to identify the fitting.",
-  },
-  {
-    question: "Are adapters included?",
-    answer:
-      "Yes. One selected mechanical fitting adapter is included with each standard shade at no extra cost. The adapter supports the shade on the selected fitting type; it does not alter wiring, electrical contacts, or the certified fixture already installed in the home.",
-  },
-  {
-    question: "Can I request a custom size?",
-    answer:
-      "Yes. Custom size, colour, material, and form requests can be submitted through the custom design process. The request is reviewed for scale, material suitability, fitting compatibility, and production practicality before the final price and timing are confirmed.",
-  },
-  {
-    question: "What bulbs are safe?",
-    answer:
-      "Use modern LED bulbs only. The bulb must also remain within the wattage and temperature limits of your existing fitting. LED-only use applies to every Lumenform shade, material, colour, and finish.",
-  },
-  {
-    question: "Can I use incandescent or halogen bulbs?",
-    answer:
-      "No. Incandescent, halogen, heat lamp, appliance, or other high-temperature bulbs must not be used. High heat can deform printed materials, reduce product lifespan, and create an unsafe condition.",
-  },
-  {
-    question: "Is shipping available?",
-    answer:
-      "No. Lumenform is currently local pickup only. Shipping remains stubbed in the site model and is not available at checkout. If shipping is introduced later, additional delivery terms, costs, and packaging requirements will need to be confirmed first.",
-  },
-  {
-    question: "How long does production take?",
-    answer:
-      "Standard catalogue shades are typically ready within 3–5 business days. Custom work commonly takes 5–10 business days after the design, fitting, and price are confirmed. Unclear fixture details can pause production until compatibility is reviewed.",
-  },
-  {
-    question: "What happens after I order?",
-    answer:
-      "The order is reviewed for adapter choice, product details, LED-only acknowledgement, and any fixture or customisation notes. The shade is then produced and prepared in the studio. When complete, you receive an email with local pickup instructions and available collection times.",
-  },
-];
+const sections = [{'title': 'Are all boards custom?', 'text': 'Some deckz are catalogue placeholders, but every physical build is confirmed against available material, intended use, and finish preferences before completion.'}, {'title': 'Can I request a shape?', 'text': 'Yes. Use the custom designer route to describe cruiser, longboard, surfskate, display, or experimental requirements.'}, {'title': 'Is shipping available?', 'text': 'Not yet. The current fulfilment model is local pickup by arrangement so each handmade deck can be inspected at handover.'}, {'title': 'Will the timber match photos?', 'text': 'Photos are directional. Reclaimed material varies naturally, and final grain, scars, knots, resin details, and tone depend on the timber available.'}, {'title': 'Can I provide reference images?', 'text': 'Yes. Direct uploads are not enabled yet, so email reference photos, sketches, or inspiration after submitting a request.'}, {'title': 'Are trucks and wheels included?', 'text': 'Phase 0 treats products as deck-focused placeholders. Hardware availability should be confirmed directly before purchase.'}];
 
-export default function FaqPage() {
+export default function Page() {
   return (
-    <>
-      <section className="bg-warm-black py-16 text-warm-white sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber">
-            Customer support
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">FAQ</h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-            Practical answers about fitting adapters, safe bulbs, custom requests, production
-            timing, and the current local pickup-only model.
-          </p>
+    <main className="bg-warm-white">
+      <section className="border-b border-charcoal/10 bg-weathered-grey/30 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">PLANKZ DECKZ</p>
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-gold sm:text-6xl">FAQ</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-charcoal/75">Practical answers for local pickup, custom builds, reclaimed timber variation, ride style, and finish expectations.</p>
         </div>
       </section>
-
-      <section className="bg-warm-white py-12 sm:py-16">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="space-y-4">
-            {faqs.map((faq) => (
-              <article
-                key={faq.question}
-                className="rounded-2xl border border-charcoal/10 bg-ivory/35 p-6"
-              >
-                <h2 className="text-lg font-semibold text-charcoal">{faq.question}</h2>
-                <p className="mt-3 text-sm leading-relaxed text-charcoal/70">{faq.answer}</p>
-              </article>
-            ))}
+      <section className="px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+          {sections.map((section) => (
+            <article key={section.title} className="rounded-3xl border border-charcoal/10 bg-ivory/80 p-6 shadow-sm">
+              <h2 className="font-display text-2xl tracking-wide text-brand-gold">{section.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-charcoal/70">{section.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-charcoal p-8 text-warm-white sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-display text-2xl tracking-wide text-brand-gold">Hand-Crafted Skateboard Deckz — Recycled. Reclaimed. One of a Kind.</p>
+            <p className="mt-2 text-sm text-warm-white/70">Custom local pickup builds from repurposed landfill materials.</p>
           </div>
-
-          <section className="mt-10 rounded-2xl border border-amber/30 bg-amber/5 p-6 sm:p-8">
-            <h2 className="text-xl font-semibold text-charcoal">Still unsure?</h2>
-            <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
-              If the fitting, size, safety requirement, or pickup process is unclear, contact the
-              studio before ordering or select Other / not sure when configuring the shade.
-              Compatibility can be confirmed before production starts.
-            </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/fitting-guide"
-                className="inline-flex justify-center rounded-lg bg-charcoal px-6 py-3 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
-              >
-                View fitting guide
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex justify-center rounded-lg border border-charcoal/15 px-6 py-3 text-sm font-semibold text-charcoal transition-colors hover:border-charcoal/30"
-              >
-                Contact the studio
-              </Link>
-            </div>
-          </section>
+          <Link href="/custom" className="inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-charcoal hover:bg-primary/90">
+            Start a custom deck
+          </Link>
         </div>
       </section>
-    </>
+    </main>
   );
 }
