@@ -105,10 +105,10 @@ export default function HomePage() {
 
             <div className="mt-10 flex flex-wrap gap-4">
               <Link
-                href="/products"
+                href="/shop"
                 className="inline-flex items-center gap-2 rounded-full bg-amber px-6 py-3 text-sm font-bold uppercase tracking-[0.16em] text-warm-black transition-colors hover:bg-amber/90"
               >
-                Shop deckz
+                Shop deckz and merch
                 <ArrowRight className="h-4 w-4" />
               </Link>
 
@@ -161,8 +161,8 @@ export default function HomePage() {
               Reclaimed timber ride craft
             </h2>
             <p className="mt-4 text-base leading-relaxed text-charcoal/68">
-              Phase 0 keeps the commerce infrastructure intact while replacing the public shell with
-              a Plankz-native coastal, recycled, handmade identity.
+              The current catalogue separates one-off recycled hardwood boards from repeatable merch,
+              with sold boards retained as visible craft evidence in the gallery.
             </p>
           </div>
 
@@ -182,7 +182,7 @@ export default function HomePage() {
                 <div className="p-5">
                   <h3 className="font-display text-2xl tracking-[0.08em] text-charcoal">{title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-charcoal/60">
-                    Placeholder shell content pending Phase 2 product catalogue restructuring.
+                    Browse the live Phase 2 catalogue for one-off boards, merch drops, and sold-board references.
                   </p>
                 </div>
               </div>
@@ -191,10 +191,10 @@ export default function HomePage() {
 
           <div className="mt-10">
             <Link
-              href="/products"
+              href="/shop"
               className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-charcoal transition-colors hover:text-amber"
             >
-              View shop shell
+              View shop
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

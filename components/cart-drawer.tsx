@@ -4,7 +4,7 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { Minus, Plus, Shirt, ShoppingBag, Trash2, X } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { cartItemKey } from "@/lib/cart-types";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ export function CartDrawer() {
             <ShoppingBag className="h-12 w-12 text-charcoal/20" />
             <p className="mt-4 text-sm font-medium text-charcoal/60">Your cart is empty</p>
             <Link
-              href="/products"
+              href="/shop"
               onClick={closeDrawer}
               className="mt-6 inline-flex items-center gap-2 rounded-lg bg-charcoal px-5 py-2.5 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
             >
@@ -103,7 +103,11 @@ export function CartDrawer() {
                           />
                         ) : (
                           <div className="flex h-full w-full items-center justify-center">
-                            <ShoppingBag className="h-5 w-5 text-charcoal/20" />
+                            {item.productType === "merch" ? (
+                              <Shirt className="h-5 w-5 text-charcoal/20" />
+                            ) : (
+                              <ShoppingBag className="h-5 w-5 text-charcoal/20" />
+                            )}
                           </div>
                         )}
                       </div>
@@ -116,7 +120,9 @@ export function CartDrawer() {
                               {item.title}
                             </p>
                             <p className="mt-0.5 text-xs text-charcoal/50">
-                              {item.selectedAdapter}
+                              {item.productType === "merch"
+                                ? `Merch${item.selectedSize ? ` · Size ${item.selectedSize}` : ""}`
+                                : `Board · ${item.selectedAdapter}`}
                               {item.colour ? ` · ${item.colour}` : ""}
                             </p>
                           </div>

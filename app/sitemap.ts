@@ -10,11 +10,10 @@ const publicRoutes: Array<{
   priority: number;
 }> = [
   { path: "/", changeFrequency: "weekly", priority: 1 },
-  { path: "/products", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/shop", changeFrequency: "weekly", priority: 0.9 },
   { path: "/custom", changeFrequency: "monthly", priority: 0.8 },
   { path: "/our-story", changeFrequency: "monthly", priority: 0.8 },
   { path: "/gallery", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/merch", changeFrequency: "monthly", priority: 0.7 },
   { path: "/materials", changeFrequency: "monthly", priority: 0.7 },
   { path: "/process", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.6 },

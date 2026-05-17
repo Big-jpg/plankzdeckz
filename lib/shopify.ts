@@ -4,7 +4,7 @@
 // All calls use the Storefront API (public, read-only) via server-side fetch.
 // No private credentials are exposed to the client bundle.
 
-import type { Product, ProductCategory, AdapterType, ProductMetadata } from "./types";
+import type { AdapterType, BoardStyle, Product, ProductCategory, ProductMetadata } from "./types";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -191,6 +191,7 @@ interface ShopifyProduct {
 // ---------------------------------------------------------------------------
 
 const VALID_CATEGORIES: ProductCategory[] = [
+  "One-of-a-kind boards",
   "Reclaimed cruisers",
   "Surfskate deckz",
   "Longboard deckz",
@@ -247,6 +248,23 @@ function normaliseAdapters(raw: string[]): AdapterType[] {
   return mapped.length > 0 ? mapped : [...VALID_ADAPTERS];
 }
 
+function normaliseBoardStyle(category: ProductCategory, designFamily: string | null): BoardStyle {
+  const source = `${category} ${designFamily ?? ""}`.toLowerCase();
+  if (source.includes("surf")) return "surfskate";
+  if (source.includes("long")) return "longboard";
+  return "cruiser";
+}
+
+function normaliseTimberSpecies(material: string): string[] {
+  const candidates = material
+    .replace(/reclaimed|recycled|hardwood|pallet|timber|wood/gi, "")
+    .split(/,|\/| and |\+/gi)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return candidates.length > 0 ? candidates : ["Reclaimed hardwood"];
+}
+
 function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
   const metafields = shopifyProduct.metafields ?? [];
   const firstVariant = shopifyProduct.variants.edges[0]?.node ?? null;
@@ -259,6 +277,13 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
   const rawCategory = getMetafieldValue(metafields, "category");
   const rawColours = parseJsonArray(getMetafieldValue(metafields, "colours"));
   const rawAdapters = parseJsonArray(getMetafieldValue(metafields, "compatible_builds"));
+  const category = normaliseCategory(rawCategory, shopifyProduct.productType);
+  const material = getMetafieldValue(metafields, "material") ?? "Reclaimed timber";
+  const dimensions = getMetafieldValue(metafields, "dimensions") ?? "Dimensions confirmed on handover";
+  const colours = rawColours.length > 0 ? rawColours : ["Default"];
+  const images = shopifyProduct.images.edges.map((e) => e.node.url);
+  const designFamily = getMetafieldValue(metafields, "design_family");
+  const productionNotes = getMetafieldValue(metafields, "production_notes");
 
   const metadata: ProductMetadata = {};
   const metadataKeys: (keyof ProductMetadata)[] = [
@@ -278,26 +303,61 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
     }
   }
 
-  return {
+  const baseProduct = {
     id: shopifyProduct.id,
     handle: shopifyProduct.handle,
     title: shopifyProduct.title,
     price,
     currency,
-    category: normaliseCategory(rawCategory, shopifyProduct.productType),
     description: shopifyProduct.description,
-    material: getMetafieldValue(metafields, "material") ?? "Reclaimed timber",
-    dimensions: getMetafieldValue(metafields, "dimensions") ?? "",
-    colours: rawColours.length > 0 ? rawColours : ["Default"],
-    images: shopifyProduct.images.edges.map((e) => e.node.url),
-    adapters: normaliseAdapters(rawAdapters),
+    material,
+    dimensions,
+    colours,
+    images,
     inStock: shopifyProduct.availableForSale,
     shopifyProductId: shopifyProduct.id,
     shopifyVariantId: firstVariant?.id ?? null,
-    designFamily: getMetafieldValue(metafields, "design_family"),
+    designFamily,
     compatibleAdapters: rawAdapters.length > 0 ? rawAdapters : null,
-    productionNotes: getMetafieldValue(metafields, "production_notes"),
+    productionNotes,
     metadata: Object.keys(metadata).length > 0 ? metadata : null,
+  };
+
+  if (category === "Merch" || shopifyProduct.productType.toLowerCase().includes("merch")) {
+    return {
+      ...baseProduct,
+      productType: "merch",
+      category: "Merch",
+      adapters: [],
+      merchKind: "sticker_pack",
+      sizes: ["One size"],
+      sizeRequired: false,
+      fitNotes: "Sizing and fit details are confirmed from the live catalogue.",
+    };
+  }
+
+  const boardStyle = normaliseBoardStyle(category, designFamily);
+  const adapters = normaliseAdapters(rawAdapters).filter((adapter) => adapter !== "Custom / not sure");
+
+  return {
+    ...baseProduct,
+    productType: "board",
+    category: category === "Custom builds" || category === "Experimental prototypes" ? "One-of-a-kind boards" : category,
+    adapters: adapters.length > 0 ? adapters : normaliseAdapters(rawAdapters),
+    availabilityStatus: shopifyProduct.availableForSale ? "available" : "sold",
+    timberSpecies: normaliseTimberSpecies(material),
+    boardStyle,
+    boardShape: designFamily ?? `${boardStyle[0].toUpperCase()}${boardStyle.slice(1)} deck`,
+    boardDimensions: {
+      display: dimensions,
+    },
+    specs: [
+      { label: "Style", value: boardStyle },
+      { label: "Dimensions", value: dimensions },
+      { label: "Timber", value: material },
+      { label: "Pickup", value: "Western Australia local pickup only" },
+    ],
+    galleryNotes: productionNotes ?? "Live catalogue board retained as a Plankz craft reference.",
   };
 }
 

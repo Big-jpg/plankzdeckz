@@ -7,8 +7,8 @@ const footerSections = [
   {
     title: "Shop",
     links: [
-      { href: "/products", label: "Boards" },
-      { href: "/merch", label: "Merch" },
+      { href: "/shop#boards", label: "Boards" },
+      { href: "/shop#merch", label: "Merch" },
       { href: "/custom", label: "Custom Designer" },
       { href: "/gallery", label: "Gallery" },
     ],

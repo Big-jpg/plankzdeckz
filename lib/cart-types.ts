@@ -3,7 +3,7 @@
 // Cart item shape and related types for the PLANKZ DECKZ storefront.
 // Cart is client-side only (localStorage) — no backend persistence yet.
 
-import type { AdapterType } from "./types";
+import type { AdapterType, MerchSize, ProductType } from "./types";
 
 export interface CartItem {
   /** App-level product ID (Shopify global ID or mock ID). */
@@ -24,7 +24,11 @@ export interface CartItem {
   currency: string;
   /** Quantity of this item in the cart. Must be >= 1. */
   quantity: number;
-  /** Selected fitting adapter — required before add-to-cart. */
+  /** Product behaviour class. Defaults to "board" for legacy cart payloads. */
+  productType?: ProductType;
+  /** Selected merch size. Boards do not use this field. */
+  selectedSize?: MerchSize;
+  /** Selected ride/build adapter. Preserved for backend compatibility. */
   selectedAdapter: AdapterType;
   /** Whether the customer has acknowledged local pickup and handmade build terms. Tracked at cart level, not per-item. */
   bulbTypeConfirmed: boolean;
@@ -42,12 +46,15 @@ export interface CartItem {
 
 /**
  * Generates a deterministic key for deduplicating cart items.
- * Two items are considered the same if they share productId + variantId + selectedAdapter + colour.
+ * Two items are considered the same if they share productId + variantId + behaviour metadata.
  */
 export function cartItemKey(
-  item: Pick<CartItem, "productId" | "variantId" | "selectedAdapter" | "colour">,
+  item: Pick<
+    CartItem,
+    "productId" | "variantId" | "selectedAdapter" | "colour" | "productType" | "selectedSize"
+  >,
 ): string {
-  return `${item.productId}::${item.variantId ?? "null"}::${item.selectedAdapter}::${item.colour}`;
+  return `${item.productId}::${item.variantId ?? "null"}::${item.productType ?? "board"}::${item.selectedAdapter}::${item.selectedSize ?? "none"}::${item.colour}`;
 }
 
 export interface CartState {

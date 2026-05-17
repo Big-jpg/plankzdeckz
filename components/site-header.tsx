@@ -10,11 +10,11 @@ import { useCart } from "@/lib/cart-context";
 import { UserMenu } from "@/components/user-menu";
 
 const navLinks = [
-  { href: "/products", label: "Shop" },
+  { href: "/shop", label: "Shop" },
   { href: "/our-story", label: "Our Story" },
   { href: "/custom", label: "Custom Designer" },
   { href: "/gallery", label: "Gallery" },
-  { href: "/merch", label: "Merch" },
+  { href: "/shop#merch", label: "Merch" },
 ];
 
 export function SiteHeader() {

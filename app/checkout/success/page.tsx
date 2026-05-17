@@ -244,7 +244,7 @@ export default async function CheckoutSuccessPage({
 
           <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
-              href="/products"
+              href="/shop"
               className="inline-flex items-center gap-2 rounded-lg bg-charcoal px-6 py-3 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
             >
               Continue browsing

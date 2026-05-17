@@ -46,7 +46,7 @@ export default function ErrorBoundary({
               Try again
             </button>
             <Link
-              href="/products"
+              href="/shop"
               className="inline-flex items-center justify-center rounded-lg border border-charcoal/15 px-5 py-3 text-sm font-semibold text-charcoal transition-colors hover:border-charcoal/35 hover:bg-charcoal/5"
             >
               Return to collection

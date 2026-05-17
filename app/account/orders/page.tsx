@@ -109,7 +109,7 @@ export default async function OrderHistoryPage() {
                 When you make a purchase, your orders will appear here.
               </p>
               <Link
-                href="/products"
+                href="/shop"
                 className="mt-6 inline-flex items-center gap-2 rounded-lg bg-charcoal px-4 py-2.5 text-sm font-medium text-warm-white transition-colors hover:bg-charcoal/90"
               >
                 Browse Products
