@@ -5,9 +5,11 @@ import { createHash } from "node:crypto";
 
 import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
+import { isBoardProduct, isMerchProduct } from "@/lib/types";
 import { validateCartForCheckout, type VerifiedCartItem } from "@/server/cart/validation";
 import { onCheckoutStarted } from "@/server/hooks/buyer-events";
 import { getStripeClient } from "@/server/stripe/client";
+import { findBoardHandlesInActiveCheckoutSessions } from "@/server/stripe/reservations";
 
 export const runtime = "nodejs";
 
@@ -42,7 +44,7 @@ function metadataValue(value: unknown): string {
   return truncateMetadataValue(JSON.stringify(value));
 }
 
-function uniqueJoined(values: Array<string | null>): string {
+function uniqueJoined(values: Array<string | null | undefined>): string {
   return truncateMetadataValue(
     Array.from(new Set(values.map((value) => value?.trim()).filter(Boolean) as string[])).join(
       " | ",
@@ -61,6 +63,14 @@ function absoluteImageUrl(imageUrl: string | null): string[] | undefined {
   }
 }
 
+function boardItems(items: VerifiedCartItem[]): VerifiedCartItem[] {
+  return items.filter((item) => isBoardProduct(item.catalogueProduct));
+}
+
+function merchItems(items: VerifiedCartItem[]): VerifiedCartItem[] {
+  return items.filter((item) => isMerchProduct(item.catalogueProduct));
+}
+
 function cartFingerprint(items: VerifiedCartItem[]): string {
   return createHash("sha256")
     .update(
@@ -71,10 +81,7 @@ function cartFingerprint(items: VerifiedCartItem[]): string {
           quantity: item.quantity,
           productType: item.productType,
           selectedSize: item.selectedSize,
-          selectedAdapter: item.selectedAdapter,
           colour: item.colour,
-          fixtureNotes: item.fixtureNotes,
-          customisationNotes: item.customisationNotes,
         })),
       ),
     )
@@ -86,36 +93,60 @@ function buildLineItemMetadata(
   item: VerifiedCartItem,
   index: number,
 ): Stripe.MetadataParam | undefined {
-  return {
+  const commonMetadata: Stripe.MetadataParam = {
     line_item_index: String(index),
     product_id: metadataValue(item.productId),
     variant_id: metadataValue(item.variantId),
     handle: metadataValue(item.handle),
     product_type: metadataValue(item.productType),
-    selected_size: metadataValue(item.selectedSize),
-    selected_adapter: metadataValue(item.selectedAdapter),
-    bulb_type_confirmed: metadataValue(item.bulbTypeConfirmed),
-    fixture_notes: metadataValue(item.fixtureNotes),
-    customisation_notes: metadataValue(item.customisationNotes),
     material: metadataValue(item.material),
     colour: metadataValue(item.colour),
     image_url: metadataValue(item.imageUrl),
     item_metadata: metadataValue(item.metadata),
   };
+
+  if (isBoardProduct(item.catalogueProduct)) {
+    return {
+      ...commonMetadata,
+      board_name: metadataValue(item.title),
+      board_type: metadataValue(item.catalogueProduct.boardStyle),
+      board_shape: metadataValue(item.catalogueProduct.boardShape),
+      timber_species: metadataValue(item.catalogueProduct.timberSpecies.join(" / ")),
+      dimensions: metadataValue(item.catalogueProduct.boardDimensions.display),
+    };
+  }
+
+  return {
+    ...commonMetadata,
+    merch_item: metadataValue(item.title),
+    merch_size: metadataValue(item.selectedSize),
+  };
 }
 
 function buildSessionMetadata(items: VerifiedCartItem[]): Stripe.MetadataParam {
+  const boards = boardItems(items);
+  const merch = merchItems(items);
+
   return {
     source: "plankz_deckz",
-    checkout_payload_version: "phase_2_catalogue_merch_v1",
-    item_count: String(items.length),
+    checkout_payload_version: "phase_3_cart_checkout_v1",
+    local_pickup_only: "true",
+    item_count: String(items.reduce((sum, item) => sum + item.quantity, 0)),
     product_types: uniqueJoined(items.map((item) => item.productType)),
-    selected_sizes: uniqueJoined(items.map((item) => item.selectedSize)),
-    selected_adapters: uniqueJoined(items.map((item) => item.selectedAdapter)),
+    board_handles: uniqueJoined(boards.map((item) => item.handle)),
+    board_names: uniqueJoined(boards.map((item) => item.title)),
+    board_types: uniqueJoined(boards.map((item) => item.catalogueProduct.designFamily ?? item.material)),
+    timber_species: uniqueJoined(
+      boards.map((item) =>
+        isBoardProduct(item.catalogueProduct)
+          ? item.catalogueProduct.timberSpecies.join(" / ")
+          : item.material,
+      ),
+    ),
+    merch_items: uniqueJoined(merch.map((item) => item.title)),
+    merch_sizes: uniqueJoined(merch.map((item) => item.selectedSize)),
     materials: uniqueJoined(items.map((item) => item.material)),
     colours: uniqueJoined(items.map((item) => item.colour)),
-    fixture_notes: uniqueJoined(items.map((item) => item.fixtureNotes)),
-    customisation_notes: uniqueJoined(items.map((item) => item.customisationNotes)),
     cart_fingerprint: cartFingerprint(items),
   };
 }
@@ -140,6 +171,17 @@ function checkoutBaseUrl(request: NextRequest): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? request.nextUrl.origin;
 }
 
+async function assertNoActiveBoardReservations(items: VerifiedCartItem[]): Promise<void> {
+  const boardHandles = boardItems(items).map((item) => item.handle);
+  const reservedHandles = await findBoardHandlesInActiveCheckoutSessions(boardHandles);
+
+  if (reservedHandles.size > 0) {
+    throw new Error(
+      `Board${reservedHandles.size === 1 ? "" : "s"} ${Array.from(reservedHandles).join(", ")} already held in another active checkout session.`,
+    );
+  }
+}
+
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<CheckoutSessionResponse | CheckoutErrorResponse>> {
@@ -153,7 +195,6 @@ export async function POST(
 
   const validation = await validateCartForCheckout(
     body && typeof body === "object" ? body : { items: undefined },
-    { requireLedAcknowledgement: true },
   );
 
   if (!validation.valid) {
@@ -163,6 +204,17 @@ export async function POST(
         details: validation.errors,
       },
       { status: 422 },
+    );
+  }
+
+  try {
+    await assertNoActiveBoardReservations(validation.verifiedItems);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "One or more boards are no longer available.",
+      },
+      { status: 409 },
     );
   }
 
@@ -186,13 +238,12 @@ export async function POST(
 
   await onCheckoutStarted({
     stripe_checkout_session_id: session.id,
-    item_count: validation.verifiedItems.length,
+    item_count: validation.verifiedItems.reduce((sum, item) => sum + item.quantity, 0),
     subtotal_amount: session.amount_subtotal ?? Math.round(validation.verifiedSubtotal * 100),
     total_amount: session.amount_total ?? Math.round(validation.verifiedSubtotal * 100),
     currency: validation.currency,
-    selected_adapters: Array.from(
-      new Set(validation.verifiedItems.map((item) => item.selectedAdapter)),
-    ),
+    board_handles: boardItems(validation.verifiedItems).map((item) => item.handle),
+    merch_items: merchItems(validation.verifiedItems).map((item) => item.title),
     cart_fingerprint: cartFingerprint(validation.verifiedItems),
   });
 

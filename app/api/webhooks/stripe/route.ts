@@ -36,10 +36,6 @@ function metadataString(
   return value && value.trim().length > 0 ? value : fallback;
 }
 
-function metadataBoolean(metadata: Stripe.Metadata | null | undefined, key: string): boolean {
-  return metadata?.[key] === "true";
-}
-
 function parseMetadataJson(
   metadata: Stripe.Metadata | null | undefined,
   key: string,
@@ -75,7 +71,7 @@ function lineItemTitle(lineItem: Stripe.LineItem): string {
     return product.name;
   }
 
-  return "PLANKZ DECKZ custom deck";
+  return "PLANKZ DECKZ item";
 }
 
 function checkoutEmail(session: Stripe.Checkout.Session): string | null {
@@ -88,6 +84,44 @@ function checkoutBuyerName(session: Stripe.Checkout.Session): string | null {
 
 function checkoutPhone(session: Stripe.Checkout.Session): string | null {
   return session.customer_details?.phone ?? null;
+}
+
+function productTypeForLegacyOrderColumn(metadata: Stripe.Metadata | null): string {
+  const productType = metadataString(metadata, "product_type");
+  return productType === "merch" ? "Merch" : "Board";
+}
+
+function lineItemVariantTitle(metadata: Stripe.Metadata | null): string | null {
+  const merchSize = metadataString(metadata, "merch_size");
+  if (merchSize) return `Size ${merchSize}`;
+
+  const boardType = metadataString(metadata, "board_type");
+  return boardType ? `Board type: ${boardType}` : null;
+}
+
+function simplifiedLineItemMetadata(
+  metadata: Stripe.Metadata | null,
+  lineItem: Stripe.LineItem,
+): Record<string, unknown> {
+  return {
+    ...parseMetadataJson(metadata, "item_metadata"),
+    stripe_line_item_id: lineItem.id,
+    stripe_price_id: lineItem.price?.id ?? null,
+    stripe_product_id:
+      typeof lineItem.price?.product === "string"
+        ? lineItem.price.product
+        : lineItem.price?.product?.id,
+    handle: metadataString(metadata, "handle"),
+    product_type: metadataString(metadata, "product_type"),
+    board_name: metadataString(metadata, "board_name"),
+    board_type: metadataString(metadata, "board_type"),
+    board_shape: metadataString(metadata, "board_shape"),
+    timber_species: metadataString(metadata, "timber_species"),
+    dimensions: metadataString(metadata, "dimensions"),
+    merch_item: metadataString(metadata, "merch_item"),
+    merch_size: metadataString(metadata, "merch_size"),
+    local_pickup_only: true,
+  };
 }
 
 async function persistCheckoutSessionOrder(session: Stripe.Checkout.Session): Promise<void> {
@@ -128,42 +162,26 @@ async function persistCheckoutSessionOrder(session: Stripe.Checkout.Session): Pr
     return;
   }
 
-  for (const [index, lineItem] of lineItems.data.entries()) {
+  for (const lineItem of lineItems.data) {
     const metadata = productMetadataFromLineItem(lineItem);
-    const selectedAdapter = metadataString(metadata, "selected_adapter");
-
-    if (!selectedAdapter) {
-      throw new Error(
-        `Stripe checkout session ${session.id} line item ${index} is missing selected_adapter metadata.`,
-      );
-    }
 
     await createOrderItem({
       order_id: order.id,
       shopify_product_id: metadataString(metadata, "product_id"),
       shopify_variant_id: metadataString(metadata, "variant_id"),
       title: lineItemTitle(lineItem),
-      variant_title: null,
+      variant_title: lineItemVariantTitle(metadata),
       quantity: lineItem.quantity ?? 1,
       unit_amount: lineItem.price?.unit_amount ?? 0,
       total_amount: lineItem.amount_total ?? 0,
       image_url: metadataString(metadata, "image_url"),
-      selected_adapter: selectedAdapter,
-      bulb_type_confirmed: metadataBoolean(metadata, "bulb_type_confirmed"),
-      fixture_notes: metadataString(metadata, "fixture_notes"),
-      customisation_notes: metadataString(metadata, "customisation_notes"),
-      material: metadataString(metadata, "material"),
+      selected_adapter: productTypeForLegacyOrderColumn(metadata),
+      bulb_type_confirmed: false,
+      fixture_notes: null,
+      customisation_notes: null,
+      material: metadataString(metadata, "material") ?? metadataString(metadata, "timber_species"),
       colour: metadataString(metadata, "colour"),
-      metadata: {
-        ...parseMetadataJson(metadata, "item_metadata"),
-        stripe_line_item_id: lineItem.id,
-        stripe_price_id: lineItem.price?.id ?? null,
-        stripe_product_id:
-          typeof lineItem.price?.product === "string"
-            ? lineItem.price.product
-            : lineItem.price?.product?.id,
-        handle: metadataString(metadata, "handle"),
-      },
+      metadata: simplifiedLineItemMetadata(metadata, lineItem),
     });
   }
 

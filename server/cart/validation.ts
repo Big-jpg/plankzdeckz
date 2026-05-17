@@ -4,7 +4,7 @@
 import "server-only";
 
 import { getProducts } from "@/lib/catalogue";
-import type { AdapterType, MerchSize, Product, ProductType } from "@/lib/types";
+import type { MerchSize, Product, ProductType } from "@/lib/types";
 import { isBoardProduct, isMerchProduct } from "@/lib/types";
 
 export interface CheckoutCartItemInput {
@@ -19,10 +19,6 @@ export interface CheckoutCartItemInput {
   quantity?: unknown;
   productType?: unknown;
   selectedSize?: unknown;
-  selectedAdapter?: unknown;
-  bulbTypeConfirmed?: unknown;
-  fixtureNotes?: unknown;
-  customisationNotes?: unknown;
   material?: unknown;
   colour?: unknown;
   metadata?: unknown;
@@ -30,7 +26,6 @@ export interface CheckoutCartItemInput {
 
 export interface CartValidationInput {
   items?: unknown;
-  ledAcknowledged?: unknown;
 }
 
 export interface ValidationError {
@@ -53,10 +48,6 @@ export interface VerifiedCartItem {
   quantity: number;
   productType: ProductType;
   selectedSize: MerchSize | null;
-  selectedAdapter: AdapterType;
-  bulbTypeConfirmed: boolean;
-  fixtureNotes: string | null;
-  customisationNotes: string | null;
   material: string | null;
   colour: string | null;
   metadata: Record<string, unknown>;
@@ -73,16 +64,7 @@ export interface CartValidationResult {
   verifiedItems: VerifiedCartItem[];
 }
 
-export interface CartValidationOptions {
-  requireLedAcknowledgement?: boolean;
-}
-
-const VALID_ADAPTERS: AdapterType[] = ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"];
 const VALID_MERCH_SIZES: MerchSize[] = ["S", "M", "L", "XL", "One size"];
-
-function isValidAdapter(value: unknown): value is AdapterType {
-  return typeof value === "string" && VALID_ADAPTERS.includes(value as AdapterType);
-}
 
 function isValidMerchSize(value: unknown): value is MerchSize {
   return typeof value === "string" && VALID_MERCH_SIZES.includes(value as MerchSize);
@@ -121,10 +103,8 @@ function emptyResult(errors: ValidationError[], statusCurrency = "AUD"): CartVal
 
 export async function validateCartForCheckout(
   input: CartValidationInput,
-  options: CartValidationOptions = {},
 ): Promise<CartValidationResult> {
   const rawItems = input.items;
-  const requireLedAcknowledgement = options.requireLedAcknowledgement ?? false;
   const errors: ValidationError[] = [];
 
   if (!Array.isArray(rawItems) || rawItems.length === 0) {
@@ -133,21 +113,15 @@ export async function validateCartForCheckout(
     ]);
   }
 
-  if (requireLedAcknowledgement && input.ledAcknowledged !== true) {
-    errors.push({
-      handle: "",
-      field: "ledAcknowledged",
-      message: "Reclaimed-deck safety acknowledgement is required before checkout.",
-    });
-  }
-
   const catalogue = await getProducts();
   const catalogueByHandle = new Map(catalogue.map((product) => [product.handle, product]));
 
   const verifiedItems: VerifiedCartItem[] = [];
+  const boardHandles = new Set<string>();
   let verifiedSubtotal = 0;
   let claimedSubtotal = 0;
   let currency = "AUD";
+  let verifiedQuantityCount = 0;
 
   for (const rawItem of rawItems as unknown[]) {
     if (!rawItem || typeof rawItem !== "object") {
@@ -175,17 +149,6 @@ export async function validateCartForCheckout(
       });
       continue;
     }
-
-    if (!isValidAdapter(item.selectedAdapter)) {
-      errors.push({
-        handle,
-        field: "selectedAdapter",
-        message: `Invalid board type selection: "${String(item.selectedAdapter)}". Must be one of: ${VALID_ADAPTERS.join(", ")}.`,
-      });
-      continue;
-    }
-
-    const fixtureNotes = optionalString(item.fixtureNotes);
 
     const catalogueProduct = catalogueByHandle.get(item.handle);
 
@@ -216,12 +179,31 @@ export async function validateCartForCheckout(
       });
     }
 
-    if (isBoardProduct(catalogueProduct) && catalogueProduct.availabilityStatus !== "available") {
-      errors.push({
-        handle,
-        field: "availabilityStatus",
-        message: `Board "${item.handle}" is marked ${catalogueProduct.availabilityStatus} and cannot be checked out.`,
-      });
+    if (isBoardProduct(catalogueProduct)) {
+      if (catalogueProduct.availabilityStatus !== "available") {
+        errors.push({
+          handle,
+          field: "availabilityStatus",
+          message: `Board "${item.handle}" is marked ${catalogueProduct.availabilityStatus} and cannot be checked out.`,
+        });
+      }
+
+      if (item.quantity !== 1) {
+        errors.push({
+          handle,
+          field: "quantity",
+          message: "One-of-a-kind boards must have quantity 1.",
+        });
+      }
+
+      if (boardHandles.has(item.handle)) {
+        errors.push({
+          handle,
+          field: "handle",
+          message: `Board "${item.handle}" appears more than once in the cart.`,
+        });
+      }
+      boardHandles.add(item.handle);
     }
 
     let selectedSize: MerchSize | null = null;
@@ -254,14 +236,6 @@ export async function validateCartForCheckout(
       }
     }
 
-    if (isBoardProduct(catalogueProduct) && item.selectedAdapter === "Custom / not sure" && !fixtureNotes) {
-      errors.push({
-        handle,
-        field: "fixtureNotes",
-        message: "Build notes are required when the selected board type is Custom / not sure.",
-      });
-    }
-
     currency = catalogueProduct.currency;
     const cataloguePrice = catalogueProduct.price;
     const clientPrice = item.unitPrice;
@@ -284,22 +258,12 @@ export async function validateCartForCheckout(
       });
     }
 
-    if (
-      isBoardProduct(catalogueProduct) &&
-      catalogueProduct.adapters.length > 0 &&
-      !catalogueProduct.adapters.includes(item.selectedAdapter)
-    ) {
-      errors.push({
-        handle,
-        field: "selectedAdapter",
-        message: `Board type "${item.selectedAdapter}" is not compatible with this product. Compatible: ${catalogueProduct.adapters.join(", ")}.`,
-      });
-    }
-
     const unitAmount = Math.round(cataloguePrice * 100);
-    const totalAmount = unitAmount * item.quantity;
-    verifiedSubtotal += cataloguePrice * item.quantity;
-    claimedSubtotal += (typeof clientPrice === "number" ? clientPrice : 0) * item.quantity;
+    const quantity = isBoardProduct(catalogueProduct) ? 1 : item.quantity;
+    const totalAmount = unitAmount * quantity;
+    verifiedSubtotal += cataloguePrice * quantity;
+    claimedSubtotal += (typeof clientPrice === "number" ? clientPrice : 0) * quantity;
+    verifiedQuantityCount += quantity;
 
     verifiedItems.push({
       productId: optionalString(item.productId) ?? catalogueProduct.id,
@@ -312,13 +276,9 @@ export async function validateCartForCheckout(
       unitAmount,
       totalAmount,
       currency: catalogueProduct.currency,
-      quantity: item.quantity,
+      quantity,
       productType,
       selectedSize,
-      selectedAdapter: item.selectedAdapter,
-      bulbTypeConfirmed: input.ledAcknowledged === true || item.bulbTypeConfirmed === true,
-      fixtureNotes,
-      customisationNotes: optionalString(item.customisationNotes),
       material: optionalString(item.material) ?? catalogueProduct.material,
       colour: optionalString(item.colour),
       metadata: normaliseMetadata(item.metadata),
@@ -332,7 +292,7 @@ export async function validateCartForCheckout(
     verifiedSubtotal: Math.round(verifiedSubtotal * 100) / 100,
     claimedSubtotal: Math.round(claimedSubtotal * 100) / 100,
     currency,
-    itemCount: rawItems.length,
+    itemCount: verifiedQuantityCount,
     verifiedItems,
   };
 }

@@ -115,18 +115,10 @@ export default async function AdminOrderDetailPage({
                 </div>
 
                 <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                  <Field label="Selected adapter" value={item.selected_adapter} />
+                  <Field label="Item type" value={item.selected_adapter} />
                   <Field label="Material" value={item.material} />
                   <Field label="Colour" value={item.colour} />
-                  <Field
-                    label="Build acknowledgement"
-                    value={item.bulb_type_confirmed ? "Yes" : "No"}
-                  />
-                </div>
-
-                <div className="mt-3 grid gap-3 lg:grid-cols-2">
-                  <Field label="Build notes" value={item.fixture_notes} />
-                  <Field label="Customisation notes" value={item.customisation_notes} />
+                  <Field label="Line total" value={formatCurrency(item.total_amount, order.currency)} />
                 </div>
               </article>
             ))

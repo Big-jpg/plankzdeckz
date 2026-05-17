@@ -28,8 +28,29 @@ type CartAction =
   | { type: "ADD_ITEM"; payload: CartItem }
   | { type: "REMOVE_ITEM"; payload: { key: string } }
   | { type: "SET_QUANTITY"; payload: { key: string; quantity: number } }
-  | { type: "SET_LED_ACKNOWLEDGED"; payload: boolean }
   | { type: "CLEAR_CART" };
+
+// ---------------------------------------------------------------------------
+// Reducer helpers
+// ---------------------------------------------------------------------------
+
+function itemQuantity(item: CartItem, requestedQuantity: number): number {
+  if ((item.productType ?? "board") === "board") return 1;
+  return Math.max(1, requestedQuantity);
+}
+
+function normaliseItem(item: CartItem): CartItem {
+  return {
+    ...item,
+    quantity: itemQuantity(item, item.quantity),
+  };
+}
+
+function normaliseState(state: CartState): CartState {
+  return {
+    items: Array.isArray(state.items) ? state.items.map(normaliseItem) : [],
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Reducer
@@ -38,30 +59,32 @@ type CartAction =
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case "HYDRATE":
-      return action.payload;
+      return normaliseState(action.payload);
 
     case "ADD_ITEM": {
-      const newItem = action.payload;
+      const newItem = normaliseItem(action.payload);
       const key = cartItemKey(newItem);
-      const existing = state.items.findIndex((i) => cartItemKey(i) === key);
+      const existing = state.items.findIndex((item) => cartItemKey(item) === key);
+
       if (existing >= 0) {
         const updated = [...state.items];
         updated[existing] = {
           ...updated[existing],
-          quantity: updated[existing].quantity + newItem.quantity,
-          // Update notes in case the customer changed them
-          fixtureNotes: newItem.fixtureNotes || updated[existing].fixtureNotes,
-          customisationNotes: newItem.customisationNotes || updated[existing].customisationNotes,
+          quantity:
+            (updated[existing].productType ?? "board") === "board"
+              ? 1
+              : updated[existing].quantity + newItem.quantity,
         };
         return { ...state, items: updated };
       }
+
       return { ...state, items: [...state.items, newItem] };
     }
 
     case "REMOVE_ITEM":
       return {
         ...state,
-        items: state.items.filter((i) => cartItemKey(i) !== action.payload.key),
+        items: state.items.filter((item) => cartItemKey(item) !== action.payload.key),
       };
 
     case "SET_QUANTITY": {
@@ -69,17 +92,17 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       if (quantity < 1) {
         return {
           ...state,
-          items: state.items.filter((i) => cartItemKey(i) !== key),
+          items: state.items.filter((item) => cartItemKey(item) !== key),
         };
       }
+
       return {
         ...state,
-        items: state.items.map((i) => (cartItemKey(i) === key ? { ...i, quantity } : i)),
+        items: state.items.map((item) =>
+          cartItemKey(item) === key ? { ...item, quantity: itemQuantity(item, quantity) } : item,
+        ),
       };
     }
-
-    case "SET_LED_ACKNOWLEDGED":
-      return { ...state, ledAcknowledged: action.payload };
 
     case "CLEAR_CART":
       return EMPTY_CART;
@@ -104,7 +127,6 @@ interface CartContextValue {
   addItem: (item: CartItem) => void;
   removeItem: (key: string) => void;
   setQuantity: (key: string, quantity: number) => void;
-  setLedAcknowledged: (value: boolean) => void;
   clearCart: () => void;
   /** Whether the mini-cart drawer is open. */
   drawerOpen: boolean;
@@ -165,23 +187,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const setLedAcknowledged = useCallback(
-    (value: boolean) => dispatch({ type: "SET_LED_ACKNOWLEDGED", payload: value }),
-    [],
-  );
-
   const clearCart = useCallback(() => dispatch({ type: "CLEAR_CART" }), []);
 
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   const itemCount = useMemo(
-    () => state.items.reduce((sum, i) => sum + i.quantity, 0),
+    () => state.items.reduce((sum, item) => sum + item.quantity, 0),
     [state.items],
   );
 
   const subtotal = useMemo(
-    () => state.items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0),
+    () => state.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
     [state.items],
   );
 
@@ -196,7 +213,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addItem,
       removeItem,
       setQuantity,
-      setLedAcknowledged,
       clearCart,
       drawerOpen,
       openDrawer,
@@ -210,7 +226,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addItem,
       removeItem,
       setQuantity,
-      setLedAcknowledged,
       clearCart,
       drawerOpen,
       openDrawer,
