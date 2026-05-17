@@ -1,5 +1,5 @@
 // server/cart/validation.ts
-// Lumenform Studio — Shared server-side cart validation for checkout.
+// PLANKZ DECKZ — Shared server-side cart validation for checkout.
 
 import "server-only";
 
@@ -72,7 +72,7 @@ export interface CartValidationOptions {
   requireLedAcknowledgement?: boolean;
 }
 
-const VALID_ADAPTERS: AdapterType[] = ["B22", "E27", "Clipsal No. 530", "Other / not sure"];
+const VALID_ADAPTERS: AdapterType[] = ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"];
 
 function isValidAdapter(value: unknown): value is AdapterType {
   return typeof value === "string" && VALID_ADAPTERS.includes(value as AdapterType);
@@ -127,7 +127,7 @@ export async function validateCartForCheckout(
     errors.push({
       handle: "",
       field: "ledAcknowledged",
-      message: "LED-only bulb acknowledgement is required before checkout.",
+      message: "Reclaimed-deck safety acknowledgement is required before checkout.",
     });
   }
 
@@ -170,18 +170,18 @@ export async function validateCartForCheckout(
       errors.push({
         handle,
         field: "selectedAdapter",
-        message: `Invalid adapter selection: "${String(item.selectedAdapter)}". Must be one of: ${VALID_ADAPTERS.join(", ")}.`,
+        message: `Invalid board type selection: "${String(item.selectedAdapter)}". Must be one of: ${VALID_ADAPTERS.join(", ")}.`,
       });
       continue;
     }
 
     const fixtureNotes = optionalString(item.fixtureNotes);
 
-    if (item.selectedAdapter === "Other / not sure" && !fixtureNotes) {
+    if (item.selectedAdapter === "Custom / not sure" && !fixtureNotes) {
       errors.push({
         handle,
         field: "fixtureNotes",
-        message: "Fixture notes are required when the selected adapter is Other / not sure.",
+        message: "Build notes are required when the selected board type is Custom / not sure.",
       });
     }
 
@@ -233,7 +233,7 @@ export async function validateCartForCheckout(
       errors.push({
         handle,
         field: "selectedAdapter",
-        message: `Adapter "${item.selectedAdapter}" is not compatible with this product. Compatible: ${catalogueProduct.adapters.join(", ")}.`,
+        message: `Board type "${item.selectedAdapter}" is not compatible with this product. Compatible: ${catalogueProduct.adapters.join(", ")}.`,
       });
     }
 

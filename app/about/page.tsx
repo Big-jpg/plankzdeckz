@@ -1,98 +1,45 @@
 // app/about/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About",
-  description: "About Lumenform Studio; the maker, the process, and the philosophy.",
+  title: "Our Story | PLANKZ DECKZ",
+  description: "The PLANKZ DECKZ story: coastal handmade skateboards from reclaimed timber and repurposed materials.",
 };
 
-export default function AboutPage() {
+const sections = [{'title': 'Reclaimed by design', 'text': 'The material story matters. Boards are shaped around available timber character rather than hidden behind mass-production sameness.'}, {'title': 'Coastal workshop feel', 'text': 'The visual identity is Australian beach lifestyle: weathered timber, teal water, coral sunsets, warm grain, and handmade edges.'}, {'title': 'Local pickup model', 'text': 'Deckz are built locally and handed over by arrangement so details can be checked directly before the board leaves the workshop.'}, {'title': 'One of a kind', 'text': 'Every board varies in grain, tone, repair marks, and finish. That variation is the product, not a defect.'}];
+
+export default function Page() {
   return (
-    <>
-      <section className="bg-warm-black py-16 text-warm-white sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            About Lumenform Studio
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-            Contemporary lighting objects, designed and made locally.
-          </p>
+    <main className="bg-warm-white">
+      <section className="border-b border-charcoal/10 bg-weathered-grey/30 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">PLANKZ DECKZ</p>
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-gold sm:text-6xl">Our Story</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-charcoal/75">PLANKZ DECKZ builds one-of-a-kind skate and longboard deckz from reclaimed timber, offcuts, and repurposed material that would otherwise be wasted.</p>
         </div>
       </section>
-
-      <section className="bg-warm-white py-12 sm:py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="prose prose-charcoal max-w-none space-y-6 text-charcoal/80">
-            <p className="text-lg leading-relaxed">
-              Lumenform Studio is a small-batch lighting design practice focused on sculptural
-              lampshades and contemporary lighting objects. Each piece is developed and produced
-              locally using digitally driven fabrication methods that allow for precision,
-              flexibility, and highly individual forms.
-            </p>
-
-            <h2 className="text-xl font-semibold text-charcoal">The Maker</h2>
-            <p className="leading-relaxed">
-              Founded by a designer-maker with a background in computational design, systems
-              engineering, and industrial fabrication, Lumenform exists at the intersection of
-              mathematics, material, and light. The studio operates from a dedicated workshop in
-              Western Australia where every object is produced, assembled, and refined in-house.
-            </p>
-
-            <h2 className="text-xl font-semibold text-charcoal">The Process</h2>
-            <p className="leading-relaxed">
-              Each piece begins as a parametric model — a living design system governed by geometry,
-              proportion, curvature, density, and light diffusion. Rather than creating a single
-              static form, these systems allow subtle variations and adaptations to emerge naturally
-              while preserving the intent of the original design.
-            </p>
-
-            <p className="leading-relaxed">
-              Materials are selected for both optical behaviour and tactile quality, producing
-              surfaces that interact with light in ways traditional shade construction often cannot.
-              The resulting forms possess a softness, translucency, and geometric complexity that
-              would be difficult or prohibitively expensive to manufacture through conventional
-              methods.
-            </p>
-
-            <h2 className="text-xl font-semibold text-charcoal">The Philosophy</h2>
-            <p className="leading-relaxed">
-              Lumenform was founded on the belief that contemporary manufacturing should be local,
-              adaptable, and transparent. Traditional homewares production often relies on offshore
-              tooling, large inventory commitments, and long supply chains. Lumenform instead
-              embraces responsive, small-batch production where objects can evolve over time rather
-              than remain fixed.
-            </p>
-
-            <p className="leading-relaxed">
-              This approach allows designs to be refined, customised, and replaced without the waste
-              and inertia associated with mass production. The goal is not to imitate glass, fabric,
-              or metal, but to explore an emerging design language shaped by computation, light, and
-              modern fabrication techniques.
-            </p>
-
-            <h2 className="text-xl font-semibold text-charcoal">Safety and Compatibility</h2>
-
-            <p className="leading-relaxed">
-              All Lumenform shades are designed exclusively for LED bulbs. Every piece is checked
-              for compatibility with low-heat lighting applications and is supplied with the
-              required fitting adapter included in the purchase price, supporting B22, E27, and
-              Clipsal No. 530 fittings.
-            </p>
-          </div>
-
-          <div className="mt-12 border-t border-charcoal/10 pt-8">
-            <Link
-              href="/custom"
-              className="inline-flex items-center gap-2 rounded-lg bg-charcoal px-6 py-3 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
-            >
-              Request a custom design
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+      <section className="px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+          {sections.map((section) => (
+            <article key={section.title} className="rounded-3xl border border-charcoal/10 bg-ivory/80 p-6 shadow-sm">
+              <h2 className="font-display text-2xl tracking-wide text-brand-gold">{section.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-charcoal/70">{section.text}</p>
+            </article>
+          ))}
         </div>
       </section>
-    </>
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-charcoal p-8 text-warm-white sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-display text-2xl tracking-wide text-brand-gold">Hand-Crafted Skateboard Deckz — Recycled. Reclaimed. One of a Kind.</p>
+            <p className="mt-2 text-sm text-warm-white/70">Custom local pickup builds from repurposed landfill materials.</p>
+          </div>
+          <Link href="/custom" className="inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-charcoal hover:bg-primary/90">
+            Start a custom deck
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }

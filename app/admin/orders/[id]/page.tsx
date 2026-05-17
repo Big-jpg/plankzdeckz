@@ -119,13 +119,13 @@ export default async function AdminOrderDetailPage({
                   <Field label="Material" value={item.material} />
                   <Field label="Colour" value={item.colour} />
                   <Field
-                    label="LED bulb confirmed"
+                    label="Build acknowledgement"
                     value={item.bulb_type_confirmed ? "Yes" : "No"}
                   />
                 </div>
 
                 <div className="mt-3 grid gap-3 lg:grid-cols-2">
-                  <Field label="Fixture notes" value={item.fixture_notes} />
+                  <Field label="Build notes" value={item.fixture_notes} />
                   <Field label="Customisation notes" value={item.customisation_notes} />
                 </div>
               </article>

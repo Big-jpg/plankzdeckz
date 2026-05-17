@@ -75,7 +75,7 @@ function lineItemTitle(lineItem: Stripe.LineItem): string {
     return product.name;
   }
 
-  return "Lumenform lampshade";
+  return "PLANKZ DECKZ custom deck";
 }
 
 function checkoutEmail(session: Stripe.Checkout.Session): string | null {

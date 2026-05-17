@@ -7,8 +7,8 @@ import type { ReactNode } from "react";
 import { requireAdmin } from "@/lib/admin-auth";
 
 export const metadata: Metadata = {
-  title: "Admin | Lumenform Studio",
-  description: "Admin-Lite operational panel for Lumenform Studio.",
+  title: "Admin | PLANKZ DECKZ",
+  description: "Admin-Lite operational panel for PLANKZ DECKZ.",
 };
 
 const adminLinks = [
@@ -28,7 +28,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-amber">Admin-Lite</p>
           <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h1 className="font-serif text-4xl font-semibold">Lumenform operations</h1>
+              <h1 className="font-display text-4xl font-semibold">PLANKZ operations</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-warm-white/70">
                 Restricted operational surface for orders, pickup transitions, custom requests, and
                 catalogue visibility.

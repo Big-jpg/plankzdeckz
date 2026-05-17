@@ -1,17 +1,17 @@
 // lib/types.ts
 
-export type AdapterType = "B22" | "E27" | "Clipsal No. 530" | "Other / not sure";
+export type AdapterType = "Cruiser" | "Longboard" | "Surfskate" | "Custom / not sure";
 
 export type ProductCategory =
-  | "Pleated shades"
-  | "Faceted / geometric shades"
-  | "Floral / petal shades"
-  | "Textured diffuser shades"
-  | "Starfield / perforated shades"
+  | "Reclaimed cruisers"
+  | "Surfskate deckz"
+  | "Longboard deckz"
+  | "Custom builds"
+  | "Merch"
   | "Experimental prototypes";
 
 /**
- * Future-ready metadata fields from the branding doc.
+ * Future-ready metadata fields from the original commerce scaffold.
  * These are optional and populated from Shopify metafields when available.
  */
 export interface ProductMetadata {
@@ -20,9 +20,9 @@ export interface ProductMetadata {
   qr_campaign?: string;
   display_sample_id?: string;
   production_queue_status?: string;
-  filament_material?: string;
-  filament_colour?: string;
-  print_profile?: string;
+  timber_material?: string;
+  timber_finish?: string;
+  build_profile?: string;
 }
 
 export interface Product {
@@ -39,7 +39,7 @@ export interface Product {
   dimensions: string;
   colours: string[];
   images: string[];
-  /** Compatible adapter types for this product. */
+  /** Board build types compatible with this product. */
   adapters: AdapterType[];
   inStock: boolean;
 
@@ -52,9 +52,9 @@ export interface Product {
 
   // --- Extended catalogue fields ---
 
-  /** Design family grouping, e.g. "Meridian", "Cobalt". */
+  /** Design family grouping, e.g. "Cruiser", "Longboard". */
   designFamily?: string | null;
-  /** Compatible adapters as raw strings from Shopify (before normalisation). */
+  /** Compatible board types as raw strings from Shopify before normalisation. */
   compatibleAdapters?: string[] | null;
   /** Production notes from Shopify metafield. */
   productionNotes?: string | null;

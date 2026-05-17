@@ -1,5 +1,5 @@
 // server/auth/adapter.ts
-// Lumenform Studio — Custom PostgreSQL adapter for Auth.js (NextAuth v5).
+// PLANKZ DECKZ — Custom PostgreSQL adapter for Auth.js (NextAuth v5).
 // Uses the existing pg client and stored procedures from Phase 4.
 // No ORM. No Prisma. Direct stored procedure calls via server/db/client.ts.
 
@@ -98,7 +98,7 @@ function toAdapterSessionDirect(row: DbSessionRowDirect): AdapterSession {
 // Adapter implementation
 // ---------------------------------------------------------------------------
 
-export function LumenformAdapter(): Adapter {
+export function PlankzAdapter(): Adapter {
   return {
     // -----------------------------------------------------------------------
     // User methods

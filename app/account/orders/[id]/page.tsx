@@ -188,13 +188,13 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     {item.material && <span>Material: {item.material}</span>}
                     {item.colour && <span>Colour: {item.colour}</span>}
                     {item.bulb_type_confirmed && (
-                      <span className="text-green-700">LED confirmed</span>
+                      <span className="text-green-700">Build acknowledged</span>
                     )}
                   </div>
 
                   {item.fixture_notes && (
                     <p className="mt-1.5 text-xs text-charcoal/50">
-                      Fixture notes: {item.fixture_notes}
+                      Build notes: {item.fixture_notes}
                     </p>
                   )}
                   {item.customisation_notes && (

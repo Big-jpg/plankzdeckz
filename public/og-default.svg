@@ -1,14 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
-  <title id="title">Lumenform Studio Open Graph placeholder</title>
-  <desc id="desc">Warm ivory card with charcoal typography and gold accent forms for Lumenform Studio.</desc>
-  <rect width="1200" height="630" fill="#f7efe3"/>
-  <rect x="64" y="64" width="1072" height="502" rx="36" fill="#fffaf0" stroke="#c7a45d" stroke-width="3"/>
-  <circle cx="932" cy="186" r="118" fill="#c7a45d" opacity="0.16"/>
-  <circle cx="980" cy="246" r="76" fill="#2d2926" opacity="0.08"/>
-  <path d="M152 454C246 384 309 420 386 350C463 280 522 218 633 244C744 270 785 382 892 344C972 316 1018 250 1070 254" fill="none" stroke="#c7a45d" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
-  <text x="132" y="196" fill="#2d2926" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="600" letter-spacing="4">LUMENFORM STUDIO</text>
-  <text x="132" y="292" fill="#2d2926" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="700">Custom 3D printed</text>
-  <text x="132" y="370" fill="#2d2926" font-family="Inter, Arial, sans-serif" font-size="68" font-weight="700">lampshades</text>
-  <text x="132" y="442" fill="#625950" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="400">Designed for the lights you already own.</text>
-  <text x="132" y="510" fill="#2d2926" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="600">B22 · E27 · Clipsal-compatible adapters · LED only</text>
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PLANKZ DECKZ Open Graph placeholder</title>
+  <desc id="desc">Coastal recycled timber skateboard deck placeholder artwork for PLANKZ DECKZ.</desc>
+  <rect width="1200" height="630" fill="#132321"/>
+  <rect width="1200" height="630" fill="url(#coast)" opacity="0.92"/>
+  <path d="M0 410C147 358 265 401 404 369C568 331 675 252 846 292C988 325 1070 385 1200 337V630H0V410Z" fill="#EAD8B8"/>
+  <path d="M0 455C155 405 258 443 408 421C594 393 695 333 851 366C1009 400 1084 442 1200 410V630H0V455Z" fill="#D9C3A2" opacity="0.92"/>
+  <path d="M158 476L912 314C950 306 985 332 994 369C1003 407 979 446 941 456L187 618C149 626 113 601 105 563C96 525 120 486 158 476Z" fill="url(#deck)" stroke="#132321" stroke-width="10"/>
+  <circle cx="203" cy="538" r="24" fill="#7ECFC0" stroke="#132321" stroke-width="8"/>
+  <circle cx="874" cy="393" r="24" fill="#7ECFC0" stroke="#132321" stroke-width="8"/>
+  <circle cx="945" cy="128" r="64" fill="#F5BE33" opacity="0.95"/>
+  <rect x="68" y="72" width="662" height="250" rx="34" fill="#132321" fill-opacity="0.76" stroke="#7ECFC0" stroke-width="3"/>
+  <text x="102" y="144" fill="#7ECFC0" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" letter-spacing="10">RECYCLE · RECLAIM · RIDE</text>
+  <text x="102" y="230" fill="#F5BE33" font-family="Impact, Arial Black, sans-serif" font-size="78" letter-spacing="6">PLANKZ DECKZ</text>
+  <text x="104" y="286" fill="#FFF8ED" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">Hand-Crafted Skateboard Deckz</text>
+  <text x="104" y="333" fill="#FFF8ED" fill-opacity="0.78" font-family="Inter, Arial, sans-serif" font-size="24">Recycled. Reclaimed. One of a Kind.</text>
+  <defs>
+    <linearGradient id="coast" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#203A49"/>
+      <stop offset="0.48" stop-color="#7ECFC0" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#F5A0A0" stop-opacity="0.38"/>
+    </linearGradient>
+    <linearGradient id="deck" x1="105" y1="618" x2="993" y2="314" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6F4327"/>
+      <stop offset="0.18" stop-color="#D9C3A2"/>
+      <stop offset="0.35" stop-color="#8B5A34"/>
+      <stop offset="0.52" stop-color="#203A49"/>
+      <stop offset="0.68" stop-color="#A87445"/>
+      <stop offset="0.84" stop-color="#F5BE33"/>
+      <stop offset="1" stop-color="#5B3722"/>
+    </linearGradient>
+  </defs>
 </svg>

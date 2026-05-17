@@ -1,40 +1,52 @@
 @import "tailwindcss";
 
-/* Lumenform Studio — Brand Palette */
+/* Plankz Deckz — coastal recycled-timber brand palette */
 :root {
-  --background: #faf8f5;
-  --foreground: #1c1c1c;
+  --background: #f4efe6;
+  --foreground: #243230;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-bangers), var(--font-inter), system-ui, sans-serif;
 
-  /* Brand colours */
-  --color-charcoal: #1c1c1c;
-  --color-warm-black: #0f0f0f;
-  --color-ivory: #f5f0e8;
-  --color-warm-white: #faf8f5;
-  --color-amber: #c9943e;
-  --color-frosted-blue: #8ab4c7;
-  --color-filament-beige: #d4c5a9;
-  --color-copper: #b87333;
-  --color-muted-charcoal: #2a2a2a;
-  --color-soft-gray: #3a3a3a;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f0f0f;
-    --foreground: #f5f0e8;
-  }
+  /* Plankz brand colours */
+  --color-charcoal: #243230;
+  --color-warm-black: #132321;
+  --color-ivory: #f4efe6;
+  --color-warm-white: #fff8ed;
+  --color-amber: #f5be33;
+  --color-frosted-blue: #7ecfc0;
+  --color-timber-beige: #d9c3a2;
+  --color-copper: #a87445;
+  --color-muted-charcoal: #4b5a56;
+  --color-soft-gray: #9d9a90;
+  --color-coral: #f5a0a0;
+  --color-teal: #7ecfc0;
+  --color-weathered-gray: #d8d4c8;
+  --color-timber: #9a6a3f;
+  --color-sand: #ead8b8;
+  --color-deep-navy: #203a49;
 }
 
 body {
-  background: var(--background);
+  background:
+    linear-gradient(90deg, rgb(36 50 48 / 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgb(36 50 48 / 0.045) 1px, transparent 1px),
+    linear-gradient(135deg, #f4efe6 0%, #e7dfd0 46%, #d8d4c8 100%);
+  background-size: 96px 96px, 96px 96px, 100% 100%;
   color: var(--foreground);
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-bangers), var(--font-inter), system-ui, sans-serif;
+  letter-spacing: 0.035em;
 }
 
 /* Smooth scrolling */
@@ -44,6 +56,6 @@ html {
 
 /* Selection colour */
 ::selection {
-  background-color: #c9943e33;
-  color: #1c1c1c;
+  background-color: #7ecfc066;
+  color: #132321;
 }

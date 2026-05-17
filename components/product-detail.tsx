@@ -4,7 +4,7 @@
 import { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, AlertTriangle, MapPin, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Info, MapPin, ShoppingBag } from "lucide-react";
 import type { Product, AdapterType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
@@ -31,15 +31,15 @@ export function ProductDetail({ product }: { product: Product }) {
     [],
   );
 
-  // Use adapters from the product DTO (populated from Shopify or mock data)
+  // Field names remain adapter-oriented for cart/back-end compatibility from the inherited scaffold.
   const adapterOptions: AdapterType[] =
     product.adapters.length > 0
       ? product.adapters
-      : ["B22", "E27", "Clipsal No. 530", "Other / not sure"];
+      : ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"];
 
   const canAdd =
     selectedAdapter !== null &&
-    (selectedAdapter !== "Other / not sure" || fixtureNotes.trim().length > 0);
+    (selectedAdapter !== "Custom / not sure" || fixtureNotes.trim().length > 0);
 
   const handleAdapterSelect = useCallback(
     (adapter: AdapterType) => {
@@ -105,12 +105,11 @@ export function ProductDetail({ product }: { product: Product }) {
 
   return (
     <>
-      {/* Breadcrumb */}
-      <div className="border-b border-charcoal/5 bg-warm-white">
+      <div className="border-b border-charcoal/10 bg-warm-white/95">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
           <Link
             href="/products"
-            className="inline-flex items-center gap-1 text-sm text-charcoal/50 transition-colors hover:text-charcoal"
+            className="inline-flex items-center gap-1 text-sm text-charcoal/60 transition-colors hover:text-charcoal"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to shop
@@ -121,8 +120,7 @@ export function ProductDetail({ product }: { product: Product }) {
       <section className="bg-warm-white py-8 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-            {/* Image */}
-            <div className="relative aspect-square overflow-hidden rounded-2xl bg-ivory/50">
+            <div className="relative aspect-square overflow-hidden rounded-3xl border border-charcoal/10 bg-ivory/70 shadow-sm">
               <Image
                 src={product.images[0]}
                 alt={product.title}
@@ -133,12 +131,11 @@ export function ProductDetail({ product }: { product: Product }) {
               />
             </div>
 
-            {/* Details */}
             <div className="flex flex-col">
-              <p className="text-xs font-medium uppercase tracking-wider text-charcoal/40">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary">
                 {product.category}
               </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-charcoal sm:text-3xl">
+              <h1 className="mt-2 font-display text-3xl tracking-wide text-brand-gold sm:text-4xl">
                 {product.title}
               </h1>
               <p className="mt-2 text-2xl font-semibold text-charcoal">
@@ -146,36 +143,32 @@ export function ProductDetail({ product }: { product: Product }) {
                 <span className="text-base font-normal text-charcoal/50">{product.currency}</span>
               </p>
 
-              <p className="mt-6 text-base leading-relaxed text-charcoal/70">
-                {product.description}
-              </p>
+              <p className="mt-6 text-base leading-relaxed text-charcoal/75">{product.description}</p>
 
-              {/* Specs */}
               <div className="mt-6 space-y-3 border-t border-charcoal/10 pt-6">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between gap-6 text-sm">
                   <span className="text-charcoal/50">Material</span>
-                  <span className="font-medium text-charcoal">{product.material}</span>
+                  <span className="text-right font-medium text-charcoal">{product.material}</span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between gap-6 text-sm">
                   <span className="text-charcoal/50">Dimensions</span>
-                  <span className="font-medium text-charcoal">{product.dimensions}</span>
+                  <span className="text-right font-medium text-charcoal">{product.dimensions}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-charcoal/50">Available colours</span>
-                  <span className="font-medium text-charcoal">{product.colours.join(", ")}</span>
+                <div className="flex justify-between gap-6 text-sm">
+                  <span className="text-charcoal/50">Finish palette</span>
+                  <span className="text-right font-medium text-charcoal">{product.colours.join(", ")}</span>
                 </div>
                 {product.designFamily && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-charcoal/50">Design family</span>
-                    <span className="font-medium text-charcoal">{product.designFamily}</span>
+                  <div className="flex justify-between gap-6 text-sm">
+                    <span className="text-charcoal/50">Build family</span>
+                    <span className="text-right font-medium text-charcoal">{product.designFamily}</span>
                   </div>
                 )}
               </div>
 
-              {/* Colour selector */}
               {product.colours.length > 1 && (
                 <div className="mt-6 border-t border-charcoal/10 pt-6">
-                  <label className="text-sm font-semibold text-charcoal">Colour</label>
+                  <label className="text-sm font-semibold text-charcoal">Finish direction</label>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {product.colours.map((colour) => (
                       <button
@@ -183,7 +176,7 @@ export function ProductDetail({ product }: { product: Product }) {
                         type="button"
                         onClick={() => setSelectedColour(colour)}
                         className={cn(
-                          "rounded-lg border px-3 py-2 text-sm font-medium transition-all",
+                          "rounded-full border px-3 py-2 text-sm font-medium transition-all",
                           selectedColour === colour
                             ? "border-charcoal bg-charcoal text-warm-white"
                             : "border-charcoal/20 text-charcoal hover:border-charcoal/40",
@@ -196,21 +189,13 @@ export function ProductDetail({ product }: { product: Product }) {
                 </div>
               )}
 
-              {/* Adapter Selector */}
               <div className="mt-6 border-t border-charcoal/10 pt-6">
                 <label className="text-sm font-semibold text-charcoal">
-                  Fitting adapter <span className="text-red-600">*</span>
+                  Board build type <span className="text-red-600">*</span>
                 </label>
-                <p className="mt-1 text-xs text-charcoal/50">
-                  Included with your shade at no extra cost. Select the adapter for your light
-                  fitting. If unsure, read the{" "}
-                  <Link
-                    href="/fitting-guide"
-                    className="text-charcoal underline underline-offset-2"
-                  >
-                    fitting guide
-                  </Link>
-                  .
+                <p className="mt-1 text-xs text-charcoal/55">
+                  Select the closest ride style for this deck. If unsure, choose custom and add notes so
+                  the build can be confirmed before pickup.
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {adapterOptions.map((adapter) => (
@@ -219,7 +204,7 @@ export function ProductDetail({ product }: { product: Product }) {
                       type="button"
                       onClick={() => handleAdapterSelect(adapter)}
                       className={cn(
-                        "rounded-lg border px-3 py-2.5 text-sm font-medium transition-all",
+                        "rounded-xl border px-3 py-2.5 text-sm font-semibold transition-all",
                         selectedAdapter === adapter
                           ? "border-charcoal bg-charcoal text-warm-white"
                           : "border-charcoal/20 text-charcoal hover:border-charcoal/40",
@@ -230,85 +215,73 @@ export function ProductDetail({ product }: { product: Product }) {
                   ))}
                 </div>
 
-                {/* Notes for "Other / not sure" */}
-                {selectedAdapter === "Other / not sure" && (
-                  <div className="mt-4 rounded-lg border border-amber/30 bg-amber/5 p-4">
-                    <p className="text-sm font-medium text-charcoal">
-                      Please describe your fitting or upload a photo
-                    </p>
-                    <p className="mt-1 text-xs text-charcoal/60">
-                      Upload or email a photo of the fitting before production. We will confirm
-                      compatibility before printing.
+                {selectedAdapter === "Custom / not sure" && (
+                  <div className="mt-4 rounded-xl border border-brand-gold/35 bg-brand-gold/10 p-4">
+                    <p className="text-sm font-semibold text-charcoal">Describe the intended ride</p>
+                    <p className="mt-1 text-xs text-charcoal/65">
+                      Include rider size, stance, preferred trucks, or any inspiration photos you plan to
+                      send through before production.
                     </p>
                     <textarea
                       value={fixtureNotes}
-                      onChange={(e) => setFixtureNotes(e.target.value)}
-                      placeholder="Describe your light fitting, brand, model, or any identifying details..."
-                      className="mt-3 w-full rounded-lg border border-charcoal/20 bg-warm-white px-3 py-2 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
+                      onChange={(event) => setFixtureNotes(event.target.value)}
+                      placeholder="e.g. relaxed longboard cruiser, surfskate carve trainer, wall-hanger with local pickup..."
+                      className="mt-3 w-full rounded-xl border border-charcoal/20 bg-warm-white px-3 py-2 text-sm text-charcoal placeholder:text-charcoal/35 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
                       rows={3}
                     />
                     {fixtureNotes.trim().length === 0 && (
                       <p className="mt-2 text-xs text-red-600">
-                        Fixture notes are required when &quot;Other / not sure&quot; is selected.
+                        Build notes are required when &quot;Custom / not sure&quot; is selected.
                       </p>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Customisation notes */}
               <div className="mt-6 border-t border-charcoal/10 pt-6">
                 <label className="text-sm font-semibold text-charcoal">
-                  Customisation notes{" "}
-                  <span className="font-normal text-charcoal/40">(optional)</span>
+                  Customisation notes <span className="font-normal text-charcoal/40">(optional)</span>
                 </label>
-                <p className="mt-1 text-xs text-charcoal/50">
-                  Any special requests for size, finish, or design modifications.
+                <p className="mt-1 text-xs text-charcoal/55">
+                  Add preferences for size, concave, timber tone, resin detail, grip, or display finish.
                 </p>
                 <textarea
                   value={customisationNotes}
-                  onChange={(e) => setCustomisationNotes(e.target.value)}
-                  placeholder="e.g. slightly larger opening, matte finish, specific colour match..."
-                  className="mt-3 w-full rounded-lg border border-charcoal/20 bg-warm-white px-3 py-2 text-sm text-charcoal placeholder:text-charcoal/30 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
+                  onChange={(event) => setCustomisationNotes(event.target.value)}
+                  placeholder="e.g. warmer timber, teal resin accent, mellow concave, no grip tape yet..."
+                  className="mt-3 w-full rounded-xl border border-charcoal/20 bg-warm-white px-3 py-2 text-sm text-charcoal placeholder:text-charcoal/35 focus:border-charcoal focus:outline-none focus:ring-1 focus:ring-charcoal"
                   rows={3}
                 />
               </div>
 
-              {/* Safety note */}
-              <div className="mt-6 flex items-start gap-3 rounded-lg border border-amber/20 bg-amber/5 p-4">
-                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber" />
+              <div className="mt-6 flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/10 p-4">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <div>
-                  <p className="text-sm font-medium text-charcoal">LED bulbs only</p>
-                  <p className="mt-0.5 text-xs text-charcoal/60">
-                    This shade is designed for LED bulbs only. Not compatible with incandescent or
-                    halogen bulbs. Customer must confirm bulb type and fitting compatibility. Read
-                    the{" "}
-                    <Link href="/safety" className="text-charcoal underline underline-offset-2">
-                      full safety note
-                    </Link>
-                    .
+                  <p className="text-sm font-semibold text-charcoal">Handmade recycled timber</p>
+                  <p className="mt-0.5 text-xs text-charcoal/65">
+                    Each deck varies with the reclaimed material available. Final grain, tone, and small
+                    build details are confirmed before production.
                   </p>
                 </div>
               </div>
 
-              {/* Local pickup note */}
-              <div className="mt-4 flex items-start gap-3 rounded-lg border border-charcoal/10 p-4">
+              <div className="mt-4 flex items-start gap-3 rounded-xl border border-charcoal/10 p-4">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/50" />
                 <div>
-                  <p className="text-sm font-medium text-charcoal">Local pickup only</p>
-                  <p className="mt-0.5 text-xs text-charcoal/60">
-                    This product is available for local pickup only. Shipping is not yet available.
+                  <p className="text-sm font-semibold text-charcoal">Local pickup only</p>
+                  <p className="mt-0.5 text-xs text-charcoal/65">
+                    Built locally from repurposed materials and handed over by arrangement. Shipping is
+                    not currently available.
                   </p>
                 </div>
               </div>
 
-              {/* Add to cart */}
               <button
                 type="button"
                 disabled={!canAdd}
                 onClick={handleAddToCart}
                 className={cn(
-                  "mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-sm font-semibold transition-all",
+                  "mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-all",
                   canAdd
                     ? "bg-charcoal text-warm-white hover:bg-charcoal/90"
                     : "cursor-not-allowed bg-charcoal/20 text-charcoal/40",
@@ -316,19 +289,18 @@ export function ProductDetail({ product }: { product: Product }) {
               >
                 <ShoppingBag className="h-4 w-4" />
                 {!selectedAdapter
-                  ? "Select a fitting adapter to continue"
-                  : selectedAdapter === "Other / not sure" && fixtureNotes.trim().length === 0
-                    ? "Add fixture notes to continue"
+                  ? "Select a board build type to continue"
+                  : selectedAdapter === "Custom / not sure" && fixtureNotes.trim().length === 0
+                    ? "Add build notes to continue"
                     : "Add to cart"}
               </button>
 
-              {/* Custom CTA */}
               <div className="mt-4 text-center">
                 <Link
                   href="/custom"
-                  className="text-sm text-charcoal/50 underline underline-offset-2 transition-colors hover:text-charcoal"
+                  className="text-sm text-charcoal/55 underline underline-offset-2 transition-colors hover:text-charcoal"
                 >
-                  Want this in a different size or colour? Request a custom design
+                  Want a different outline, timber story, or finish? Request a custom deck
                 </Link>
               </div>
             </div>
@@ -336,12 +308,7 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
       </section>
 
-      {/* Toast notification */}
-      <Toast
-        message={`${product.title} added to cart`}
-        visible={toastVisible}
-        onClose={() => setToastVisible(false)}
-      />
+      <Toast message={`${product.title} added to cart`} visible={toastVisible} onClose={() => setToastVisible(false)} />
     </>
   );
 }

@@ -2,7 +2,7 @@
 import type { MetadataRoute } from "next";
 import { getProducts } from "@/lib/catalogue";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://lumenform.studio";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://plankzdeckz.com";
 
 const publicRoutes: Array<{
   path: string;
@@ -12,10 +12,11 @@ const publicRoutes: Array<{
   { path: "/", changeFrequency: "weekly", priority: 1 },
   { path: "/products", changeFrequency: "weekly", priority: 0.9 },
   { path: "/custom", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/fitting-guide", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/our-story", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/gallery", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/merch", changeFrequency: "monthly", priority: 0.7 },
   { path: "/materials", changeFrequency: "monthly", priority: 0.7 },
   { path: "/production", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/safety", changeFrequency: "monthly", priority: 0.7 },
   { path: "/about", changeFrequency: "monthly", priority: 0.6 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.6 },
   { path: "/faq", changeFrequency: "monthly", priority: 0.6 },

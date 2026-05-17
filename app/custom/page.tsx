@@ -5,38 +5,38 @@ import { CustomDesignRequestForm } from "@/components/custom-design-request-form
 import { CheckCircle2, Ruler, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Custom Design",
+  title: "Custom Designer | PLANKZ DECKZ",
   description:
-    "Request a custom parametric lighting object designed for your space, fitting, dimensions, and aesthetic requirements.",
+    "Request a custom PLANKZ DECKZ skateboard, cruiser, surfskate, or longboard build from reclaimed timber and recycled material.",
 };
 
 const customOptions = [
-  "Form and silhouette",
-  "Diameter and height",
-  "Pattern density and aperture",
-  "Light diffusion and translucency",
-  "Colour and material character",
-  "Fitting adapter type",
-  "Pendant, batten, or wall-mounted arrangements",
-  "Multi-shade compositions",
+  "Cruiser, longboard, surfskate, or display build",
+  "Deck length, width, concave, and stance notes",
+  "Reclaimed timber character and grain direction",
+  "Weathered grey, warm timber, teal, or coral finish cues",
+  "Grip, clear coat, resin, or art direction",
+  "Hardware compatibility notes",
+  "Local pickup timing",
+  "One-off experimental deckz",
 ];
 
 const designSteps = [
   {
-    title: "Share the space",
-    text: "Describe the room, the existing fitting, approximate dimensions, ceiling height where relevant, and the atmosphere you want to create. Photos of the fitting and surrounding space are useful.",
+    title: "Share the ride or display intent",
+    text: "Describe whether the deck is for cruising, carving, wall display, a gift, or an experimental reclaimed-material build. Reference images and rider context help set direction.",
   },
   {
     title: "Confirm feasibility",
-    text: "The request is reviewed for fitting compatibility, scale, material suitability, heat safety, and whether the intended form is practical to produce and use.",
+    text: "The request is reviewed for available timber, structural suitability, finish direction, hardware assumptions, timing, and whether the build should be ride-ready or display-only.",
   },
   {
     title: "Set direction and price",
-    text: "The design direction, expected production window, and price are confirmed before production proceeds. Larger or unusual works may require an individual quote.",
+    text: "The build direction, expected production window, and price are confirmed before irreversible work proceeds. Larger or unusual builds may require an individual quote.",
   },
   {
-    title: "Produce the piece",
-    text: "The shade and adapter are prepared in the studio. Typical custom turnaround is 5–10 business days after the design, fitting, and price are confirmed.",
+    title: "Build the deck",
+    text: "The deck is shaped, finished, checked, and prepared in the workshop. Typical timing depends on material availability, finish work, and current build queue.",
   },
   {
     title: "Collect locally",
@@ -47,15 +47,17 @@ const designSteps = [
 export default function CustomPage() {
   return (
     <>
-      <section className="bg-warm-black py-16 text-warm-white sm:py-20">
+      <section className="bg-charcoal py-16 text-warm-white sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber">
-            Customisation
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Custom Designer
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Custom Design</h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-            For spaces that need a particular proportion, fitting, colour, or light behaviour,
-            Lumenform can adapt a parametric lighting object around your requirements.
+          <h1 className="mt-3 font-display text-4xl tracking-wide text-brand-gold sm:text-6xl">
+            Custom Deckz
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/75">
+            Start a one-of-a-kind PLANKZ build shaped around reclaimed timber, coastal finish cues,
+            rider intent, and local pickup timing.
           </p>
         </div>
       </section>
@@ -63,9 +65,11 @@ export default function CustomPage() {
       <section className="bg-warm-white py-12 sm:py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-            <section className="rounded-2xl border border-charcoal/10 bg-ivory/40 p-6 sm:p-8">
-              <SlidersHorizontal className="h-6 w-6 text-charcoal/50" />
-              <h2 className="mt-4 text-xl font-semibold text-charcoal">What can be customised</h2>
+            <section className="rounded-2xl border border-charcoal/10 bg-ivory/60 p-6 sm:p-8">
+              <SlidersHorizontal className="h-6 w-6 text-primary" />
+              <h2 className="mt-4 font-display text-2xl tracking-wide text-brand-gold">
+                What can be customised
+              </h2>
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {customOptions.map((item) => (
                   <div
@@ -78,12 +82,13 @@ export default function CustomPage() {
               </div>
             </section>
 
-            <aside className="rounded-2xl border border-amber/30 bg-amber/5 p-6">
-              <ShieldCheck className="h-6 w-6 text-amber" />
-              <h2 className="mt-4 text-lg font-semibold text-charcoal">Safety remains fixed</h2>
+            <aside className="rounded-2xl border border-primary/30 bg-primary/10 p-6">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+              <h2 className="mt-4 text-lg font-semibold text-charcoal">Use remains fixed</h2>
               <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
-                Customisation can change size, form, colour, and material direction. It does not
-                remove the LED-only limitation or the requirement for a compatible, safe fitting.
+                Customisation can change size, finish, artwork, timber direction, and intended ride
+                style. It does not remove the need to inspect the board, use suitable hardware, and
+                ride within safe conditions.
               </p>
               <Link
                 href="/safety"
@@ -95,12 +100,14 @@ export default function CustomPage() {
           </div>
 
           <section className="mt-10 rounded-2xl border border-charcoal/10 bg-warm-white p-6 sm:p-8">
-            <h2 className="text-xl font-semibold text-charcoal">The customisation process</h2>
+            <h2 className="font-display text-2xl tracking-wide text-brand-gold">
+              The custom build process
+            </h2>
             <div className="mt-6 space-y-5">
               {designSteps.map((step, index) => (
                 <div
                   key={step.title}
-                  className="flex gap-4 rounded-xl border border-charcoal/10 bg-ivory/30 p-5"
+                  className="flex gap-4 rounded-xl border border-charcoal/10 bg-ivory/40 p-5"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-charcoal text-xs font-semibold text-warm-white">
                     {index + 1}
@@ -115,33 +122,33 @@ export default function CustomPage() {
           </section>
 
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
-            <section className="rounded-2xl border border-charcoal/10 bg-ivory/40 p-6">
-              <Ruler className="h-6 w-6 text-charcoal/50" />
+            <section className="rounded-2xl border border-charcoal/10 bg-ivory/60 p-6">
+              <Ruler className="h-6 w-6 text-primary" />
               <h2 className="mt-4 text-lg font-semibold text-charcoal">Requesting a custom size</h2>
               <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
-                Provide the approximate diameter, height, available clearance, and whether the shade
-                is intended for a pendant, batten holder, lamp, or other fixture. If you do not know
-                the exact size, describe the existing shade or send a photo for scale.
+                Provide approximate length, width, stance, ride style, rider context, hardware notes,
+                and whether the deck is intended to be ridden or displayed. If unsure, describe the
+                closest board you like and send a reference photo by email.
               </p>
             </section>
 
             <section className="rounded-2xl border border-charcoal/10 bg-warm-white p-6">
-              <CheckCircle2 className="h-6 w-6 text-charcoal/50" />
+              <CheckCircle2 className="h-6 w-6 text-primary" />
               <h2 className="mt-4 text-lg font-semibold text-charcoal">Pricing and timing</h2>
               <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
-                Custom designs generally start from $60 AUD depending on size, geometry, material,
-                and development effort. A $30 design fee applies and is credited toward the final
-                purchase price if the piece proceeds.
+                Custom pricing depends on board size, material availability, finish complexity,
+                hardware assumptions, and development effort. The build is confirmed before work
+                proceeds.
               </p>
             </section>
           </div>
 
-          <section className="mt-10 rounded-2xl border border-charcoal/10 bg-ivory/50 p-6 sm:p-8">
-            <h2 className="text-lg font-semibold text-charcoal">Request a custom design</h2>
+          <section className="mt-10 rounded-2xl border border-charcoal/10 bg-ivory/60 p-6 sm:p-8">
+            <h2 className="text-lg font-semibold text-charcoal">Request a custom deck</h2>
             <p className="mt-2 text-sm leading-relaxed text-charcoal/60">
-              Share the practical details first: fitting type, room context, approximate size,
-              colour or material preference, and the visual direction. The more context you provide,
-              the better the initial design response will be.
+              Share the practical details first: intended use, board type, approximate size, timber or
+              finish preference, and the visual direction. The more context you provide, the better the
+              initial build response will be.
             </p>
             <CustomDesignRequestForm />
           </section>

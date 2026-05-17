@@ -32,7 +32,7 @@ export function CartPageContent() {
     setCheckoutError(null);
 
     if (!state.ledAcknowledged) {
-      setCheckoutError("You must acknowledge LED bulb usage before checkout.");
+      setCheckoutError("You must acknowledge the local pickup and handmade build terms before checkout.");
       return;
     }
 
@@ -73,7 +73,7 @@ export function CartPageContent() {
             <ShoppingBag className="mx-auto h-12 w-12 text-charcoal/20" />
             <h2 className="mt-4 text-lg font-semibold text-charcoal">Your cart is empty</h2>
             <p className="mt-2 text-sm text-charcoal/60">
-              Browse our collection and add a shade to get started.
+              Browse the deck collection and add a build to get started.
             </p>
             <div className="mt-8">
               <Link
@@ -166,7 +166,7 @@ export function CartPageContent() {
                       {/* Notes */}
                       {item.fixtureNotes && (
                         <p className="mt-1 text-xs text-charcoal/50">
-                          Fixture notes: {item.fixtureNotes}
+                          Build notes: {item.fixtureNotes}
                         </p>
                       )}
                       {item.customisationNotes && (
@@ -253,7 +253,7 @@ export function CartPageContent() {
                 </div>
               </div>
 
-              {/* LED bulb acknowledgement */}
+              {/* Local pickup and handmade build acknowledgement */}
               <div className="mt-6 rounded-lg border border-amber/20 bg-amber/5 p-4">
                 <label className="flex cursor-pointer items-start gap-3">
                   <input
@@ -263,8 +263,8 @@ export function CartPageContent() {
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-charcoal/30 accent-charcoal"
                   />
                   <span className="text-xs leading-relaxed text-charcoal/80">
-                    I confirm I will use LED bulbs only with these lampshades. These products are
-                    not designed for incandescent or halogen bulbs.
+                    I confirm this is a handmade reclaimed-material deck order for local pickup.
+                    Final timber character and finish may vary by available material.
                   </span>
                 </label>
               </div>
@@ -286,7 +286,7 @@ export function CartPageContent() {
                   ? "Starting secure checkout..."
                   : state.ledAcknowledged
                     ? "Proceed to checkout"
-                    : "Confirm LED bulb usage to continue"}
+                    : "Confirm pickup and build terms to continue"}
               </button>
 
               {checkoutError && (
@@ -297,7 +297,7 @@ export function CartPageContent() {
 
               {!state.ledAcknowledged && !checkoutError && (
                 <p className="mt-2 text-center text-xs text-charcoal/40">
-                  You must acknowledge LED bulb usage before checkout.
+                  You must acknowledge the local pickup and handmade build terms before checkout.
                 </p>
               )}
             </div>

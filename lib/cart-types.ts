@@ -1,6 +1,6 @@
 // lib/cart-types.ts
 //
-// Cart item shape and related types for the Lumenform Studio storefront.
+// Cart item shape and related types for the PLANKZ DECKZ storefront.
 // Cart is client-side only (localStorage) — no backend persistence yet.
 
 import type { AdapterType } from "./types";
@@ -26,9 +26,9 @@ export interface CartItem {
   quantity: number;
   /** Selected fitting adapter — required before add-to-cart. */
   selectedAdapter: AdapterType;
-  /** Whether the customer has confirmed LED-only bulb usage. Tracked at cart level, not per-item. */
+  /** Whether the customer has acknowledged local pickup and handmade build terms. Tracked at cart level, not per-item. */
   bulbTypeConfirmed: boolean;
-  /** Notes about the customer's fixture (required when adapter is "Other / not sure"). */
+  /** Build notes from the customer (required when board type is "Custom / not sure"). */
   fixtureNotes: string;
   /** Optional free-text customisation notes from the customer. */
   customisationNotes: string;
@@ -52,7 +52,7 @@ export function cartItemKey(
 
 export interface CartState {
   items: CartItem[];
-  /** Cart-level LED bulb acknowledgement. */
+  /** Cart-level local pickup and handmade build acknowledgement. */
   ledAcknowledged: boolean;
 }
 
@@ -61,4 +61,4 @@ export const EMPTY_CART: CartState = {
   ledAcknowledged: false,
 };
 
-export const CART_STORAGE_KEY = "lumenform_cart_v1";
+export const CART_STORAGE_KEY = "plankz_cart_v1";

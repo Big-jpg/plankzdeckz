@@ -7,21 +7,21 @@ import { getProducts, getCategories } from "@/lib/catalogue";
 export const metadata: Metadata = {
   title: "Shop",
   description:
-    "Browse the Lumenform Studio collection of contemporary lighting objects for B22, E27, and Clipsal fittings.",
+    "Browse the PLANKZ DECKZ collection of handmade recycled timber skateboard and longboard deckz.",
   alternates: {
     canonical: "/products",
   },
   openGraph: {
-    title: "Shop Lumenform Studio Lighting Objects",
+    title: "Shop PLANKZ DECKZ",
     description:
-      "Browse made-to-order 3D printed lampshades supplied with B22, E27, and Clipsal-compatible fitting adapters.",
+      "Browse handmade skateboard and longboard deckz built from reclaimed timber and recycled material.",
     url: "/products",
     images: [
       {
         url: "/og-product-placeholder.svg",
         width: 1200,
         height: 630,
-        alt: "Lumenform Studio catalogue Open Graph placeholder",
+        alt: "PLANKZ DECKZ catalogue Open Graph placeholder",
       },
     ],
   },
@@ -40,7 +40,7 @@ export default async function ProductsPage() {
           </h1>
 
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-            Contemporary shades and lighting forms, made to order and supplied with the appropriate
+            Hand-crafted recycled timber deckz, made to order with the appropriate
             fitting adapter.
           </p>
         </div>

@@ -1,124 +1,45 @@
 // app/returns/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertCircle, Camera, FileText, RotateCcw } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Returns & Refunds",
-  description:
-    "Returns and refunds placeholder guidance for made-to-order Lumenform Studio lighting objects.",
+  title: "Returns | PLANKZ DECKZ",
+  description: "Returns and refund guidance for handmade PLANKZ DECKZ custom and small-batch boards.",
 };
 
-const assessmentItems = [
-  "A product is materially defective.",
-  "A product is damaged before collection.",
-  "A product is substantially inconsistent with the listed description.",
-  "The issue is reported within 14 days of receiving or collecting the order.",
-];
+const sections = [{'title': 'Custom work', 'text': 'Custom orders may not be returnable for change of mind once materials have been selected or build work has started.'}, {'title': 'Material variation', 'text': 'Natural grain, reclaimed marks, and tone variation are expected features of the product.'}, {'title': 'Issue review', 'text': 'If something is wrong, contact PLANKZ DECKZ promptly with photos and the order reference.'}, {'title': 'Pickup inspection', 'text': 'Where possible, inspect the board at local pickup before accepting handover.'}];
 
-const limitedItems = [
-  "Change of mind after production has started.",
-  "Incorrect adapter selection where fitting details were not supplied accurately.",
-  "Damage caused by incandescent, halogen, or other high-temperature bulbs.",
-  "Damage caused by electrical modification, unsuitable installation, or misuse.",
-];
-
-export default function ReturnsPage() {
+export default function Page() {
   return (
-    <>
-      <section className="bg-warm-black py-16 text-warm-white sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber">
-            Policy placeholder
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Returns &amp; Refunds
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/70">
-            This page sets customer expectations while the studio remains small-batch and local
-            pickup-only. It should be reviewed before expanding fulfilment or enabling shipping.
-          </p>
+    <main className="bg-warm-white">
+      <section className="border-b border-charcoal/10 bg-weathered-grey/30 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary">PLANKZ DECKZ</p>
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-gold sm:text-6xl">Returns & Refunds</h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-charcoal/75">Because reclaimed timber deckz are handmade and often customised, returns need to account for agreed build details and material variation.</p>
         </div>
       </section>
-
-      <section className="bg-warm-white py-12 sm:py-16">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl border border-charcoal/10 bg-ivory/40 p-6 sm:p-8">
-            <FileText className="h-6 w-6 text-charcoal/50" />
-            <h2 className="mt-4 text-xl font-semibold text-charcoal">Made-to-order context</h2>
-            <div className="mt-4 space-y-4 text-sm leading-relaxed text-charcoal/70">
-              <p>
-                Lumenform products are generally prepared individually after order confirmation.
-                Custom size, colour, fitting, or design requests may begin production shortly after
-                the order is reviewed.
-              </p>
-              <p>
-                Because of this made-to-order model, returns are generally assessed only where there
-                is a material defect, pre-collection damage, or a significant mismatch against the
-                listed product description.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
-            <section className="rounded-2xl border border-charcoal/10 bg-warm-white p-6">
-              <RotateCcw className="h-6 w-6 text-charcoal/50" />
-              <h2 className="mt-4 text-lg font-semibold text-charcoal">Usually assessed when</h2>
-              <ul className="mt-4 space-y-3 text-sm leading-relaxed text-charcoal/70">
-                {assessmentItems.map((item) => (
-                  <li key={item} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section className="rounded-2xl border border-charcoal/10 bg-warm-white p-6">
-              <AlertCircle className="h-6 w-6 text-charcoal/50" />
-              <h2 className="mt-4 text-lg font-semibold text-charcoal">Usually limited when</h2>
-              <ul className="mt-4 space-y-3 text-sm leading-relaxed text-charcoal/70">
-                {limitedItems.map((item) => (
-                  <li key={item} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-charcoal/40" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-
-          <section className="mt-8 rounded-2xl border border-charcoal/10 bg-ivory/40 p-6 sm:p-8">
-            <Camera className="h-6 w-6 text-charcoal/50" />
-            <h2 className="mt-4 text-xl font-semibold text-charcoal">How to raise an issue</h2>
-            <div className="mt-4 space-y-4 text-sm leading-relaxed text-charcoal/70">
-              <p>
-                Contact the studio within 14 days of receiving or collecting the order. Include the
-                order email address, a short description of the issue, and clear photographs of the
-                product, fitting, and any relevant installation context.
-              </p>
-              <p>
-                Refunds, repairs, or replacements are assessed case by case, with Australian
-                Consumer Law rights preserved where they cannot be excluded.
-              </p>
-            </div>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/contact"
-                className="inline-flex justify-center rounded-lg bg-charcoal px-6 py-3 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
-              >
-                Contact the studio
-              </Link>
-              <Link
-                href="/terms"
-                className="inline-flex justify-center rounded-lg border border-charcoal/15 px-6 py-3 text-sm font-semibold text-charcoal transition-colors hover:border-charcoal/30"
-              >
-                Read full terms
-              </Link>
-            </div>
-          </section>
+      <section className="px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+          {sections.map((section) => (
+            <article key={section.title} className="rounded-3xl border border-charcoal/10 bg-ivory/80 p-6 shadow-sm">
+              <h2 className="font-display text-2xl tracking-wide text-brand-gold">{section.title}</h2>
+              <p className="mt-3 text-sm leading-7 text-charcoal/70">{section.text}</p>
+            </article>
+          ))}
         </div>
       </section>
-    </>
+      <section className="px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-charcoal p-8 text-warm-white sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-display text-2xl tracking-wide text-brand-gold">Hand-Crafted Skateboard Deckz — Recycled. Reclaimed. One of a Kind.</p>
+            <p className="mt-2 text-sm text-warm-white/70">Custom local pickup builds from repurposed landfill materials.</p>
+          </div>
+          <Link href="/custom" className="inline-flex rounded-full bg-primary px-5 py-3 text-sm font-semibold text-charcoal hover:bg-primary/90">
+            Start a custom deck
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }

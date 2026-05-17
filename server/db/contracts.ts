@@ -1,5 +1,5 @@
 // server/db/contracts.ts
-// Lumenform Studio — Typed database contract layer.
+// PLANKZ DECKZ — Typed database contract layer.
 // Route handlers call these functions; they do NOT write raw SQL.
 // Each function maps to a stored procedure/function in PostgreSQL.
 

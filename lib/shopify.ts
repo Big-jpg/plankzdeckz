@@ -97,21 +97,21 @@ const PRODUCT_FRAGMENT = /* GraphQL */ `
     }
     metafields(
       identifiers: [
-        { namespace: "lumenform", key: "category" }
-        { namespace: "lumenform", key: "design_family" }
-        { namespace: "lumenform", key: "material" }
-        { namespace: "lumenform", key: "dimensions" }
-        { namespace: "lumenform", key: "colours" }
-        { namespace: "lumenform", key: "compatible_adapters" }
-        { namespace: "lumenform", key: "production_notes" }
-        { namespace: "lumenform", key: "market_event_id" }
-        { namespace: "lumenform", key: "market_source" }
-        { namespace: "lumenform", key: "qr_campaign" }
-        { namespace: "lumenform", key: "display_sample_id" }
-        { namespace: "lumenform", key: "production_queue_status" }
-        { namespace: "lumenform", key: "filament_material" }
-        { namespace: "lumenform", key: "filament_colour" }
-        { namespace: "lumenform", key: "print_profile" }
+        { namespace: "plankz", key: "category" }
+        { namespace: "plankz", key: "design_family" }
+        { namespace: "plankz", key: "material" }
+        { namespace: "plankz", key: "dimensions" }
+        { namespace: "plankz", key: "colours" }
+        { namespace: "plankz", key: "compatible_builds" }
+        { namespace: "plankz", key: "production_notes" }
+        { namespace: "plankz", key: "market_event_id" }
+        { namespace: "plankz", key: "market_source" }
+        { namespace: "plankz", key: "qr_campaign" }
+        { namespace: "plankz", key: "display_sample_id" }
+        { namespace: "plankz", key: "production_queue_status" }
+        { namespace: "plankz", key: "timber_material" }
+        { namespace: "plankz", key: "timber_finish" }
+        { namespace: "plankz", key: "build_profile" }
       ]
     )
   }
@@ -191,15 +191,15 @@ interface ShopifyProduct {
 // ---------------------------------------------------------------------------
 
 const VALID_CATEGORIES: ProductCategory[] = [
-  "Pleated shades",
-  "Faceted / geometric shades",
-  "Floral / petal shades",
-  "Textured diffuser shades",
-  "Starfield / perforated shades",
+  "Reclaimed cruisers",
+  "Surfskate deckz",
+  "Longboard deckz",
+  "Custom builds",
+  "Merch",
   "Experimental prototypes",
 ];
 
-const VALID_ADAPTERS: AdapterType[] = ["B22", "E27", "Clipsal No. 530", "Other / not sure"];
+const VALID_ADAPTERS: AdapterType[] = ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"];
 
 function getMetafieldValue(metafields: (ShopifyMetafield | null)[], key: string): string | null {
   const mf = metafields.find((m) => m !== null && m.key === key);
@@ -235,7 +235,7 @@ function normaliseCategory(raw: string | null, productType: string): ProductCate
 
 function normaliseAdapters(raw: string[]): AdapterType[] {
   if (raw.length === 0) {
-    // Default: all adapters available
+    // Default: all build types available
     return [...VALID_ADAPTERS];
   }
   const mapped = raw
@@ -258,7 +258,7 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
 
   const rawCategory = getMetafieldValue(metafields, "category");
   const rawColours = parseJsonArray(getMetafieldValue(metafields, "colours"));
-  const rawAdapters = parseJsonArray(getMetafieldValue(metafields, "compatible_adapters"));
+  const rawAdapters = parseJsonArray(getMetafieldValue(metafields, "compatible_builds"));
 
   const metadata: ProductMetadata = {};
   const metadataKeys: (keyof ProductMetadata)[] = [
@@ -267,9 +267,9 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
     "qr_campaign",
     "display_sample_id",
     "production_queue_status",
-    "filament_material",
-    "filament_colour",
-    "print_profile",
+    "timber_material",
+    "timber_finish",
+    "build_profile",
   ];
   for (const key of metadataKeys) {
     const val = getMetafieldValue(metafields, key);
@@ -286,7 +286,7 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
     currency,
     category: normaliseCategory(rawCategory, shopifyProduct.productType),
     description: shopifyProduct.description,
-    material: getMetafieldValue(metafields, "material") ?? "PLA (polylactic acid)",
+    material: getMetafieldValue(metafields, "material") ?? "Reclaimed timber",
     dimensions: getMetafieldValue(metafields, "dimensions") ?? "",
     colours: rawColours.length > 0 ? rawColours : ["Default"],
     images: shopifyProduct.images.edges.map((e) => e.node.url),

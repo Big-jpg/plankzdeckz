@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url: productImage,
           width: 1200,
           height: 630,
-          alt: `${product.title} by Lumenform Studio`,
+          alt: `${product.title} by PLANKZ DECKZ`,
         },
       ],
     },
