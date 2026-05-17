@@ -13,7 +13,6 @@ export function CartDrawer() {
   const { state, itemCount, subtotal, currency, drawerOpen, closeDrawer, removeItem, setQuantity } =
     useCart();
 
-  // Prevent body scroll when drawer is open
   useEffect(() => {
     if (drawerOpen) {
       document.body.style.overflow = "hidden";
@@ -27,7 +26,6 @@ export function CartDrawer() {
 
   return (
     <>
-      {/* Overlay */}
       <div
         className={cn(
           "fixed inset-0 z-[60] bg-charcoal/40 backdrop-blur-sm transition-opacity duration-300",
@@ -37,7 +35,6 @@ export function CartDrawer() {
         aria-hidden="true"
       />
 
-      {/* Drawer panel */}
       <div
         className={cn(
           "fixed inset-y-0 right-0 z-[70] flex w-full max-w-md flex-col bg-warm-white shadow-2xl transition-transform duration-300 ease-in-out",
@@ -47,7 +44,6 @@ export function CartDrawer() {
         aria-modal="true"
         aria-label="Shopping cart"
       >
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-charcoal/10 px-6 py-4">
           <h2 className="text-lg font-semibold text-charcoal">
             Cart{" "}
@@ -67,7 +63,6 @@ export function CartDrawer() {
           </button>
         </div>
 
-        {/* Body */}
         {state.items.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-6">
             <ShoppingBag className="h-12 w-12 text-charcoal/20" />
@@ -86,12 +81,13 @@ export function CartDrawer() {
               <div className="space-y-4">
                 {state.items.map((item) => {
                   const key = cartItemKey(item);
+                  const isBoard = (item.productType ?? "board") === "board";
+
                   return (
                     <div
                       key={key}
                       className="flex gap-3 rounded-lg border border-charcoal/5 bg-ivory/30 p-3"
                     >
-                      {/* Thumbnail */}
                       <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-ivory/50">
                         {item.imageUrl ? (
                           <Image
@@ -112,17 +108,17 @@ export function CartDrawer() {
                         )}
                       </div>
 
-                      {/* Info */}
                       <div className="flex flex-1 flex-col">
                         <div className="flex items-start justify-between gap-1">
                           <div>
-                            <p className="text-sm font-medium text-charcoal leading-tight">
+                            <p className="text-sm font-medium leading-tight text-charcoal">
                               {item.title}
                             </p>
                             <p className="mt-0.5 text-xs text-charcoal/50">
                               {item.productType === "merch"
                                 ? `Merch${item.selectedSize ? ` · Size ${item.selectedSize}` : ""}`
-                                : `Board · ${item.selectedAdapter}`}
+                                : "Board"}
+                              {item.material ? ` · ${item.material}` : ""}
                               {item.colour ? ` · ${item.colour}` : ""}
                             </p>
                           </div>
@@ -137,27 +133,31 @@ export function CartDrawer() {
                         </div>
 
                         <div className="mt-auto flex items-center justify-between pt-2">
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => setQuantity(key, item.quantity - 1)}
-                              className="flex h-6 w-6 items-center justify-center rounded border border-charcoal/20 text-charcoal/60 transition-colors hover:border-charcoal/40"
-                              aria-label="Decrease quantity"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </button>
-                            <span className="w-7 text-center text-xs font-medium text-charcoal">
-                              {item.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setQuantity(key, item.quantity + 1)}
-                              className="flex h-6 w-6 items-center justify-center rounded border border-charcoal/20 text-charcoal/60 transition-colors hover:border-charcoal/40"
-                              aria-label="Increase quantity"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
-                          </div>
+                          {isBoard ? (
+                            <p className="text-xs font-medium text-charcoal/60">Qty 1</p>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setQuantity(key, item.quantity - 1)}
+                                className="flex h-6 w-6 items-center justify-center rounded border border-charcoal/20 text-charcoal/60 transition-colors hover:border-charcoal/40"
+                                aria-label="Decrease quantity"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </button>
+                              <span className="w-7 text-center text-xs font-medium text-charcoal">
+                                {item.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setQuantity(key, item.quantity + 1)}
+                                className="flex h-6 w-6 items-center justify-center rounded border border-charcoal/20 text-charcoal/60 transition-colors hover:border-charcoal/40"
+                                aria-label="Increase quantity"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
                           <p className="text-sm font-semibold text-charcoal">
                             ${(item.unitPrice * item.quantity).toFixed(2)}
                           </p>
@@ -169,7 +169,6 @@ export function CartDrawer() {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="border-t border-charcoal/10 px-6 py-4">
               <div className="flex justify-between text-sm">
                 <span className="text-charcoal/60">Subtotal</span>

@@ -12,23 +12,46 @@ type CheckoutErrorResponse = {
   details?: CheckoutErrorDetail[];
 };
 
-const meridianBloomItem = {
-  productId: "prod-01",
+const coastlineCruiserItem = {
+  productId: "board-coastline-cruiser-001",
   variantId: null,
-  handle: "meridian-bloom",
-  title: "Meridian Bloom",
-  variantTitle: null,
-  imageUrl: "/products/product-01.png",
-  unitPrice: 1,
+  handle: "coastline-cruiser-jarrah-marri",
+  title: "Coastline Cruiser 001",
+  variantTitle: "One-of-a-kind board",
+  imageUrl: "",
+  unitPrice: 950,
   currency: "AUD",
   quantity: 1,
-  selectedAdapter: "B22",
-  bulbTypeConfirmed: true,
-  fixtureNotes: null,
-  customisationNotes: null,
-  material: "PLA (polylactic acid), matte finish",
-  colour: "Warm White",
-  metadata: {},
+  productType: "board",
+  selectedSize: null,
+  material: "Recycled jarrah and marri hardwood pallet timber",
+  colour: "Jarrah red-brown",
+  metadata: {
+    availability_status: "available",
+    board_style: "cruiser",
+    board_shape: "Kicktail cruiser",
+    timber_species: "Jarrah / Marri",
+  },
+};
+
+const logoTeeItem = {
+  productId: "merch-og-plankz-logo-tee",
+  variantId: null,
+  handle: "og-plankz-logo-tee",
+  title: "OG Plankz Logo Tee",
+  variantTitle: "Size M",
+  imageUrl: "",
+  unitPrice: 45,
+  currency: "AUD",
+  quantity: 2,
+  productType: "merch",
+  selectedSize: "M",
+  material: "Cotton tee placeholder",
+  colour: "Washed white",
+  metadata: {
+    merch_kind: "tee",
+    selected_size: "M",
+  },
 };
 
 async function expectCheckoutValidationError(
@@ -55,7 +78,7 @@ async function expectCheckoutValidationError(
   );
 }
 
-test.describe("Lumenform smoke coverage", () => {
+test.describe("PLANKZ DECKZ smoke coverage", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => window.localStorage.clear());
   });
@@ -65,75 +88,100 @@ test.describe("Lumenform smoke coverage", () => {
 
     await expect(
       page.getByRole("heading", {
-        name: /Contemporary lighting objects for the fittings you already own/i,
+        name: /Hand-Crafted Skateboard Deckz/i,
       }),
     ).toBeVisible();
-    await expect(page.getByText("Lightweight domestic delivery")).toBeVisible();
+    await expect(page.getByText("Recycled. Reclaimed. One of a Kind.")).toBeVisible();
   });
 
-  test("product catalogue loads", async ({ page }) => {
-    await page.goto("/products");
-
-    await expect(page.getByRole("heading", { name: /Shop Lighting Objects/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Meridian Bloom/i })).toBeVisible();
-  });
-
-  test("product detail loads", async ({ page }) => {
-    await page.goto("/products/meridian-bloom");
-
-    await expect(page.getByRole("heading", { name: "Meridian Bloom" })).toBeVisible();
-    await expect(page.getByText("Fitting adapter *")).toBeVisible();
-    await expect(page.getByText("LED bulbs only", { exact: true })).toBeVisible();
-  });
-
-  test("adapter selection required", async ({ page }) => {
-    await page.goto("/products/meridian-bloom");
+  test("shop catalogue loads", async ({ page }) => {
+    await page.goto("/shop");
 
     await expect(
-      page.getByRole("button", { name: "Select a fitting adapter to continue" }),
-    ).toBeDisabled();
+      page.getByRole("heading", { name: /One-off recycled hardwood boards and coastal merch/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Coastline Cruiser 001" })).toBeVisible();
   });
 
-  test("add to cart", async ({ page }) => {
-    await page.goto("/products/meridian-bloom");
+  test("board detail loads without configuration controls", async ({ page }) => {
+    await page.goto("/products/coastline-cruiser-jarrah-marri");
 
-    await page.getByRole("button", { name: "B22" }).click();
-    await page.getByRole("button", { name: /Add to cart/i }).click();
+    await expect(page.getByRole("heading", { name: "Coastline Cruiser 001" })).toBeVisible();
+    await expect(page.getByText("No configuration required")).toBeVisible();
+    await expect(page.getByText("Local pickup only")).toBeVisible();
+    await expect(page.getByRole("button", { name: /Add one-of-a-kind board to cart/i })).toBeEnabled();
+  });
 
-    await expect(page.getByText("Meridian Bloom added to cart")).toBeVisible();
+  test("add board to cart", async ({ page }) => {
+    await page.route("**/api/boards/availability?**", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ available: true, message: "Board is available." }),
+      });
+    });
+
+    await page.goto("/products/coastline-cruiser-jarrah-marri");
+
+    await page.getByRole("button", { name: /Add one-of-a-kind board to cart/i }).click();
+
+    await expect(page.getByText("Coastline Cruiser 001 added to cart")).toBeVisible();
     await expect(page.getByRole("button", { name: "Cart, 1 items" })).toBeVisible();
   });
 
+  test("merch requires a size before add to cart", async ({ page }) => {
+    await page.goto("/products/og-plankz-logo-tee");
+
+    await expect(page.getByRole("heading", { name: "OG Plankz Logo Tee" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Add merch to cart/i })).toBeDisabled();
+
+    await page.getByRole("button", { name: "M" }).click();
+    await expect(page.getByRole("button", { name: /Add merch to cart/i })).toBeEnabled();
+  });
+
   test("checkout rejects empty cart", async ({ request }) => {
-    await expectCheckoutValidationError(
-      request,
-      { items: [], ledAcknowledged: true },
-      "items",
-      /Cart must contain at least one item/i,
-    );
+    await expectCheckoutValidationError(request, { items: [] }, "items", /Cart must contain at least one item/i);
   });
 
-  test("checkout rejects missing adapter", async ({ request }) => {
+  test("checkout rejects board quantity above one", async ({ request }) => {
     await expectCheckoutValidationError(
       request,
       {
-        items: [{ ...meridianBloomItem, selectedAdapter: "" }],
-        ledAcknowledged: true,
+        items: [{ ...coastlineCruiserItem, quantity: 2 }],
       },
-      "selectedAdapter",
-      /Invalid adapter selection/i,
+      "quantity",
+      /One-of-a-kind boards must have quantity 1/i,
     );
   });
 
-  test("checkout rejects missing LED acknowledgement", async ({ request }) => {
+  test("checkout rejects sold boards", async ({ request }) => {
     await expectCheckoutValidationError(
       request,
       {
-        items: [meridianBloomItem],
-        ledAcknowledged: false,
+        items: [
+          {
+            ...coastlineCruiserItem,
+            productId: "board-sunset-pintail-003",
+            handle: "sunset-pintail-sheoak-jarrah",
+            title: "Sunset Pintail 003",
+            unitPrice: 900,
+            material: "Recycled sheoak and jarrah hardwood pallet timber",
+          },
+        ],
       },
-      "ledAcknowledged",
-      /LED-only bulb acknowledgement is required before checkout/i,
+      "inStock",
+      /currently out of stock/i,
+    );
+  });
+
+  test("checkout rejects merch without required size", async ({ request }) => {
+    await expectCheckoutValidationError(
+      request,
+      {
+        items: [{ ...logoTeeItem, selectedSize: null, variantTitle: null }],
+      },
+      "selectedSize",
+      /A merch size is required/i,
     );
   });
 
@@ -143,7 +191,7 @@ test.describe("Lumenform smoke coverage", () => {
 
       const body = route.request().postDataJSON() as Record<string, unknown>;
       expect(body.name).toBe("Smoke Tester");
-      expect(body.adapter_type).toBe("B22");
+      expect(body.adapter_type).toBe("Cruiser");
       expect(body.upload_instruction_acknowledged).toBe(true);
 
       await route.fulfill({
@@ -158,13 +206,13 @@ test.describe("Lumenform smoke coverage", () => {
     await page.getByLabel(/Name/i).fill("Smoke Tester");
     await page.getByLabel(/Phone/i).fill("0400000000");
     await page.getByRole("textbox", { name: "Email *" }).fill("smoke@example.test");
-    await page.getByLabel(/Fixture type/i).fill("Pendant");
-    await page.getByLabel(/Adapter type/i).selectOption("B22");
-    await page.getByLabel(/Desired shade style/i).fill("Warm ivory pleated shade");
-    await page.getByLabel(/Dimensions if known/i).fill("220mm diameter x 180mm high");
-    await page.getByLabel(/Colour\/material preference/i).fill("Warm ivory PLA");
-    await page.getByLabel(/Notes/i).fill("Smoke-test submission for Phase 10 handoff.");
-    await page.getByLabel(/fixture or room photos should be emailed separately/i).check();
+    await page.getByLabel(/Intended use/i).fill("Cruiser deck");
+    await page.getByLabel(/Board type/i).selectOption("Cruiser");
+    await page.getByLabel(/Desired shade style/i).fill("Coastal cruiser with clear timber finish");
+    await page.getByLabel(/Dimensions if known/i).fill("32 in x 9 in");
+    await page.getByLabel(/Colour\/material preference/i).fill("Jarrah and marri reclaimed timber");
+    await page.getByLabel(/Notes/i).fill("Smoke-test submission for Plankz custom workflow.");
+    await page.getByLabel(/reference photos should be emailed separately/i).check();
     await page.getByRole("button", { name: "Submit request" }).click();
 
     await expect(page.getByText(/Your custom design request has been recorded/i)).toBeVisible();

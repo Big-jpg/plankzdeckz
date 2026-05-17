@@ -182,26 +182,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-charcoal/60">
                     <span>Qty: {item.quantity}</span>
                     <span>
-                      Adapter:{" "}
-                      <span className="font-medium text-charcoal/80">{item.selected_adapter}</span>
+                      Type: <span className="font-medium text-charcoal/80">{item.selected_adapter}</span>
                     </span>
                     {item.material && <span>Material: {item.material}</span>}
                     {item.colour && <span>Colour: {item.colour}</span>}
-                    {item.bulb_type_confirmed && (
-                      <span className="text-green-700">Build acknowledged</span>
-                    )}
                   </div>
-
-                  {item.fixture_notes && (
-                    <p className="mt-1.5 text-xs text-charcoal/50">
-                      Build notes: {item.fixture_notes}
-                    </p>
-                  )}
-                  {item.customisation_notes && (
-                    <p className="mt-1 text-xs text-charcoal/50">
-                      Customisation: {item.customisation_notes}
-                    </p>
-                  )}
                 </div>
               ))}
             </div>

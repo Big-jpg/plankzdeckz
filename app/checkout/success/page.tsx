@@ -149,24 +149,11 @@ function OrderConfirmationDetails({ order }: { order: OrderWithItems }) {
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-charcoal/60">
                 <span>Qty: {item.quantity}</span>
                 <span>
-                  Adapter:{" "}
-                  <span className="font-medium text-charcoal/80">{item.selected_adapter}</span>
+                  Type: <span className="font-medium text-charcoal/80">{item.selected_adapter}</span>
                 </span>
                 {item.material && <span>Material: {item.material}</span>}
                 {item.colour && <span>Colour: {item.colour}</span>}
-                {item.bulb_type_confirmed && <span className="text-green-700">Build acknowledged</span>}
               </div>
-
-              {item.fixture_notes && (
-                <p className="mt-1.5 text-xs text-charcoal/50">
-                  Build notes: {item.fixture_notes}
-                </p>
-              )}
-              {item.customisation_notes && (
-                <p className="mt-1 text-xs text-charcoal/50">
-                  Customisation: {item.customisation_notes}
-                </p>
-              )}
             </div>
           ))}
         </div>
@@ -213,7 +200,7 @@ export default async function CheckoutSuccessPage({
           </h1>
 
           <p className="mt-4 text-base leading-relaxed text-charcoal/60">
-            Thank you for your order. Your piece has been added to the studio production queue and
+            Thank you for your order. Your board or merch has been confirmed for local pickup and
             preparation will begin shortly.
           </p>
 
@@ -224,13 +211,13 @@ export default async function CheckoutSuccessPage({
 
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-charcoal/60">
               <p>
-                <strong className="text-charcoal">1.</strong> Your order is reviewed for fitting and
-                production requirements.
+                <strong className="text-charcoal">1.</strong> Your order is reviewed for pickup timing and
+                item availability confirmation.
               </p>
 
               <p>
-                <strong className="text-charcoal">2.</strong> The piece is prepared, finished, and
-                packed in the studio.
+                <strong className="text-charcoal">2.</strong> The board or merch is prepared and packed for
+                local collection.
               </p>
 
               <p>

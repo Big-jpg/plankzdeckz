@@ -4,7 +4,7 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, BadgeCheck, Info, MapPin, Ruler, ShoppingBag, Trees } from "lucide-react";
-import type { AdapterType, BoardProduct, MerchProduct, MerchSize, Product } from "@/lib/types";
+import type { BoardProduct, MerchProduct, MerchSize, Product } from "@/lib/types";
 import { isBoardProduct, isMerchProduct } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
@@ -16,30 +16,47 @@ function formatPrice(product: Product): string {
   return `$${product.price.toFixed(0)} ${product.currency}`;
 }
 
-function adapterFromBoard(board: BoardProduct): AdapterType {
-  if (board.boardStyle === "surfskate") return "Surfskate";
-  if (board.boardStyle === "longboard") return "Longboard";
-  return "Cruiser";
-}
-
 function initialMerchSize(product: Product): MerchSize | null {
   if (!isMerchProduct(product)) return null;
   if (!product.sizeRequired) return product.sizes[0] ?? "One size";
   return null;
 }
 
+interface BoardAvailabilityResponse {
+  available?: boolean;
+  error?: string;
+  message?: string;
+}
+
+async function assertBoardAvailableForCart(handle: string): Promise<void> {
+  const response = await fetch(`/api/boards/availability?handle=${encodeURIComponent(handle)}`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+  });
+  const payload = (await response.json().catch(() => ({}))) as BoardAvailabilityResponse;
+
+  if (!response.ok || !payload.available) {
+    throw new Error(
+      payload.message ?? payload.error ?? "This board is no longer available for checkout.",
+    );
+  }
+}
+
 function StatusPill({ board }: { board: BoardProduct }) {
   const sold = board.availabilityStatus === "sold";
+  const reserved = board.availabilityStatus === "reserved";
 
   return (
     <span
       className={cn(
         "inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em]",
-        sold ? "bg-charcoal/10 text-charcoal/60" : "bg-teal/20 text-charcoal ring-1 ring-teal/40",
+        sold || reserved
+          ? "bg-charcoal/10 text-charcoal/60"
+          : "bg-teal/20 text-charcoal ring-1 ring-teal/40",
       )}
     >
       <BadgeCheck className="h-4 w-4" />
-      {sold ? "Sold" : "Available"}
+      {sold ? "Sold" : reserved ? "Reserved" : "Available"}
     </span>
   );
 }
@@ -48,87 +65,90 @@ export function ProductDetail({ product }: { product: Product }) {
   const [selectedColour] = useState<string>(product.colours[0] ?? "");
   const [selectedSize, setSelectedSize] = useState<MerchSize | null>(() => initialMerchSize(product));
   const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState(`${product.title} added to cart`);
+  const [isAdding, setIsAdding] = useState(false);
 
   const { addItem, itemCount } = useCart();
 
-  const sendBuyerEvent = useCallback(
-    (eventType: "adapter_selected" | "cart_created", payload: Record<string, unknown>) => {
-      void fetch("/api/buyer-events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event_type: eventType, payload }),
-      }).catch(() => undefined);
-    },
-    [],
-  );
+  const sendBuyerEvent = useCallback((payload: Record<string, unknown>) => {
+    void fetch("/api/buyer-events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event_type: "cart_created", payload }),
+    }).catch(() => undefined);
+  }, []);
 
   const isBoard = isBoardProduct(product);
   const isMerch = isMerchProduct(product);
   const boardCanAdd = isBoard && product.availabilityStatus === "available" && product.inStock;
   const merchCanAdd = isMerch && product.inStock && (!product.sizeRequired || selectedSize !== null);
-  const canAdd = boardCanAdd || merchCanAdd;
+  const canAdd = (boardCanAdd || merchCanAdd) && !isAdding;
 
-  const handleAddToCart = useCallback(() => {
+  const handleAddToCart = useCallback(async () => {
     if (!canAdd) return;
 
-    const selectedAdapter: AdapterType = isBoardProduct(product)
-      ? adapterFromBoard(product)
-      : "Custom / not sure";
-    const variantTitle = isMerchProduct(product)
-      ? selectedSize
-        ? `Size ${selectedSize}`
-        : "One size"
-      : "One-of-a-kind board";
+    setIsAdding(true);
+    try {
+      if (isBoardProduct(product)) {
+        await assertBoardAvailableForCart(product.handle);
+      }
 
-    const item: CartItem = {
-      productId: product.id,
-      variantId: product.shopifyVariantId ?? null,
-      handle: product.handle,
-      title: product.title,
-      variantTitle,
-      imageUrl: product.images[0] ?? "",
-      unitPrice: product.price,
-      currency: product.currency,
-      quantity: 1,
-      productType: product.productType,
-      selectedSize: isMerchProduct(product) ? (selectedSize ?? "One size") : undefined,
-      selectedAdapter,
-      bulbTypeConfirmed: false,
-      fixtureNotes: "",
-      customisationNotes: "",
-      material: product.material,
-      colour: selectedColour,
-      metadata: isBoardProduct(product)
-        ? {
-            availability_status: product.availabilityStatus,
-            board_style: product.boardStyle,
-            board_shape: product.boardShape,
-            timber_species: product.timberSpecies.join(" / "),
-            dimensions: product.boardDimensions.display,
-          }
-        : {
-            merch_kind: product.merchKind,
-            selected_size: selectedSize ?? "One size",
-          },
-    };
+      const selectedMerchSize = isMerchProduct(product) ? (selectedSize ?? "One size") : undefined;
+      const variantTitle = selectedMerchSize ? `Size ${selectedMerchSize}` : "One-of-a-kind board";
 
-    addItem(item);
-
-    if (itemCount === 0) {
-      sendBuyerEvent("cart_created", {
-        product_id: product.id,
-        product_handle: product.handle,
-        product_title: product.title,
-        product_type: product.productType,
-        selected_adapter: selectedAdapter,
-        selected_size: isMerchProduct(product) ? (selectedSize ?? "One size") : null,
-        item_count: 1,
+      const item: CartItem = {
+        productId: product.id,
+        variantId: product.shopifyVariantId ?? null,
+        handle: product.handle,
+        title: product.title,
+        variantTitle,
+        imageUrl: product.images[0] ?? "",
+        unitPrice: product.price,
         currency: product.currency,
-        subtotal_amount: Math.round(product.price * 100),
-      });
-    }
+        quantity: 1,
+        productType: product.productType,
+        selectedSize: selectedMerchSize,
+        material: product.material,
+        colour: selectedColour,
+        metadata: isBoardProduct(product)
+          ? {
+              availability_status: product.availabilityStatus,
+              board_style: product.boardStyle,
+              board_shape: product.boardShape,
+              timber_species: product.timberSpecies.join(" / "),
+              dimensions: product.boardDimensions.display,
+            }
+          : {
+              merch_kind: product.merchKind,
+              selected_size: selectedMerchSize ?? "One size",
+            },
+      };
 
-    setToastVisible(true);
+      addItem(item);
+
+      if (itemCount === 0) {
+        sendBuyerEvent({
+          product_id: product.id,
+          product_handle: product.handle,
+          product_title: product.title,
+          product_type: product.productType,
+          selected_size: selectedMerchSize ?? null,
+          item_count: 1,
+          currency: product.currency,
+          subtotal_amount: Math.round(product.price * 100),
+        });
+      }
+
+      setToastMessage(`${product.title} added to cart`);
+      setToastVisible(true);
+    } catch (error) {
+      setToastMessage(
+        error instanceof Error ? error.message : "This item could not be added to the cart.",
+      );
+      setToastVisible(true);
+    } finally {
+      setIsAdding(false);
+    }
   }, [addItem, canAdd, itemCount, product, selectedColour, selectedSize, sendBuyerEvent]);
 
   return (
@@ -146,22 +166,19 @@ export function ProductDetail({ product }: { product: Product }) {
       </div>
 
       {isBoardProduct(product) ? (
-        <BoardDetail product={product} canAdd={canAdd} onAddToCart={handleAddToCart} />
+        <BoardDetail product={product} canAdd={canAdd} isAdding={isAdding} onAddToCart={handleAddToCart} />
       ) : (
         <MerchDetail
           product={product}
           selectedSize={selectedSize}
           setSelectedSize={setSelectedSize}
           canAdd={canAdd}
+          isAdding={isAdding}
           onAddToCart={handleAddToCart}
         />
       )}
 
-      <Toast
-        message={`${product.title} added to cart`}
-        visible={toastVisible}
-        onClose={() => setToastVisible(false)}
-      />
+      <Toast message={toastMessage} visible={toastVisible} onClose={() => setToastVisible(false)} />
     </>
   );
 }
@@ -169,13 +186,16 @@ export function ProductDetail({ product }: { product: Product }) {
 function BoardDetail({
   product,
   canAdd,
+  isAdding,
   onAddToCart,
 }: {
   product: BoardProduct;
   canAdd: boolean;
+  isAdding: boolean;
   onAddToCart: () => void;
 }) {
   const sold = product.availabilityStatus === "sold";
+  const reserved = product.availabilityStatus === "reserved";
 
   return (
     <section className="bg-warm-white py-8 sm:py-12">
@@ -285,7 +305,13 @@ function BoardDetail({
               )}
             >
               <ShoppingBag className="h-4 w-4" />
-              {sold ? "Sold — view only" : "Add one-of-a-kind board to cart"}
+              {sold
+                ? "Sold — view only"
+                : reserved
+                  ? "Reserved — view only"
+                  : isAdding
+                    ? "Checking availability..."
+                    : "Add one-of-a-kind board to cart"}
             </button>
           </div>
         </div>
@@ -299,12 +325,14 @@ function MerchDetail({
   selectedSize,
   setSelectedSize,
   canAdd,
+  isAdding,
   onAddToCart,
 }: {
   product: MerchProduct;
   selectedSize: MerchSize | null;
   setSelectedSize: (size: MerchSize) => void;
   canAdd: boolean;
+  isAdding: boolean;
   onAddToCart: () => void;
 }) {
   return (
@@ -381,7 +409,7 @@ function MerchDetail({
               )}
             >
               <ShoppingBag className="h-4 w-4" />
-              {product.sizeRequired && !selectedSize ? "Select a size to continue" : "Add merch to cart"}
+              {isAdding ? "Adding..." : product.inStock ? "Add merch to cart" : "Out of stock"}
             </button>
           </div>
         </div>

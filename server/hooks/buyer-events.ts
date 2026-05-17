@@ -54,7 +54,8 @@ export interface OnCheckoutStartedParams {
   subtotal_amount: number;
   total_amount: number;
   currency: string;
-  selected_adapters: string[];
+  board_handles: string[];
+  merch_items: string[];
   cart_fingerprint: string;
 }
 

@@ -10,8 +10,6 @@ type LookupOrderItem = {
   quantity: number;
   total_amount: number;
   selected_adapter: string;
-  fixture_notes: string | null;
-  customisation_notes: string | null;
 };
 
 type LookupOrder = {
@@ -161,7 +159,7 @@ export function GuestOrderLookupForm({ initialSessionId = "" }: GuestOrderLookup
           <div className="mt-2 space-y-1 text-xs text-green-900/80">
             {lookupResult.order.items.map((item) => (
               <p key={item.id}>
-                {item.quantity} × {item.title} — adapter: {item.selected_adapter}
+                {item.quantity} × {item.title} — {item.selected_adapter}
               </p>
             ))}
           </div>
