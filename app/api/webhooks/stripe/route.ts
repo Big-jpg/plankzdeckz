@@ -86,9 +86,15 @@ function checkoutPhone(session: Stripe.Checkout.Session): string | null {
   return session.customer_details?.phone ?? null;
 }
 
-function productTypeForLegacyOrderColumn(metadata: Stripe.Metadata | null): string {
-  const productType = metadataString(metadata, "product_type");
-  return productType === "merch" ? "Merch" : "Board";
+function productTypeFromMetadata(metadata: Stripe.Metadata | null): "board" | "merch" {
+  return metadataString(metadata, "product_type") === "merch" ? "merch" : "board";
+}
+
+function boardStyleFromMetadata(metadata: Stripe.Metadata | null): "cruiser" | "surfskate" | "longboard" | null {
+  const boardStyle = metadataString(metadata, "board_style") ?? metadataString(metadata, "board_type");
+  return boardStyle === "cruiser" || boardStyle === "surfskate" || boardStyle === "longboard"
+    ? boardStyle
+    : null;
 }
 
 function lineItemVariantTitle(metadata: Stripe.Metadata | null): string | null {
@@ -175,9 +181,9 @@ async function persistCheckoutSessionOrder(session: Stripe.Checkout.Session): Pr
       unit_amount: lineItem.price?.unit_amount ?? 0,
       total_amount: lineItem.amount_total ?? 0,
       image_url: metadataString(metadata, "image_url"),
-      selected_adapter: productTypeForLegacyOrderColumn(metadata),
-      bulb_type_confirmed: false,
-      fixture_notes: null,
+      product_type: productTypeFromMetadata(metadata),
+      board_style: boardStyleFromMetadata(metadata),
+      merch_size: metadataString(metadata, "merch_size"),
       customisation_notes: null,
       material: metadataString(metadata, "material") ?? metadataString(metadata, "timber_species"),
       colour: metadataString(metadata, "colour"),

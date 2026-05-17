@@ -12,11 +12,13 @@ type FormState = {
   name: string;
   email: string;
   phone: string;
-  fixture_type: string;
-  adapter_type: string;
-  desired_shade_style: string;
-  dimensions: string;
-  colour_material_preference: string;
+  intended_use: string;
+  board_style: string;
+  board_shape: string;
+  board_length: string;
+  board_width: string;
+  timber_preference: string;
+  resin_inlay_preference: string;
   notes: string;
   upload_instruction_acknowledged: boolean;
 };
@@ -32,11 +34,13 @@ const INITIAL_FORM_STATE: FormState = {
   name: "",
   email: "",
   phone: "",
-  fixture_type: "",
-  adapter_type: "",
-  desired_shade_style: "",
-  dimensions: "",
-  colour_material_preference: "",
+  intended_use: "",
+  board_style: "",
+  board_shape: "",
+  board_length: "",
+  board_width: "",
+  timber_preference: "",
+  resin_inlay_preference: "",
   notes: "",
   upload_instruction_acknowledged: false,
 };
@@ -163,99 +167,137 @@ export function CustomDesignRequestForm() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-fixture">
+          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-intended-use">
             Intended use <span className="text-red-600">*</span>
           </label>
           <input
-            id="custom-fixture"
+            id="custom-intended-use"
             type="text"
-            value={form.fixture_type}
-            onChange={(event) => updateField("fixture_type", event.target.value)}
+            value={form.intended_use}
+            onChange={(event) => updateField("intended_use", event.target.value)}
             placeholder="Ride deck, wall display, gift, surfskate setup..."
             required
-            className={inputClass(Boolean(fieldError(fieldErrors, "fixture_type")))}
+            className={inputClass(Boolean(fieldError(fieldErrors, "intended_use")))}
           />
-          {fieldError(fieldErrors, "fixture_type") && (
-            <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "fixture_type")}</p>
+          {fieldError(fieldErrors, "intended_use") && (
+            <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "intended_use")}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-adapter">
-            Board type <span className="text-red-600">*</span>
+          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-board-style">
+            Board style <span className="text-red-600">*</span>
           </label>
           <select
-            id="custom-adapter"
-            value={form.adapter_type}
-            onChange={(event) => updateField("adapter_type", event.target.value)}
+            id="custom-board-style"
+            value={form.board_style}
+            onChange={(event) => updateField("board_style", event.target.value)}
             required
-            className={inputClass(Boolean(fieldError(fieldErrors, "adapter_type")))}
+            className={inputClass(Boolean(fieldError(fieldErrors, "board_style")))}
           >
             <option value="">Select...</option>
-            <option value="Cruiser">Cruiser</option>
-            <option value="Longboard">Longboard</option>
-            <option value="Surfskate">Surfskate</option>
-            <option value="Custom / not sure">Custom / not sure</option>
+            <option value="cruiser">Cruiser</option>
+            <option value="longboard">Longboard</option>
+            <option value="surfskate">Surfskate</option>
+            <option value="custom">Custom / not sure</option>
           </select>
-          {fieldError(fieldErrors, "adapter_type") && (
-            <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "adapter_type")}</p>
+          {fieldError(fieldErrors, "board_style") && (
+            <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "board_style")}</p>
           )}
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-charcoal" htmlFor="custom-style">
-          Desired deck style <span className="text-red-600">*</span>
+        <label className="block text-sm font-medium text-charcoal" htmlFor="custom-board-shape">
+          Board shape <span className="text-red-600">*</span>
         </label>
         <input
-          id="custom-style"
+          id="custom-board-shape"
           type="text"
-          value={form.desired_shade_style}
-          onChange={(event) => updateField("desired_shade_style", event.target.value)}
-          placeholder="Fish tail, cruiser, pintail, old-school pool shape, wall-hanger, experimental..."
+          value={form.board_shape}
+          onChange={(event) => updateField("board_shape", event.target.value)}
+          placeholder="Fish tail, pintail, old-school pool shape, wall-hanger, experimental..."
           required
-          className={inputClass(Boolean(fieldError(fieldErrors, "desired_shade_style")))}
+          className={inputClass(Boolean(fieldError(fieldErrors, "board_shape")))}
         />
-        {fieldError(fieldErrors, "desired_shade_style") && (
-          <p className="mt-1 text-xs text-red-600">
-            {fieldError(fieldErrors, "desired_shade_style")}
-          </p>
+        {fieldError(fieldErrors, "board_shape") && (
+          <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "board_shape")}</p>
         )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-dimensions">
-            Dimensions if known
+          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-board-length">
+            Board length in cm
           </label>
           <input
-            id="custom-dimensions"
-            type="text"
-            value={form.dimensions}
-            onChange={(event) => updateField("dimensions", event.target.value)}
-            placeholder="e.g. 820mm x 245mm, mellow concave, short wheelbase"
-            className={inputClass(Boolean(fieldError(fieldErrors, "dimensions")))}
+            id="custom-board-length"
+            type="number"
+            min="0"
+            step="0.1"
+            value={form.board_length}
+            onChange={(event) => updateField("board_length", event.target.value)}
+            placeholder="e.g. 82.0"
+            className={inputClass(Boolean(fieldError(fieldErrors, "board_length")))}
           />
-          {fieldError(fieldErrors, "dimensions") && (
-            <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "dimensions")}</p>
+          {fieldError(fieldErrors, "board_length") && (
+            <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "board_length")}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-colour">
-            Timber/finish preference
+          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-board-width">
+            Board width in cm
           </label>
           <input
-            id="custom-colour"
-            type="text"
-            value={form.colour_material_preference}
-            onChange={(event) => updateField("colour_material_preference", event.target.value)}
-            placeholder="Weathered grey, warm timber, teal resin, coral accent..."
-            className={inputClass(Boolean(fieldError(fieldErrors, "colour_material_preference")))}
+            id="custom-board-width"
+            type="number"
+            min="0"
+            step="0.1"
+            value={form.board_width}
+            onChange={(event) => updateField("board_width", event.target.value)}
+            placeholder="e.g. 24.5"
+            className={inputClass(Boolean(fieldError(fieldErrors, "board_width")))}
           />
-          {fieldError(fieldErrors, "colour_material_preference") && (
+          {fieldError(fieldErrors, "board_width") && (
+            <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "board_width")}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-timber">
+            Timber preference
+          </label>
+          <input
+            id="custom-timber"
+            type="text"
+            value={form.timber_preference}
+            onChange={(event) => updateField("timber_preference", event.target.value)}
+            placeholder="Jarrah, oak, reclaimed mixed timber, warm timber finish..."
+            className={inputClass(Boolean(fieldError(fieldErrors, "timber_preference")))}
+          />
+          {fieldError(fieldErrors, "timber_preference") && (
+            <p className="mt-1 text-xs text-red-600">{fieldError(fieldErrors, "timber_preference")}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-charcoal" htmlFor="custom-resin">
+            Resin inlay preference
+          </label>
+          <input
+            id="custom-resin"
+            type="text"
+            value={form.resin_inlay_preference}
+            onChange={(event) => updateField("resin_inlay_preference", event.target.value)}
+            placeholder="Teal centre band, coral rail accent, no resin..."
+            className={inputClass(Boolean(fieldError(fieldErrors, "resin_inlay_preference")))}
+          />
+          {fieldError(fieldErrors, "resin_inlay_preference") && (
             <p className="mt-1 text-xs text-red-600">
-              {fieldError(fieldErrors, "colour_material_preference")}
+              {fieldError(fieldErrors, "resin_inlay_preference")}
             </p>
           )}
         </div>

@@ -41,9 +41,9 @@ export interface OrderItem {
   unit_amount: number;
   total_amount: number;
   image_url: string | null;
-  selected_adapter: string;
-  bulb_type_confirmed: boolean;
-  fixture_notes: string | null;
+  product_type: "board" | "merch";
+  board_style: "cruiser" | "surfskate" | "longboard" | null;
+  merch_size: string | null;
   customisation_notes: string | null;
   material: string | null;
   colour: string | null;
@@ -94,18 +94,43 @@ export interface CustomDesignRequest {
   email: string;
   name: string | null;
   phone: string | null;
-  fixture_type: string | null;
-  adapter_type: string | null;
+  intended_use: string | null;
+  board_style: "cruiser" | "surfskate" | "longboard" | "custom" | null;
+  board_shape: string | null;
+  board_length: number | null;
+  board_width: number | null;
+  timber_preference: string | null;
+  resin_inlay_preference: string | null;
   design_notes: string;
   budget_range: string | null;
   status: string;
   created_at: string;
+  updated_at: string;
+}
+
+export interface CustomBoardDesign {
+  id: string;
+  customer_id: string | null;
+  customer_email?: string | null;
+  customer_name?: string | null;
+  board_shape: string;
+  board_length: number;
+  board_width: number;
+  truck_positions: unknown;
+  resin_inlay_config: unknown;
+  timber_preference: string | null;
+  notes: string | null;
+  status: string;
+  configurator_payload: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AdminDashboardOverview {
   recent_orders_count: number;
   pending_pickups_count: number;
   new_custom_requests_count: number;
+  pending_board_designs_count: number;
 }
 
 export interface User {
@@ -196,9 +221,9 @@ export interface CreateOrderItemParams {
   unit_amount: number;
   total_amount: number;
   image_url: string | null;
-  selected_adapter: string;
-  bulb_type_confirmed: boolean;
-  fixture_notes: string | null;
+  product_type: "board" | "merch";
+  board_style: "cruiser" | "surfskate" | "longboard" | null;
+  merch_size: string | null;
   customisation_notes: string | null;
   material: string | null;
   colour: string | null;
@@ -206,10 +231,9 @@ export interface CreateOrderItemParams {
 }
 
 /**
- * Insert a single order item.
- * The metadata field can carry future-ready fields such as:
- *   market_event_id, market_source, qr_campaign, display_sample_id,
- *   production_queue_status, filament_material, filament_colour, print_profile
+ * Insert a single board or merch order item.
+ * The metadata field carries source catalogue and checkout metadata that does
+ * not deserve a first-class order_items column.
  */
 export async function createOrderItem(params: CreateOrderItemParams): Promise<string | null> {
   const result = await queryOne<{ create_order_item: string }>(
@@ -224,9 +248,9 @@ export async function createOrderItem(params: CreateOrderItemParams): Promise<st
       params.unit_amount,
       params.total_amount,
       params.image_url,
-      params.selected_adapter,
-      params.bulb_type_confirmed,
-      params.fixture_notes,
+      params.product_type,
+      params.board_style,
+      params.merch_size,
       params.customisation_notes,
       params.material,
       params.colour,
@@ -315,27 +339,37 @@ export interface CreateCustomDesignRequestParams {
   email: string;
   name: string | null;
   phone: string | null;
-  fixture_type: string | null;
-  adapter_type: string | null;
+  intended_use: string | null;
+  board_style: "cruiser" | "surfskate" | "longboard" | "custom" | null;
+  board_shape: string | null;
+  board_length: number | null;
+  board_width: number | null;
+  timber_preference: string | null;
+  resin_inlay_preference: string | null;
   design_notes: string;
   budget_range: string | null;
   user_id?: string | null;
 }
 
 /**
- * Insert a custom design request.
+ * Insert a custom board request.
  */
 export async function createCustomDesignRequest(
   params: CreateCustomDesignRequestParams,
 ): Promise<string | null> {
   const result = await queryOne<{ create_custom_design_request: string }>(
-    `SELECT create_custom_design_request($1, $2, $3, $4, $5, $6, $7, $8)`,
+    `SELECT create_custom_design_request($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
     [
       params.email,
       params.name,
       params.phone,
-      params.fixture_type,
-      params.adapter_type,
+      params.intended_use,
+      params.board_style,
+      params.board_shape,
+      params.board_length,
+      params.board_width,
+      params.timber_preference,
+      params.resin_inlay_preference,
       params.design_notes,
       params.budget_range,
       params.user_id ?? null,
@@ -381,6 +415,65 @@ export async function updateCustomDesignRequestStatus(
     `SELECT * FROM update_custom_design_request_status($1, $2)`,
     [requestId, newStatus],
   );
+}
+
+export interface CreateCustomBoardDesignParams {
+  customer_id: string | null;
+  board_shape: string;
+  board_length: number;
+  board_width: number;
+  truck_positions: unknown;
+  resin_inlay_config: unknown;
+  timber_preference: string | null;
+  notes: string | null;
+  status?: string | null;
+  configurator_payload?: Record<string, unknown> | null;
+}
+
+/**
+ * Persist a Phase 5 custom board configurator design.
+ */
+export async function createCustomBoardDesign(
+  params: CreateCustomBoardDesignParams,
+): Promise<string | null> {
+  const result = await queryOne<{ create_custom_board_design: string }>(
+    `SELECT create_custom_board_design($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+    [
+      params.customer_id,
+      params.board_shape,
+      params.board_length,
+      params.board_width,
+      JSON.stringify(params.truck_positions ?? []),
+      JSON.stringify(params.resin_inlay_config ?? {}),
+      params.timber_preference,
+      params.notes,
+      params.status ?? "submitted",
+      JSON.stringify(params.configurator_payload ?? {}),
+    ],
+  );
+  return result?.create_custom_board_design ?? null;
+}
+
+export async function updateCustomBoardDesignStatus(
+  designId: string,
+  newStatus: string,
+): Promise<CustomBoardDesign | null> {
+  return queryOne<CustomBoardDesign>(`SELECT * FROM update_custom_board_design_status($1, $2)`, [
+    designId,
+    newStatus,
+  ]);
+}
+
+export async function getCustomBoardDesignsAdmin(
+  limit = 50,
+  offset = 0,
+  statusFilter: string | null = null,
+): Promise<CustomBoardDesign[]> {
+  return queryRows<CustomBoardDesign>(`SELECT * FROM get_custom_board_designs_admin($1, $2, $3)`, [
+    limit,
+    offset,
+    statusFilter,
+  ]);
 }
 
 // =============================================================================

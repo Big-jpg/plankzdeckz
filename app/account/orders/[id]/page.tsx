@@ -182,7 +182,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-charcoal/60">
                     <span>Qty: {item.quantity}</span>
                     <span>
-                      Type: <span className="font-medium text-charcoal/80">{item.selected_adapter}</span>
+                      Type: <span className="font-medium text-charcoal/80">{item.product_type}</span>
                     </span>
                     {item.material && <span>Material: {item.material}</span>}
                     {item.colour && <span>Colour: {item.colour}</span>}

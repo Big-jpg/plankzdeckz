@@ -4,7 +4,7 @@
 // All calls use the Storefront API (public, read-only) via server-side fetch.
 // No private credentials are exposed to the client bundle.
 
-import type { AdapterType, BoardStyle, Product, ProductCategory, ProductMetadata } from "./types";
+import type { BoardStyle, BoardStyleLabel, Product, ProductCategory, ProductMetadata } from "./types";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -200,7 +200,7 @@ const VALID_CATEGORIES: ProductCategory[] = [
   "Experimental prototypes",
 ];
 
-const VALID_ADAPTERS: AdapterType[] = ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"];
+const VALID_BOARD_STYLE_LABELS: BoardStyleLabel[] = ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"];
 
 function getMetafieldValue(metafields: (ShopifyMetafield | null)[], key: string): string | null {
   const mf = metafields.find((m) => m !== null && m.key === key);
@@ -234,18 +234,18 @@ function normaliseCategory(raw: string | null, productType: string): ProductCate
   return "Experimental prototypes";
 }
 
-function normaliseAdapters(raw: string[]): AdapterType[] {
+function normaliseBoardStyleLabels(raw: string[]): BoardStyleLabel[] {
   if (raw.length === 0) {
-    // Default: all build types available
-    return [...VALID_ADAPTERS];
+    // Default: all board styles available
+    return [...VALID_BOARD_STYLE_LABELS];
   }
   const mapped = raw
     .map((r) => {
       const trimmed = r.trim();
-      return VALID_ADAPTERS.find((a) => a.toLowerCase() === trimmed.toLowerCase()) ?? null;
+      return VALID_BOARD_STYLE_LABELS.find((a) => a.toLowerCase() === trimmed.toLowerCase()) ?? null;
     })
-    .filter((a): a is AdapterType => a !== null);
-  return mapped.length > 0 ? mapped : [...VALID_ADAPTERS];
+    .filter((a): a is BoardStyleLabel => a !== null);
+  return mapped.length > 0 ? mapped : [...VALID_BOARD_STYLE_LABELS];
 }
 
 function normaliseBoardStyle(category: ProductCategory, designFamily: string | null): BoardStyle {
@@ -276,7 +276,7 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
 
   const rawCategory = getMetafieldValue(metafields, "category");
   const rawColours = parseJsonArray(getMetafieldValue(metafields, "colours"));
-  const rawAdapters = parseJsonArray(getMetafieldValue(metafields, "compatible_builds"));
+  const rawBoardStyles = parseJsonArray(getMetafieldValue(metafields, "compatible_builds"));
   const category = normaliseCategory(rawCategory, shopifyProduct.productType);
   const material = getMetafieldValue(metafields, "material") ?? "Reclaimed timber";
   const dimensions = getMetafieldValue(metafields, "dimensions") ?? "Dimensions confirmed on handover";
@@ -318,7 +318,7 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
     shopifyProductId: shopifyProduct.id,
     shopifyVariantId: firstVariant?.id ?? null,
     designFamily,
-    compatibleAdapters: rawAdapters.length > 0 ? rawAdapters : null,
+    compatibleBoardStyles: rawBoardStyles.length > 0 ? rawBoardStyles : null,
     productionNotes,
     metadata: Object.keys(metadata).length > 0 ? metadata : null,
   };
@@ -328,7 +328,7 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
       ...baseProduct,
       productType: "merch",
       category: "Merch",
-      adapters: [],
+      boardStyles: [],
       merchKind: "sticker_pack",
       sizes: ["One size"],
       sizeRequired: false,
@@ -337,13 +337,15 @@ function normaliseProduct(shopifyProduct: ShopifyProduct): Product {
   }
 
   const boardStyle = normaliseBoardStyle(category, designFamily);
-  const adapters = normaliseAdapters(rawAdapters).filter((adapter) => adapter !== "Custom / not sure");
+  const boardStyles = normaliseBoardStyleLabels(rawBoardStyles).filter(
+    (style) => style !== "Custom / not sure",
+  );
 
   return {
     ...baseProduct,
     productType: "board",
     category: category === "Custom builds" || category === "Experimental prototypes" ? "One-of-a-kind boards" : category,
-    adapters: adapters.length > 0 ? adapters : normaliseAdapters(rawAdapters),
+    boardStyles: boardStyles.length > 0 ? boardStyles : normaliseBoardStyleLabels(rawBoardStyles),
     availabilityStatus: shopifyProduct.availableForSale ? "available" : "sold",
     timberSpecies: normaliseTimberSpecies(material),
     boardStyle,
