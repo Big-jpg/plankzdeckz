@@ -5,7 +5,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { Minus, Plus, Shirt, ShoppingBag, Trash2 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { cartItemKey } from "@/lib/cart-types";
 import { cn } from "@/lib/utils";
@@ -77,7 +77,7 @@ export function CartPageContent() {
             </p>
             <div className="mt-8">
               <Link
-                href="/products"
+                href="/shop"
                 className="inline-flex items-center gap-2 rounded-lg bg-charcoal px-6 py-3 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
               >
                 Continue shopping
@@ -115,7 +115,11 @@ export function CartPageContent() {
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">
-                          <ShoppingBag className="h-8 w-8 text-charcoal/20" />
+                          {item.productType === "merch" ? (
+                            <Shirt className="h-8 w-8 text-charcoal/20" />
+                          ) : (
+                            <ShoppingBag className="h-8 w-8 text-charcoal/20" />
+                          )}
                         </div>
                       )}
                     </div>
@@ -147,9 +151,19 @@ export function CartPageContent() {
                       {/* Item meta */}
                       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-charcoal/60">
                         <span>
-                          Adapter:{" "}
-                          <span className="font-medium text-charcoal">{item.selectedAdapter}</span>
+                          Type: <span className="font-medium text-charcoal">{item.productType === "merch" ? "Merch" : "Board"}</span>
                         </span>
+                        {item.productType === "merch" && item.selectedSize && (
+                          <span>
+                            Size: <span className="font-medium text-charcoal">{item.selectedSize}</span>
+                          </span>
+                        )}
+                        {item.productType !== "merch" && (
+                          <span>
+                            Adapter:{" "}
+                            <span className="font-medium text-charcoal">{item.selectedAdapter}</span>
+                          </span>
+                        )}
                         {item.material && (
                           <span>
                             Material:{" "}
@@ -218,7 +232,7 @@ export function CartPageContent() {
             {/* Continue shopping */}
             <div className="mt-6">
               <Link
-                href="/products"
+                href="/shop"
                 className="text-sm text-charcoal/50 underline underline-offset-2 transition-colors hover:text-charcoal"
               >
                 Continue shopping
@@ -263,8 +277,8 @@ export function CartPageContent() {
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-charcoal/30 accent-charcoal"
                   />
                   <span className="text-xs leading-relaxed text-charcoal/80">
-                    I confirm this is a handmade reclaimed-material deck order for local pickup.
-                    Final timber character and finish may vary by available material.
+                    I confirm this is a local-pickup PLANKZ DECKZ order. Handmade board timber
+                    character and finish may vary by available reclaimed material.
                   </span>
                 </label>
               </div>

@@ -4,7 +4,8 @@
 import "server-only";
 
 import { getProducts } from "@/lib/catalogue";
-import type { AdapterType, Product } from "@/lib/types";
+import type { AdapterType, MerchSize, Product, ProductType } from "@/lib/types";
+import { isBoardProduct, isMerchProduct } from "@/lib/types";
 
 export interface CheckoutCartItemInput {
   productId?: unknown;
@@ -16,6 +17,8 @@ export interface CheckoutCartItemInput {
   unitPrice?: unknown;
   currency?: unknown;
   quantity?: unknown;
+  productType?: unknown;
+  selectedSize?: unknown;
   selectedAdapter?: unknown;
   bulbTypeConfirmed?: unknown;
   fixtureNotes?: unknown;
@@ -48,6 +51,8 @@ export interface VerifiedCartItem {
   totalAmount: number;
   currency: string;
   quantity: number;
+  productType: ProductType;
+  selectedSize: MerchSize | null;
   selectedAdapter: AdapterType;
   bulbTypeConfirmed: boolean;
   fixtureNotes: string | null;
@@ -73,9 +78,14 @@ export interface CartValidationOptions {
 }
 
 const VALID_ADAPTERS: AdapterType[] = ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"];
+const VALID_MERCH_SIZES: MerchSize[] = ["S", "M", "L", "XL", "One size"];
 
 function isValidAdapter(value: unknown): value is AdapterType {
   return typeof value === "string" && VALID_ADAPTERS.includes(value as AdapterType);
+}
+
+function isValidMerchSize(value: unknown): value is MerchSize {
+  return typeof value === "string" && VALID_MERCH_SIZES.includes(value as MerchSize);
 }
 
 function optionalString(value: unknown): string | null {
@@ -177,14 +187,6 @@ export async function validateCartForCheckout(
 
     const fixtureNotes = optionalString(item.fixtureNotes);
 
-    if (item.selectedAdapter === "Custom / not sure" && !fixtureNotes) {
-      errors.push({
-        handle,
-        field: "fixtureNotes",
-        message: "Build notes are required when the selected board type is Custom / not sure.",
-      });
-    }
-
     const catalogueProduct = catalogueByHandle.get(item.handle);
 
     if (!catalogueProduct) {
@@ -196,11 +198,67 @@ export async function validateCartForCheckout(
       continue;
     }
 
+    const productType: ProductType = catalogueProduct.productType;
+
+    if (item.productType && item.productType !== productType) {
+      errors.push({
+        handle,
+        field: "productType",
+        message: `Product type mismatch: client sent "${String(item.productType)}", catalogue uses "${productType}".`,
+      });
+    }
+
     if (!catalogueProduct.inStock) {
       errors.push({
         handle,
         field: "inStock",
         message: `Product "${item.handle}" is currently out of stock.`,
+      });
+    }
+
+    if (isBoardProduct(catalogueProduct) && catalogueProduct.availabilityStatus !== "available") {
+      errors.push({
+        handle,
+        field: "availabilityStatus",
+        message: `Board "${item.handle}" is marked ${catalogueProduct.availabilityStatus} and cannot be checked out.`,
+      });
+    }
+
+    let selectedSize: MerchSize | null = null;
+
+    if (isMerchProduct(catalogueProduct)) {
+      if (item.selectedSize === undefined || item.selectedSize === null) {
+        if (catalogueProduct.sizeRequired) {
+          errors.push({
+            handle,
+            field: "selectedSize",
+            message: "A merch size is required for this product.",
+          });
+        } else {
+          selectedSize = catalogueProduct.sizes[0] ?? "One size";
+        }
+      } else if (!isValidMerchSize(item.selectedSize)) {
+        errors.push({
+          handle,
+          field: "selectedSize",
+          message: `Invalid merch size: "${String(item.selectedSize)}".`,
+        });
+      } else if (!catalogueProduct.sizes.includes(item.selectedSize)) {
+        errors.push({
+          handle,
+          field: "selectedSize",
+          message: `Size "${item.selectedSize}" is not available for this product. Available: ${catalogueProduct.sizes.join(", ")}.`,
+        });
+      } else {
+        selectedSize = item.selectedSize;
+      }
+    }
+
+    if (isBoardProduct(catalogueProduct) && item.selectedAdapter === "Custom / not sure" && !fixtureNotes) {
+      errors.push({
+        handle,
+        field: "fixtureNotes",
+        message: "Build notes are required when the selected board type is Custom / not sure.",
       });
     }
 
@@ -227,6 +285,7 @@ export async function validateCartForCheckout(
     }
 
     if (
+      isBoardProduct(catalogueProduct) &&
       catalogueProduct.adapters.length > 0 &&
       !catalogueProduct.adapters.includes(item.selectedAdapter)
     ) {
@@ -254,6 +313,8 @@ export async function validateCartForCheckout(
       totalAmount,
       currency: catalogueProduct.currency,
       quantity: item.quantity,
+      productType,
+      selectedSize,
       selectedAdapter: item.selectedAdapter,
       bulbTypeConfirmed: input.ledAcknowledged === true || item.bulbTypeConfirmed === true,
       fixtureNotes,

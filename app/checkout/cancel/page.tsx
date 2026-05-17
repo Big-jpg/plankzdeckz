@@ -37,7 +37,7 @@ export default function CheckoutCancelPage() {
             </Link>
 
             <Link
-              href="/products"
+              href="/shop"
               className="inline-flex items-center gap-2 rounded-lg border border-charcoal/20 px-6 py-3 text-sm font-semibold text-charcoal transition-colors hover:bg-charcoal/5"
             >
               Continue browsing

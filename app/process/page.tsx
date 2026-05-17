@@ -83,7 +83,7 @@ export default function Page() {
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
-                href="/products"
+                href="/shop"
                 className="inline-flex rounded-full bg-charcoal px-5 py-3 text-sm font-semibold text-warm-white hover:bg-warm-black"
               >
                 View available deckz
