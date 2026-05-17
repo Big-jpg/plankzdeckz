@@ -91,10 +91,10 @@ export default function CustomPage() {
                 ride within safe conditions.
               </p>
               <Link
-                href="/safety"
+                href="/faq"
                 className="mt-4 inline-flex text-sm font-semibold text-charcoal underline underline-offset-4"
               >
-                Read safety note
+                Read board care FAQs
               </Link>
             </aside>
           </div>
