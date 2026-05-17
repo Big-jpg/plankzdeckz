@@ -18,7 +18,7 @@ const footerSections = [
     links: [
       { href: "/our-story", label: "Our Story" },
       { href: "/materials", label: "Reclaimed Materials" },
-      { href: "/production", label: "Build Process" },
+      { href: "/process", label: "Build Process" },
       { href: "/pickup", label: "Local Pickup" },
       { href: "/faq", label: "FAQ" },
       { href: "/contact", label: "Contact" },
@@ -29,8 +29,6 @@ const footerSections = [
     links: [
       { href: "/privacy", label: "Privacy Policy" },
       { href: "/terms", label: "Terms & Conditions" },
-      { href: "/returns", label: "Returns & Refunds" },
-      { href: "/shipping", label: "Pickup & Shipping" },
     ],
   },
 ];
