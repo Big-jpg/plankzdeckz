@@ -1,6 +1,6 @@
 // lib/types.ts
 
-export type AdapterType = "Cruiser" | "Longboard" | "Surfskate" | "Custom / not sure";
+export type BoardStyleLabel = "Cruiser" | "Longboard" | "Surfskate" | "Custom / not sure";
 
 export type ProductType = "board" | "merch";
 
@@ -64,7 +64,7 @@ interface BaseProduct {
   material: string;
   dimensions: string;
   colours: string[];
-  adapters: AdapterType[];
+  boardStyles: BoardStyleLabel[];
   inStock: boolean;
 
   // --- Shopify-specific identifiers (preserved for downstream use) ---
@@ -78,8 +78,8 @@ interface BaseProduct {
 
   /** Design family grouping, e.g. "Cruiser", "Longboard", "Merch". */
   designFamily?: string | null;
-  /** Compatible board types as raw strings from Shopify before normalisation. */
-  compatibleAdapters?: string[] | null;
+  /** Compatible board styles as raw strings from Shopify before normalisation. */
+  compatibleBoardStyles?: string[] | null;
   /** Production notes from Shopify metafield. */
   productionNotes?: string | null;
 

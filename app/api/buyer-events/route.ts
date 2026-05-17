@@ -2,11 +2,11 @@
 // Public buyer-event endpoint for client-side interactions that have no existing server route.
 
 import { NextResponse, type NextRequest } from "next/server";
-import { onAdapterSelected, onCartCreated } from "@/server/hooks/buyer-events";
+import { onBoardStyleSelected, onCartCreated } from "@/server/hooks/buyer-events";
 
 export const runtime = "nodejs";
 
-type ClientBuyerEventType = "cart_created" | "adapter_selected";
+type ClientBuyerEventType = "cart_created" | "board_style_selected";
 
 type BuyerEventResponse = {
   ok: boolean;
@@ -41,7 +41,7 @@ function optionalNumber(record: Record<string, unknown>, key: string): number | 
 
 function eventTypeFromBody(record: Record<string, unknown>): ClientBuyerEventType | null {
   const value = record.event_type ?? record.eventType;
-  return value === "cart_created" || value === "adapter_selected" ? value : null;
+  return value === "cart_created" || value === "board_style_selected" ? value : null;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<BuyerEventResponse>> {
@@ -64,19 +64,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<BuyerEven
     );
   }
 
-  if (eventType === "adapter_selected") {
-    const adapterType =
-      optionalString(payload, "adapter_type") ?? optionalString(payload, "adapterType");
+  if (eventType === "board_style_selected") {
+    const boardStyle = optionalString(payload, "board_style") ?? optionalString(payload, "boardStyle");
 
-    if (!adapterType) {
+    if (!boardStyle) {
       return NextResponse.json(
-        { ok: false, error: "adapter_type is required for adapter_selected events." },
+        { ok: false, error: "board_style is required for board_style_selected events." },
         { status: 422 },
       );
     }
 
-    const result = await onAdapterSelected({
-      adapter_type: adapterType,
+    const result = await onBoardStyleSelected({
+      board_style: boardStyle,
       email: optionalString(payload, "email"),
       phone: optionalString(payload, "phone"),
       user_id: optionalString(payload, "user_id"),
@@ -96,7 +95,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<BuyerEven
     product_id: optionalString(payload, "product_id"),
     product_handle: optionalString(payload, "product_handle"),
     product_title: optionalString(payload, "product_title"),
-    selected_adapter: optionalString(payload, "selected_adapter"),
+    selected_board_style: optionalString(payload, "selected_board_style"),
     item_count: optionalNumber(payload, "item_count"),
     currency: optionalString(payload, "currency"),
     subtotal_amount: optionalNumber(payload, "subtotal_amount"),

@@ -1,5 +1,4 @@
--- db/migrations/001_initial_schema.sql
--- Lumenform Studio — Initial PostgreSQL Schema
+-- PLANKZ DECKZ — Initial PostgreSQL Schema
 -- Run against a fresh database: psql $DATABASE_URL -f db/migrations/001_initial_schema.sql
 -- Requires PostgreSQL 13+ (gen_random_uuid())
 
@@ -15,13 +14,13 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- =============================================================================
 
 CREATE TABLE users (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          text,
-  email         text UNIQUE,
-  email_verified timestamptz,
-  image         text,
-  created_at    timestamptz NOT NULL DEFAULT now(),
-  updated_at    timestamptz NOT NULL DEFAULT now()
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name            text,
+  email           text UNIQUE,
+  email_verified  timestamptz,
+  image           text,
+  created_at      timestamptz NOT NULL DEFAULT now(),
+  updated_at      timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE accounts (
@@ -42,18 +41,58 @@ CREATE TABLE accounts (
 );
 
 CREATE TABLE sessions (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_token text NOT NULL UNIQUE,
-  user_id       uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  expires       timestamptz NOT NULL,
-  created_at    timestamptz NOT NULL DEFAULT now()
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_token   text NOT NULL UNIQUE,
+  user_id         uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires         timestamptz NOT NULL,
+  created_at      timestamptz NOT NULL DEFAULT now()
 );
 
 CREATE TABLE verification_tokens (
-  identifier text NOT NULL,
-  token      text NOT NULL UNIQUE,
-  expires    timestamptz NOT NULL,
+  identifier  text NOT NULL,
+  token       text NOT NULL UNIQUE,
+  expires     timestamptz NOT NULL,
   PRIMARY KEY (identifier, token)
+);
+
+-- =============================================================================
+-- Products
+-- =============================================================================
+
+CREATE TABLE products (
+  id                   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  shopify_product_id   text UNIQUE,
+  shopify_variant_id   text,
+  handle               text NOT NULL UNIQUE,
+  title                text NOT NULL,
+  description          text NOT NULL DEFAULT '',
+  product_type         text NOT NULL CHECK (product_type IN ('board', 'merch')),
+  price_amount         integer NOT NULL CHECK (price_amount >= 0),
+  currency             text NOT NULL DEFAULT 'aud',
+  category             text,
+  image_urls           jsonb NOT NULL DEFAULT '[]'::jsonb CHECK (jsonb_typeof(image_urls) = 'array'),
+
+  -- Board-specific fields. Null for merch unless explicitly useful as metadata.
+  timber_species       text[] NOT NULL DEFAULT ARRAY[]::text[],
+  board_style          text CHECK (board_style IS NULL OR board_style IN ('cruiser', 'surfskate', 'longboard')),
+  length_cm            numeric(6,2) CHECK (length_cm IS NULL OR length_cm > 0),
+  width_cm             numeric(6,2) CHECK (width_cm IS NULL OR width_cm > 0),
+  thickness_cm         numeric(5,2) CHECK (thickness_cm IS NULL OR thickness_cm > 0),
+  board_shape          text,
+  availability_status  text NOT NULL DEFAULT 'available' CHECK (availability_status IN ('available', 'sold', 'reserved')),
+
+  -- Merch-specific fields.
+  merch_kind           text,
+  merch_sizes          text[] NOT NULL DEFAULT ARRAY[]::text[],
+
+  metadata             jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(metadata) = 'object'),
+  created_at           timestamptz NOT NULL DEFAULT now(),
+  updated_at           timestamptz NOT NULL DEFAULT now(),
+
+  CONSTRAINT products_board_fields_check CHECK (
+    product_type <> 'board'
+    OR (board_style IS NOT NULL AND board_shape IS NOT NULL)
+  )
 );
 
 -- =============================================================================
@@ -93,13 +132,15 @@ CREATE TABLE order_items (
   unit_amount           integer NOT NULL,
   total_amount          integer NOT NULL,
   image_url             text,
-  selected_adapter      text NOT NULL,
-  bulb_type_confirmed   boolean NOT NULL DEFAULT false,
-  fixture_notes         text,
+  product_type          text NOT NULL CHECK (product_type IN ('board', 'merch')),
+  board_style           text CHECK (board_style IS NULL OR board_style IN ('cruiser', 'surfskate', 'longboard')),
+  merch_size            text,
   customisation_notes   text,
   material              text,
   colour                text,
-  metadata              jsonb NOT NULL DEFAULT '{}'::jsonb
+  metadata              jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at            timestamptz NOT NULL DEFAULT now(),
+  updated_at            timestamptz NOT NULL DEFAULT now()
 );
 
 -- =============================================================================
@@ -164,26 +205,58 @@ CREATE TABLE shipping_stubs (
 );
 
 -- =============================================================================
--- Custom Design Requests
+-- Custom Board Requests
 -- =============================================================================
 
 CREATE TABLE custom_design_requests (
-  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       uuid REFERENCES users(id) ON DELETE SET NULL,
-  email         text NOT NULL,
-  name          text,
-  phone         text,
-  fixture_type  text,
-  adapter_type  text,
-  design_notes  text NOT NULL,
-  budget_range  text,
-  status        text NOT NULL DEFAULT 'new',
-  created_at    timestamptz NOT NULL DEFAULT now()
+  id                      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                 uuid REFERENCES users(id) ON DELETE SET NULL,
+  email                   text NOT NULL,
+  name                    text,
+  phone                   text,
+  intended_use            text,
+  board_style             text CHECK (board_style IS NULL OR board_style IN ('cruiser', 'surfskate', 'longboard', 'custom')),
+  board_shape             text,
+  board_length            numeric(6,2) CHECK (board_length IS NULL OR board_length > 0),
+  board_width             numeric(6,2) CHECK (board_width IS NULL OR board_width > 0),
+  timber_preference       text,
+  resin_inlay_preference  text,
+  design_notes            text NOT NULL,
+  budget_range            text,
+  status                  text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'reviewing', 'quoted', 'accepted', 'rejected', 'completed')),
+  created_at              timestamptz NOT NULL DEFAULT now(),
+  updated_at              timestamptz NOT NULL DEFAULT now()
+);
+
+-- =============================================================================
+-- Custom Board Designs (Phase 5 configurator persistence)
+-- =============================================================================
+
+CREATE TABLE custom_board_designs (
+  id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id           uuid REFERENCES users(id) ON DELETE SET NULL,
+  board_shape           text NOT NULL,
+  board_length          numeric(6,2) NOT NULL CHECK (board_length > 0),
+  board_width           numeric(6,2) NOT NULL CHECK (board_width > 0),
+  truck_positions       jsonb NOT NULL DEFAULT '[]'::jsonb,
+  resin_inlay_config    jsonb NOT NULL DEFAULT '{}'::jsonb,
+  timber_preference     text,
+  notes                 text,
+  status                text NOT NULL DEFAULT 'submitted' CHECK (status IN ('draft', 'submitted', 'reviewing', 'quoted', 'approved', 'rejected', 'archived')),
+  configurator_payload  jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(configurator_payload) = 'object'),
+  created_at            timestamptz NOT NULL DEFAULT now(),
+  updated_at            timestamptz NOT NULL DEFAULT now()
 );
 
 -- =============================================================================
 -- Indexes
 -- =============================================================================
+
+-- Products
+CREATE INDEX idx_products_product_type ON products(product_type);
+CREATE INDEX idx_products_board_style ON products(board_style);
+CREATE INDEX idx_products_availability_status ON products(availability_status);
+CREATE INDEX idx_products_handle ON products(handle);
 
 -- Orders
 CREATE INDEX idx_orders_stripe_checkout_session_id ON orders(stripe_checkout_session_id);
@@ -195,6 +268,7 @@ CREATE INDEX idx_orders_created_at ON orders(created_at DESC);
 
 -- Order Items
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX idx_order_items_product_type ON order_items(product_type);
 
 -- Stripe Events
 CREATE INDEX idx_stripe_events_stripe_event_id ON stripe_events(stripe_event_id);
@@ -210,9 +284,15 @@ CREATE INDEX idx_buyer_events_email ON buyer_events(email);
 CREATE INDEX idx_buyer_events_event_type ON buyer_events(event_type);
 CREATE INDEX idx_buyer_events_order_id ON buyer_events(order_id);
 
--- Custom Design Requests
+-- Custom Board Requests
 CREATE INDEX idx_custom_design_requests_email ON custom_design_requests(email);
 CREATE INDEX idx_custom_design_requests_status ON custom_design_requests(status);
+CREATE INDEX idx_custom_design_requests_board_style ON custom_design_requests(board_style);
+
+-- Custom Board Designs
+CREATE INDEX idx_custom_board_designs_customer_id ON custom_board_designs(customer_id);
+CREATE INDEX idx_custom_board_designs_status ON custom_board_designs(status);
+CREATE INDEX idx_custom_board_designs_created_at ON custom_board_designs(created_at DESC);
 
 -- Sessions
 CREATE INDEX idx_sessions_user_id ON sessions(user_id);

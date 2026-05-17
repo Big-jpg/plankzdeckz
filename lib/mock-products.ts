@@ -1,7 +1,7 @@
 // lib/mock-products.ts
-import type { AdapterType, Product, ProductCategory } from "./types";
+import type { BoardStyleLabel, Product, ProductCategory } from "./types";
 
-function boardAdapter(style: "cruiser" | "surfskate" | "longboard"): AdapterType {
+function boardStyleLabel(style: "cruiser" | "surfskate" | "longboard"): BoardStyleLabel {
   if (style === "surfskate") return "Surfskate";
   if (style === "longboard") return "Longboard";
   return "Cruiser";
@@ -22,7 +22,7 @@ export const products: Product[] = [
     dimensions: "32 in × 9 in × 0.75 in / approx. 81.3 cm × 22.9 cm × 1.9 cm",
     colours: ["Jarrah red-brown", "Marri honey grain", "Clear sealed timber"],
     images: [],
-    adapters: [boardAdapter("cruiser")],
+    boardStyles: [boardStyleLabel("cruiser")],
     inStock: true,
     availabilityStatus: "available",
     timberSpecies: ["Jarrah", "Marri"],
@@ -65,7 +65,7 @@ export const products: Product[] = [
     dimensions: "38 in × 10 in × 0.75 in / approx. 96.5 cm × 25.4 cm × 1.9 cm",
     colours: ["Karri amber", "Wandoo pale gold", "Clear sealed timber"],
     images: [],
-    adapters: [boardAdapter("surfskate")],
+    boardStyles: [boardStyleLabel("surfskate")],
     inStock: true,
     availabilityStatus: "available",
     timberSpecies: ["Karri", "Wandoo"],
@@ -108,7 +108,7 @@ export const products: Product[] = [
     dimensions: "36 in × 9.5 in × 0.75 in / approx. 91.4 cm × 24.1 cm × 1.9 cm",
     colours: ["Sheoak orange grain", "Jarrah red-brown", "Clear sealed timber"],
     images: [],
-    adapters: [boardAdapter("cruiser")],
+    boardStyles: [boardStyleLabel("cruiser")],
     inStock: false,
     availabilityStatus: "sold",
     timberSpecies: ["Sheoak", "Jarrah"],
@@ -151,7 +151,7 @@ export const products: Product[] = [
     dimensions: "Apparel sizing S / M / L / XL",
     colours: ["Washed white", "Teal logo", "Coral detail"],
     images: [],
-    adapters: [],
+    boardStyles: [],
     inStock: true,
     merchKind: "tee",
     sizes: ["S", "M", "L", "XL"],
@@ -173,7 +173,7 @@ export const products: Product[] = [
     dimensions: "Apparel sizing S / M / L / XL",
     colours: ["Weathered grey", "Warm timber check", "Teal brand hit"],
     images: [],
-    adapters: [],
+    boardStyles: [],
     inStock: true,
     merchKind: "flanno",
     sizes: ["S", "M", "L", "XL"],
@@ -195,7 +195,7 @@ export const products: Product[] = [
     dimensions: "Mixed sticker pack / one size",
     colours: ["Teal", "Coral", "Gold", "Weathered grey"],
     images: [],
-    adapters: [],
+    boardStyles: [],
     inStock: true,
     merchKind: "sticker_pack",
     sizes: ["One size"],

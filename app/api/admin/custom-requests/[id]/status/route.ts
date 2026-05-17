@@ -101,8 +101,9 @@ export async function POST(
       previous_status: previousStatus,
       status: updatedRequest.status,
       name: updatedRequest.name,
-      fixture_type: updatedRequest.fixture_type,
-      adapter_type: updatedRequest.adapter_type,
+      intended_use: updatedRequest.intended_use,
+      board_style: updatedRequest.board_style,
+      board_shape: updatedRequest.board_shape,
     });
   }
 

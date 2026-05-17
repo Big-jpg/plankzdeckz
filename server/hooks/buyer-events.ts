@@ -8,7 +8,7 @@ export type BuyerEventType =
   | "checkout_started"
   | "payment_confirmed"
   | "order_created"
-  | "adapter_selected"
+  | "board_style_selected"
   | "pickup_requested"
   | "order_ready_for_pickup"
   | "order_collected"
@@ -39,7 +39,7 @@ export interface OnCartCreatedParams {
   product_id?: string | null;
   product_handle?: string | null;
   product_title?: string | null;
-  selected_adapter?: string | null;
+  selected_board_style?: string | null;
   item_count?: number | null;
   currency?: string | null;
   subtotal_amount?: number | null;
@@ -83,14 +83,14 @@ export interface OnOrderCreatedParams {
   item_count?: number | null;
 }
 
-export interface OnAdapterSelectedParams {
+export interface OnBoardStyleSelectedParams {
   email?: string | null;
   phone?: string | null;
   user_id?: string | null;
   product_id?: string | null;
   product_handle?: string | null;
   product_title?: string | null;
-  adapter_type: string;
+  board_style: string;
 }
 
 export interface OnPickupRequestedParams {
@@ -118,11 +118,13 @@ export interface OnCustomDesignRequestedParams {
   phone?: string | null;
   user_id?: string | null;
   name?: string | null;
-  fixture_type?: string | null;
-  adapter_type?: string | null;
-  desired_shade_style?: string | null;
-  dimensions?: string | null;
-  colour_material_preference?: string | null;
+  intended_use?: string | null;
+  board_style?: string | null;
+  board_shape?: string | null;
+  board_length?: number | null;
+  board_width?: number | null;
+  timber_preference?: string | null;
+  resin_inlay_preference?: string | null;
 }
 
 export interface OnCustomDesignStatusChangedParams {
@@ -133,8 +135,9 @@ export interface OnCustomDesignStatusChangedParams {
   previous_status?: string | null;
   status: string;
   name?: string | null;
-  fixture_type?: string | null;
-  adapter_type?: string | null;
+  intended_use?: string | null;
+  board_style?: string | null;
+  board_shape?: string | null;
 }
 
 function normalizePayload(payload: object | undefined): Record<string, unknown> {
@@ -247,9 +250,9 @@ export function onOrderCreated(params: OnOrderCreatedParams): Promise<BuyerHookR
   });
 }
 
-export function onAdapterSelected(params: OnAdapterSelectedParams): Promise<BuyerHookResult> {
+export function onBoardStyleSelected(params: OnBoardStyleSelectedParams): Promise<BuyerHookResult> {
   return runBuyerHook({
-    eventType: "adapter_selected",
+    eventType: "board_style_selected",
     email: params.email,
     phone: params.phone,
     userId: params.user_id,

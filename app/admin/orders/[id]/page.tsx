@@ -115,7 +115,7 @@ export default async function AdminOrderDetailPage({
                 </div>
 
                 <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                  <Field label="Item type" value={item.selected_adapter} />
+                  <Field label="Item type" value={item.product_type} />
                   <Field label="Material" value={item.material} />
                   <Field label="Colour" value={item.colour} />
                   <Field label="Line total" value={formatCurrency(item.total_amount, order.currency)} />

@@ -38,7 +38,7 @@ export default async function AdminProductsPage() {
                 <th className="px-4 py-3 font-semibold">Category</th>
                 <th className="px-4 py-3 font-semibold">Price</th>
                 <th className="px-4 py-3 font-semibold">Availability</th>
-                <th className="px-4 py-3 font-semibold">Adapters</th>
+                <th className="px-4 py-3 font-semibold">Board styles</th>
                 <th className="px-4 py-3 font-semibold">Material / colours</th>
               </tr>
             </thead>
@@ -81,7 +81,7 @@ export default async function AdminProductsPage() {
                         {product.inStock ? "In stock" : "Out of stock"}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-charcoal/70">{product.adapters.join(", ")}</td>
+                    <td className="px-4 py-4 text-charcoal/70">{product.boardStyles.join(", ")}</td>
                     <td className="px-4 py-4 text-charcoal/70">
                       <p>{product.material}</p>
                       <p className="mt-1 text-xs text-charcoal/50">{product.colours.join(", ")}</p>

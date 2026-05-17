@@ -1,5 +1,5 @@
 // app/api/custom-design-requests/route.ts
-// Persists custom design requests through the stored procedure contract, then fires Phase 7 buyer hook.
+// Persists custom board requests through the stored procedure contract, then fires buyer hooks.
 
 import { NextResponse, type NextRequest } from "next/server";
 import { createCustomDesignRequest } from "@/server/db/contracts";
@@ -14,7 +14,7 @@ type CustomDesignRequestResponse = {
   fieldErrors?: Record<string, string>;
 };
 
-const ADAPTER_TYPES = ["Cruiser", "Longboard", "Surfskate", "Custom / not sure"] as const;
+const BOARD_STYLES = ["cruiser", "longboard", "surfskate", "custom"] as const;
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -48,25 +48,52 @@ function stringField(
   return { value: trimmed.length > 0 ? trimmed : null };
 }
 
+function numericField(
+  record: Record<string, unknown>,
+  key: string,
+  options: { max?: number } = {},
+): { value: number | null; error?: string } {
+  const rawValue = record[key];
+
+  if (rawValue === undefined || rawValue === null || rawValue === "") {
+    return { value: null };
+  }
+
+  const parsed = typeof rawValue === "number" ? rawValue : Number(rawValue);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return { value: null, error: "Enter a positive number." };
+  }
+
+  if (options.max !== undefined && parsed > options.max) {
+    return { value: null, error: `Must be ${options.max} or less.` };
+  }
+
+  return { value: parsed };
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function buildDesignNotes(params: {
-  fixtureType: string;
-  adapterType: string;
-  desiredShadeStyle: string;
-  dimensions: string | null;
-  colourMaterialPreference: string | null;
+  intendedUse: string;
+  boardStyle: string;
+  boardShape: string;
+  boardLength: number | null;
+  boardWidth: number | null;
+  timberPreference: string | null;
+  resinInlayPreference: string | null;
   notes: string | null;
   uploadInstructionAcknowledged: boolean;
 }): string {
   return [
-    `Intended use: ${params.fixtureType}`,
-    `Board type: ${params.adapterType}`,
-    `Desired deck style: ${params.desiredShadeStyle}`,
-    `Dimensions if known: ${params.dimensions ?? "Not supplied"}`,
-    `Timber/finish preference: ${params.colourMaterialPreference ?? "Not supplied"}`,
+    `Intended use: ${params.intendedUse}`,
+    `Board style: ${params.boardStyle}`,
+    `Board shape: ${params.boardShape}`,
+    `Length: ${params.boardLength ?? "Not supplied"} cm`,
+    `Width: ${params.boardWidth ?? "Not supplied"} cm`,
+    `Timber preference: ${params.timberPreference ?? "Not supplied"}`,
+    `Resin inlay preference: ${params.resinInlayPreference ?? "Not supplied"}`,
     `Notes: ${params.notes ?? "Not supplied"}`,
     `Reference images: ${
       params.uploadInstructionAcknowledged
@@ -93,27 +120,26 @@ export async function POST(
   const name = stringField(record, "name", { required: true, maxLength: 160 });
   const email = stringField(record, "email", { required: true, maxLength: 320 });
   const phone = stringField(record, "phone", { required: true, maxLength: 80 });
-  const fixtureType = stringField(record, "fixture_type", { required: true, maxLength: 160 });
-  const adapterType = stringField(record, "adapter_type", { required: true, maxLength: 80 });
-  const desiredShadeStyle = stringField(record, "desired_shade_style", {
-    required: true,
-    maxLength: 500,
-  });
-  const dimensions = stringField(record, "dimensions", { maxLength: 240 });
-  const colourMaterialPreference = stringField(record, "colour_material_preference", {
-    maxLength: 500,
-  });
+  const intendedUse = stringField(record, "intended_use", { required: true, maxLength: 160 });
+  const boardStyle = stringField(record, "board_style", { required: true, maxLength: 80 });
+  const boardShape = stringField(record, "board_shape", { required: true, maxLength: 500 });
+  const boardLength = numericField(record, "board_length", { max: 300 });
+  const boardWidth = numericField(record, "board_width", { max: 100 });
+  const timberPreference = stringField(record, "timber_preference", { maxLength: 500 });
+  const resinInlayPreference = stringField(record, "resin_inlay_preference", { maxLength: 500 });
   const notes = stringField(record, "notes", { maxLength: 2000 });
 
   for (const [field, result] of Object.entries({
     name,
     email,
     phone,
-    fixture_type: fixtureType,
-    adapter_type: adapterType,
-    desired_shade_style: desiredShadeStyle,
-    dimensions,
-    colour_material_preference: colourMaterialPreference,
+    intended_use: intendedUse,
+    board_style: boardStyle,
+    board_shape: boardShape,
+    board_length: boardLength,
+    board_width: boardWidth,
+    timber_preference: timberPreference,
+    resin_inlay_preference: resinInlayPreference,
     notes,
   })) {
     if (result.error) fieldErrors[field] = result.error;
@@ -123,11 +149,8 @@ export async function POST(
     fieldErrors.email = "Enter a valid email address.";
   }
 
-  if (
-    adapterType.value &&
-    !ADAPTER_TYPES.includes(adapterType.value as (typeof ADAPTER_TYPES)[number])
-  ) {
-    fieldErrors.adapter_type = "Select one of the supported adapter types.";
+  if (boardStyle.value && !BOARD_STYLES.includes(boardStyle.value as (typeof BOARD_STYLES)[number])) {
+    fieldErrors.board_style = "Select one of the supported board styles.";
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -139,11 +162,13 @@ export async function POST(
 
   const uploadInstructionAcknowledged = record.upload_instruction_acknowledged === true;
   const designNotes = buildDesignNotes({
-    fixtureType: fixtureType.value ?? "Not supplied",
-    adapterType: adapterType.value ?? "Not supplied",
-    desiredShadeStyle: desiredShadeStyle.value ?? "Not supplied",
-    dimensions: dimensions.value,
-    colourMaterialPreference: colourMaterialPreference.value,
+    intendedUse: intendedUse.value ?? "Not supplied",
+    boardStyle: boardStyle.value ?? "Not supplied",
+    boardShape: boardShape.value ?? "Not supplied",
+    boardLength: boardLength.value,
+    boardWidth: boardWidth.value,
+    timberPreference: timberPreference.value,
+    resinInlayPreference: resinInlayPreference.value,
     notes: notes.value,
     uploadInstructionAcknowledged,
   });
@@ -152,8 +177,13 @@ export async function POST(
     email: email.value ?? "",
     name: name.value,
     phone: phone.value,
-    fixture_type: fixtureType.value,
-    adapter_type: adapterType.value,
+    intended_use: intendedUse.value,
+    board_style: boardStyle.value as "cruiser" | "surfskate" | "longboard" | "custom" | null,
+    board_shape: boardShape.value,
+    board_length: boardLength.value,
+    board_width: boardWidth.value,
+    timber_preference: timberPreference.value,
+    resin_inlay_preference: resinInlayPreference.value,
     design_notes: designNotes,
     budget_range: null,
   });
@@ -170,11 +200,13 @@ export async function POST(
     email: email.value ?? "",
     phone: phone.value,
     name: name.value,
-    fixture_type: fixtureType.value,
-    adapter_type: adapterType.value,
-    desired_shade_style: desiredShadeStyle.value,
-    dimensions: dimensions.value,
-    colour_material_preference: colourMaterialPreference.value,
+    intended_use: intendedUse.value,
+    board_style: boardStyle.value,
+    board_shape: boardShape.value,
+    board_length: boardLength.value,
+    board_width: boardWidth.value,
+    timber_preference: timberPreference.value,
+    resin_inlay_preference: resinInlayPreference.value,
   });
 
   return NextResponse.json({ ok: true, requestId }, { status: 201 });
