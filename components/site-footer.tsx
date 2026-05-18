@@ -9,7 +9,7 @@ const footerSections = [
     links: [
       { href: "/shop#boards", label: "Boards" },
       { href: "/shop#merch", label: "Merch" },
-      { href: "/custom", label: "Custom Designer" },
+      { href: "/custom-designer", label: "Custom Designer" },
       { href: "/gallery", label: "Gallery" },
     ],
   },
