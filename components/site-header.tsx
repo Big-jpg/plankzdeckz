@@ -12,7 +12,7 @@ import { UserMenu } from "@/components/user-menu";
 const navLinks = [
   { href: "/shop", label: "Shop" },
   { href: "/our-story", label: "Our Story" },
-  { href: "/custom", label: "Custom Designer" },
+  { href: "/custom-designer", label: "Custom Designer" },
   { href: "/gallery", label: "Gallery" },
   { href: "/shop#merch", label: "Merch" },
 ];

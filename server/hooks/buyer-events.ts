@@ -13,7 +13,8 @@ export type BuyerEventType =
   | "order_ready_for_pickup"
   | "order_collected"
   | "custom_design_requested"
-  | "custom_design_status_updated";
+  | "custom_design_status_updated"
+  | "custom_board_designed";
 
 export interface BuyerHookResult {
   eventId: string | null;
@@ -138,6 +139,15 @@ export interface OnCustomDesignStatusChangedParams {
   intended_use?: string | null;
   board_style?: string | null;
   board_shape?: string | null;
+}
+
+export interface OnCustomBoardDesignedParams {
+  userId: string;
+  email?: string | null;
+  designId: string;
+  boardShape: string;
+  boardLength: number;
+  boardWidth: number;
 }
 
 function normalizePayload(payload: object | undefined): Record<string, unknown> {
@@ -317,5 +327,21 @@ export function onCustomDesignStatusChanged(
     phone: params.phone,
     userId: params.user_id,
     payload: params,
+  });
+}
+
+export function onCustomBoardDesigned(
+  params: OnCustomBoardDesignedParams,
+): Promise<BuyerHookResult> {
+  return runBuyerHook({
+    eventType: "custom_board_designed",
+    email: params.email,
+    userId: params.userId,
+    payload: {
+      custom_board_design_id: params.designId,
+      board_shape: params.boardShape,
+      board_length: params.boardLength,
+      board_width: params.boardWidth,
+    },
   });
 }
