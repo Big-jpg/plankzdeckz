@@ -349,10 +349,10 @@ export function resinBandsToSummary(bands: ResinBandSpec[]): string {
   return bands
     .map(
       (band, index) =>
-        `Band ${index + 1}: ${roundTo(band.positionPercent, 1)}% from tail, ${roundTo(
+        `Band ${index + 1}: ${roundTo(band.positionPercent, 1)}% across width, ${roundTo(
           band.widthPercent,
           1,
-        )}% width, ${band.color}`,
+        )}% thickness, ${band.color}`,
     )
     .join("; ");
 }

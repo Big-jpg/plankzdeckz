@@ -113,7 +113,7 @@ function validateResinBands(config: unknown, errors: FieldErrors): { bands: Resi
           : bands
               .map(
                 (band, index) =>
-                  `Band ${index + 1}: ${band.positionPercent}% from tail, ${band.widthPercent}% width, ${band.color}`,
+                  `Band ${index + 1}: ${band.positionPercent}% across width, ${band.widthPercent}% thickness, ${band.color}`,
               )
               .join("; "),
   };
