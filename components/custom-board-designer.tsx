@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   ChevronRight,
   CircleAlert,
-  GripVertical,
   Plus,
   Ruler,
   Save,
@@ -259,7 +258,7 @@ function BoardRenderer({
     point.x = event.clientX;
     point.y = event.clientY;
     const local = point.matrixTransform(matrix.inverse());
-    const percent = ((local.x - geometry.boardLeft) / geometry.boardLengthPx) * 100;
+    const percent = ((local.y - geometry.boardTop) / geometry.boardWidthPx) * 100;
     return clampNumber(percent, 0, 100);
   }
 
@@ -290,8 +289,8 @@ function BoardRenderer({
             {selectedShape.label} bespoke deck
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-warm-white/65">
-            Drag resin bands directly on the board, then submit the exact measured specification for
-            workshop review.
+            Drag longitudinal resin bands directly across the deck width, then submit the exact
+            measured specification for workshop review.
           </p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-right">
@@ -347,35 +346,35 @@ function BoardRenderer({
         <g filter="url(#designer-shadow)">
           <path d={geometry.pathD} fill={`url(#${timberGradientId})`} stroke="#f5be33" strokeWidth="4" />
           <g clipPath={`url(#${clipPathId})`}>
-            {Array.from({ length: 10 }).map((_, index) => (
+            {Array.from({ length: 12 }).map((_, index) => (
               <rect
                 key={index}
-                x={geometry.boardLeft + (geometry.boardLengthPx / 10) * index}
-                y={geometry.boardTop - 12}
-                width={geometry.boardLengthPx / 20}
-                height={geometry.boardWidthPx + 24}
-                fill={index % 2 === 0 ? "rgba(255,248,237,0.13)" : "rgba(36,50,48,0.18)"}
+                x={geometry.boardLeft - 18}
+                y={geometry.boardTop + (geometry.boardWidthPx / 12) * index}
+                width={geometry.boardLengthPx + 36}
+                height={Math.max(2, geometry.boardWidthPx / 30)}
+                fill={index % 2 === 0 ? "rgba(255,248,237,0.12)" : "rgba(36,50,48,0.16)"}
               />
             ))}
             {resinBands.map((band) => {
-              const bandX = geometry.boardLeft + (band.positionPercent / 100) * geometry.boardLengthPx;
-              const bandWidth = Math.max(10, (band.widthPercent / 100) * geometry.boardLengthPx);
+              const bandY = geometry.boardTop + (band.positionPercent / 100) * geometry.boardWidthPx;
+              const bandHeight = Math.max(8, (band.widthPercent / 100) * geometry.boardWidthPx);
 
               return (
                 <g key={band.id}>
                   <rect
-                    x={bandX - bandWidth / 2}
-                    y={geometry.boardTop - 16}
-                    width={bandWidth}
-                    height={geometry.boardWidthPx + 32}
+                    x={geometry.boardLeft - 18}
+                    y={bandY - bandHeight / 2}
+                    width={geometry.boardLengthPx + 36}
+                    height={bandHeight}
                     fill={band.color}
                     opacity="0.92"
                   />
                   <rect
-                    x={bandX - bandWidth / 2}
-                    y={geometry.boardTop - 16}
-                    width={bandWidth}
-                    height={geometry.boardWidthPx + 32}
+                    x={geometry.boardLeft - 18}
+                    y={bandY - bandHeight / 2}
+                    width={geometry.boardLengthPx + 36}
+                    height={bandHeight}
                     fill={`url(#${resinGradientId})`}
                     opacity="0.65"
                   />
@@ -430,35 +429,35 @@ function BoardRenderer({
         })}
 
         {resinBands.map((band) => {
-          const bandX = geometry.boardLeft + (band.positionPercent / 100) * geometry.boardLengthPx;
-          const dragWidth = Math.max(24, (band.widthPercent / 100) * geometry.boardLengthPx + 20);
+          const bandY = geometry.boardTop + (band.positionPercent / 100) * geometry.boardWidthPx;
+          const dragHeight = Math.max(24, (band.widthPercent / 100) * geometry.boardWidthPx + 18);
 
           return (
             <g key={`${band.id}-handle`}>
               <rect
-                x={bandX - dragWidth / 2}
-                y={geometry.boardTop - 28}
-                width={dragWidth}
-                height={geometry.boardWidthPx + 56}
+                x={geometry.boardLeft - 34}
+                y={bandY - dragHeight / 2}
+                width={geometry.boardLengthPx + 68}
+                height={dragHeight}
                 fill="transparent"
-                className="cursor-ew-resize"
+                className="cursor-ns-resize"
                 onPointerDown={(event) => startBandDrag(event, band.id)}
                 onPointerMove={handlePointerMove}
                 onPointerUp={() => onActiveBandChange(null)}
               />
               <line
-                x1={bandX}
-                x2={bandX}
-                y1={geometry.boardTop - 36}
-                y2={geometry.boardTop - 12}
+                x1={geometry.boardLeft - 30}
+                x2={geometry.boardLeft - 8}
+                y1={bandY}
+                y2={bandY}
                 stroke={activeBandId === band.id ? "#F5A0A0" : "#7ECFC0"}
                 strokeWidth="4"
                 strokeLinecap="round"
               />
               <text
-                x={bandX}
-                y={geometry.boardTop - 46}
-                textAnchor="middle"
+                x={geometry.boardLeft - 38}
+                y={bandY + 5}
+                textAnchor="end"
                 className="pointer-events-none fill-warm-white text-[15px] font-bold"
               >
                 {roundTo(band.positionPercent, 0)}%
@@ -543,7 +542,7 @@ function ResinDesigner({
       <div className="mt-5 space-y-4">
         {resinBands.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-white/15 bg-black/20 p-5 text-sm leading-relaxed text-warm-white/60">
-            No resin bands selected. Add a band to place a vertical inlay across the board width.
+            No resin bands selected. Add a band to place a longitudinal inlay running nose-to-tail along the board.
           </div>
         ) : (
           resinBands.map((band, index) => (
@@ -563,11 +562,11 @@ function ResinDesigner({
                     style={{ backgroundColor: band.color }}
                     aria-hidden="true"
                   >
-                    <GripVertical className="h-4 w-4 text-charcoal/80" />
+                    <span className="h-1.5 w-7 rounded-full bg-charcoal/65" />
                   </span>
                   <div>
                     <h3 className="text-sm font-semibold text-warm-white">Band {index + 1}</h3>
-                    <p className="text-xs text-warm-white/45">Drag on the SVG or edit exact values.</p>
+                    <p className="text-xs text-warm-white/45">Drag across the deck width or edit exact values.</p>
                   </div>
                 </div>
                 <button
@@ -583,7 +582,7 @@ function ResinDesigner({
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-[0.18em] text-warm-white/55">
-                    Position from tail
+                    Position across width
                   </label>
                   <div className="mt-2 flex items-center gap-3">
                     <input
@@ -615,7 +614,7 @@ function ResinDesigner({
 
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-[0.18em] text-warm-white/55">
-                    Band width
+                    Band thickness
                   </label>
                   <div className="mt-2 flex items-center gap-3">
                     <input
@@ -894,8 +893,8 @@ export function CustomBoardDesigner() {
         ...current,
         {
           id: `band-${Date.now()}-${nextIndex}`,
-          positionPercent: clampNumber(22 + nextIndex * 12, 6, 94),
-          widthPercent: 4,
+          positionPercent: clampNumber(38 + nextIndex * 10, 10, 90),
+          widthPercent: 6,
           color: paletteColour,
         },
       ];
@@ -926,7 +925,7 @@ export function CustomBoardDesigner() {
       timber_preference: timberPreference.trim() || null,
       notes: notes.trim() || null,
       configurator_payload: {
-        version: "phase-5-custom-designer-v1",
+        version: "phase-5-custom-designer-v1.1-longitudinal-resin",
         generated_at: new Date().toISOString(),
         selected_shape: selectedShape,
         dimensions: {
@@ -990,7 +989,7 @@ export function CustomBoardDesigner() {
             </h1>
             <p className="mt-5 text-lg leading-8 text-warm-white/72">
               Build a bespoke reclaimed-timber board visually: choose the outline, tune the
-              dimensions, drag resin inlays into place, and generate a workshop-ready specification
+              dimensions, place lengthwise resin inlays, and generate a workshop-ready specification
               for Blair and Corey.
             </p>
           </div>
@@ -1000,17 +999,28 @@ export function CustomBoardDesigner() {
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
           <div className="space-y-6">
-            <BoardRenderer
-              selectedShape={selectedShape}
-              geometry={geometry}
-              boardLengthCm={boardLengthCm}
-              boardWidthCm={boardWidthCm}
-              resinBands={resinBands}
-              truckPositions={truckPositions}
-              activeBandId={activeBandId}
-              onActiveBandChange={setActiveBandId}
-              onBandPositionChange={(bandId, positionPercent) => updateBand(bandId, { positionPercent })}
-            />
+            <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1fr)_420px]">
+              <BoardRenderer
+                selectedShape={selectedShape}
+                geometry={geometry}
+                boardLengthCm={boardLengthCm}
+                boardWidthCm={boardWidthCm}
+                resinBands={resinBands}
+                truckPositions={truckPositions}
+                activeBandId={activeBandId}
+                onActiveBandChange={setActiveBandId}
+                onBandPositionChange={(bandId, positionPercent) => updateBand(bandId, { positionPercent })}
+              />
+
+              <ResinDesigner
+                resinBands={resinBands}
+                activeBandId={activeBandId}
+                onActiveBandChange={setActiveBandId}
+                onAddBand={addBand}
+                onRemoveBand={removeBand}
+                onBandChange={updateBand}
+              />
+            </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <ShapeSelector selectedShapeId={selectedShapeId} onSelect={setSelectedShapeId} />
@@ -1033,15 +1043,6 @@ export function CustomBoardDesigner() {
                 />
               </div>
             </div>
-
-            <ResinDesigner
-              resinBands={resinBands}
-              activeBandId={activeBandId}
-              onActiveBandChange={setActiveBandId}
-              onAddBand={addBand}
-              onRemoveBand={removeBand}
-              onBandChange={updateBand}
-            />
           </div>
 
           <DesignSummary
