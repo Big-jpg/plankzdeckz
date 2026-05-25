@@ -5,7 +5,7 @@ import { CustomDesignRequestForm } from "@/components/custom-design-request-form
 import { CheckCircle2, Ruler, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Custom Designer | PLANKZ DECKZ",
+  title: "Custom Deckz | PLANKZ DECKZ",
   description:
     "Request a custom PLANKZ DECKZ skateboard, cruiser, surfskate, or longboard build from reclaimed timber and recycled material.",
 };
@@ -47,12 +47,12 @@ const designSteps = [
 export default function CustomPage() {
   return (
     <>
-      <section className="bg-charcoal py-16 text-warm-white sm:py-20">
+      <section className="coastal-wash relative overflow-hidden py-16 text-warm-white sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            Custom Designer
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal/90">
+            Custom builds
           </p>
-          <h1 className="mt-3 font-display text-4xl tracking-wide text-brand-gold sm:text-6xl">
+          <h1 className="mt-3 font-display text-4xl tracking-wide text-warm-white sm:text-6xl">
             Custom Deckz
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ivory/75">
@@ -62,19 +62,19 @@ export default function CustomPage() {
         </div>
       </section>
 
-      <section className="bg-warm-white py-12 sm:py-16">
+      <section className="bg-warm-white/92 py-12 sm:py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-            <section className="rounded-2xl border border-charcoal/10 bg-ivory/60 p-6 sm:p-8">
-              <SlidersHorizontal className="h-6 w-6 text-primary" />
-              <h2 className="mt-4 font-display text-2xl tracking-wide text-brand-gold">
+            <section className="rounded-[1.75rem] border border-charcoal/8 bg-ivory/45 p-6 sm:p-8">
+              <SlidersHorizontal className="h-6 w-6 text-teal" />
+              <h2 className="mt-4 font-display text-2xl tracking-wide text-charcoal">
                 What can be customised
               </h2>
               <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {customOptions.map((item) => (
                   <div
                     key={item}
-                    className="rounded-lg border border-charcoal/10 bg-warm-white px-4 py-3 text-sm text-charcoal/70"
+                    className="rounded-2xl border border-charcoal/8 bg-warm-white/78 px-4 py-3 text-sm text-charcoal/68"
                   >
                     {item}
                   </div>
@@ -82,8 +82,8 @@ export default function CustomPage() {
               </div>
             </section>
 
-            <aside className="rounded-2xl border border-primary/30 bg-primary/10 p-6">
-              <ShieldCheck className="h-6 w-6 text-primary" />
+            <aside className="rounded-[1.75rem] border border-teal/24 bg-teal/8 p-6">
+              <ShieldCheck className="h-6 w-6 text-teal" />
               <h2 className="mt-4 text-lg font-semibold text-charcoal">Use remains fixed</h2>
               <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
                 Customisation can change size, finish, artwork, timber direction, and intended ride
@@ -99,15 +99,15 @@ export default function CustomPage() {
             </aside>
           </div>
 
-          <section className="mt-10 rounded-2xl border border-charcoal/10 bg-warm-white p-6 sm:p-8">
-            <h2 className="font-display text-2xl tracking-wide text-brand-gold">
+          <section className="woodgrain-soft mt-10 rounded-[1.75rem] border border-charcoal/8 p-6 sm:p-8">
+            <h2 className="font-display text-2xl tracking-wide text-charcoal">
               The custom build process
             </h2>
             <div className="mt-6 space-y-5">
               {designSteps.map((step, index) => (
                 <div
                   key={step.title}
-                  className="flex gap-4 rounded-xl border border-charcoal/10 bg-ivory/40 p-5"
+                  className="flex gap-4 rounded-2xl border border-charcoal/8 bg-warm-white/62 p-5"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-charcoal text-xs font-semibold text-warm-white">
                     {index + 1}
@@ -123,7 +123,7 @@ export default function CustomPage() {
 
           <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2">
             <section className="rounded-2xl border border-charcoal/10 bg-ivory/60 p-6">
-              <Ruler className="h-6 w-6 text-primary" />
+              <Ruler className="h-6 w-6 text-teal" />
               <h2 className="mt-4 text-lg font-semibold text-charcoal">Requesting a custom size</h2>
               <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
                 Provide approximate length, width, stance, ride style, rider context, hardware notes,
@@ -132,8 +132,8 @@ export default function CustomPage() {
               </p>
             </section>
 
-            <section className="rounded-2xl border border-charcoal/10 bg-warm-white p-6">
-              <CheckCircle2 className="h-6 w-6 text-primary" />
+            <section className="rounded-[1.75rem] border border-charcoal/8 bg-warm-white/72 p-6">
+              <CheckCircle2 className="h-6 w-6 text-teal" />
               <h2 className="mt-4 text-lg font-semibold text-charcoal">Pricing and timing</h2>
               <p className="mt-3 text-sm leading-relaxed text-charcoal/70">
                 Custom pricing depends on board size, material availability, finish complexity,
@@ -143,7 +143,7 @@ export default function CustomPage() {
             </section>
           </div>
 
-          <section className="mt-10 rounded-2xl border border-charcoal/10 bg-ivory/60 p-6 sm:p-8">
+          <section className="mt-10 rounded-[1.75rem] border border-charcoal/8 bg-ivory/45 p-6 sm:p-8">
             <h2 className="text-lg font-semibold text-charcoal">Request a custom deck</h2>
             <p className="mt-2 text-sm leading-relaxed text-charcoal/60">
               Share the practical details first: intended use, board type, approximate size, timber or
