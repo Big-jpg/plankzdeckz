@@ -221,8 +221,14 @@ export async function POST(
   const baseUrl = checkoutBaseUrl(request);
   const stripe = getStripeClient();
 
+  // Expire checkout sessions after 30 minutes so one-of-a-kind boards
+  // are released quickly if a buyer abandons the payment flow.
+  const CHECKOUT_EXPIRY_MINUTES = 30;
+  const expiresAt = Math.floor(Date.now() / 1000) + CHECKOUT_EXPIRY_MINUTES * 60;
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    expires_at: expiresAt,
     line_items: buildLineItems(validation.verifiedItems),
     metadata: buildSessionMetadata(validation.verifiedItems),
     success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,

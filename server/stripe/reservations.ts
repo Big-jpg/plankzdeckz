@@ -6,7 +6,9 @@ import "server-only";
 import type Stripe from "stripe";
 import { getStripeClient } from "./client";
 
-const ACTIVE_SESSION_LOOKBACK_SECONDS = 60 * 60 * 48;
+// Lookback window for active sessions. Sessions now expire after 30 minutes,
+// so 1 hour provides a generous safety buffer.
+const ACTIVE_SESSION_LOOKBACK_SECONDS = 60 * 60 * 1;
 
 function splitMetadataList(value: string | undefined): string[] {
   if (!value) return [];
