@@ -153,7 +153,7 @@ export function ProductDetail({ product }: { product: Product }) {
 
   return (
     <>
-      <div className="border-b border-charcoal/10 bg-warm-white/95">
+      <div className="border-b border-charcoal/5 bg-warm-white/86 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
           <Link
             href="/shop"
@@ -198,20 +198,20 @@ function BoardDetail({
   const reserved = product.availabilityStatus === "reserved";
 
   return (
-    <section className="bg-warm-white py-8 sm:py-12">
+    <section className="bg-warm-white/92 py-10 sm:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
+        <div className="grid grid-cols-1 gap-9 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
           <div className="space-y-4">
             <ProductVisual
               productType="board"
               title={product.title}
               images={product.images}
-              className="aspect-[4/3] min-h-[22rem]"
+              className="aspect-[4/3] min-h-[22rem] bg-ivory/45 sm:min-h-[28rem]"
               priority
             />
             <div className="grid grid-cols-3 gap-3">
               {["Timber", "Shape", "WA pickup"].map((label) => (
-                <div key={label} className="rounded-2xl border border-charcoal/10 bg-ivory/60 p-4">
+                <div key={label} className="rounded-2xl border border-charcoal/8 bg-ivory/38 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-charcoal/45">
                     {label}
                   </p>
@@ -226,19 +226,19 @@ function BoardDetail({
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-teal">
                   One-of-a-kind board
                 </p>
-                <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-brand-gold sm:text-5xl">
+                <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-charcoal sm:text-5xl">
                   {product.title}
                 </h1>
               </div>
               <StatusPill board={product} />
             </div>
 
-            <p className="mt-4 text-3xl font-semibold text-charcoal">{formatPrice(product)}</p>
+            <p className="mt-4 text-3xl font-semibold text-copper">{formatPrice(product)}</p>
             <p className="mt-6 text-base leading-8 text-charcoal/75">{product.description}</p>
 
-            <div className="mt-8 rounded-3xl border border-teal/30 bg-teal/10 p-5">
+            <div className="mt-8 rounded-3xl border border-charcoal/8 bg-ivory/48 p-5">
               <div className="flex items-start gap-3">
-                <Info className="mt-0.5 h-5 w-5 shrink-0 text-teal" />
+                <Info className="mt-0.5 h-5 w-5 shrink-0 text-teal/90" />
                 <div>
                   <p className="text-sm font-semibold text-charcoal">No configuration required</p>
                   <p className="mt-1 text-sm leading-6 text-charcoal/70">
@@ -251,7 +251,7 @@ function BoardDetail({
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {product.specs.map((spec) => (
-                <div key={spec.label} className="rounded-2xl border border-charcoal/10 bg-ivory/60 p-4">
+                <div key={spec.label} className="rounded-2xl border border-charcoal/8 bg-ivory/38 p-4">
                   <dt className="text-xs font-semibold uppercase tracking-[0.18em] text-charcoal/45">
                     {spec.label}
                   </dt>
@@ -283,7 +283,7 @@ function BoardDetail({
               </div>
             </div>
 
-            <div className="mt-6 flex items-start gap-3 rounded-xl border border-charcoal/10 p-4">
+            <div className="mt-6 flex items-start gap-3 rounded-2xl border border-charcoal/8 bg-ivory/35 p-4">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-charcoal/50" />
               <div>
                 <p className="text-sm font-semibold text-charcoal">Local pickup only</p>
@@ -300,7 +300,7 @@ function BoardDetail({
               className={cn(
                 "mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-all",
                 canAdd
-                  ? "bg-charcoal text-warm-white hover:bg-charcoal/90"
+                  ? "bg-charcoal text-warm-white hover:bg-warm-black"
                   : "cursor-not-allowed bg-charcoal/20 text-charcoal/40",
               )}
             >
@@ -336,14 +336,14 @@ function MerchDetail({
   onAddToCart: () => void;
 }) {
   return (
-    <section className="bg-warm-white py-8 sm:py-12">
+    <section className="bg-warm-white/92 py-10 sm:py-16">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 rounded-[2rem] border border-charcoal/10 bg-ivory/40 p-5 shadow-sm sm:p-8 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="grid gap-8 rounded-[2rem] border border-charcoal/8 bg-ivory/32 p-5 shadow-[0_18px_55px_rgba(19,35,33,0.045)] sm:p-8 lg:grid-cols-[0.9fr_1.1fr]">
           <ProductVisual
             productType="merch"
             title={product.title}
             images={product.images}
-            className="aspect-square min-h-[20rem]"
+            className="aspect-square min-h-[20rem] bg-ivory/45"
             priority
           />
 
@@ -351,10 +351,10 @@ function MerchDetail({
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-coral">
               Repeatable merch
             </p>
-            <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-brand-gold sm:text-5xl">
+            <h1 className="mt-3 font-display text-4xl font-bold tracking-tight text-charcoal sm:text-5xl">
               {product.title}
             </h1>
-            <p className="mt-4 text-3xl font-semibold text-charcoal">{formatPrice(product)}</p>
+            <p className="mt-4 text-3xl font-semibold text-copper">{formatPrice(product)}</p>
             <p className="mt-6 text-base leading-8 text-charcoal/75">{product.description}</p>
 
             <div className="mt-8 border-t border-charcoal/10 pt-6">
@@ -373,7 +373,7 @@ function MerchDetail({
                       "rounded-full border px-4 py-2 text-sm font-semibold transition-all",
                       selectedSize === size
                         ? "border-charcoal bg-charcoal text-warm-white"
-                        : "border-charcoal/20 bg-warm-white text-charcoal hover:border-charcoal/40",
+                        : "border-charcoal/15 bg-warm-white/78 text-charcoal hover:border-charcoal/40",
                     )}
                   >
                     {size}
@@ -404,7 +404,7 @@ function MerchDetail({
               className={cn(
                 "mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold transition-all",
                 canAdd
-                  ? "bg-charcoal text-warm-white hover:bg-charcoal/90"
+                  ? "bg-charcoal text-warm-white hover:bg-warm-black"
                   : "cursor-not-allowed bg-charcoal/20 text-charcoal/40",
               )}
             >
