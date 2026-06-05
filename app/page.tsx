@@ -17,9 +17,8 @@ const processSteps = [
     step: "01",
     title: "pallet recovery",
     reel: {
-      webmSrc: "/media/reels/pallet-recovery-raw-timber.webm",
-      mp4Src: "/media/reels/pallet-recovery-raw-timber.mp4",
-      posterSrc: "/media/reels/pallet-recovery-raw-timber-poster.jpg",
+      mp4Src: "/media/reels/02-pallet-recovery.mp4",
+      posterSrc: "/media/reels/02-pallet-recovery-poster.jpg",
       slideFrom: "left" as const,
     },
   },
@@ -27,9 +26,8 @@ const processSteps = [
     step: "02",
     title: "grain selection",
     reel: {
-      webmSrc: "/media/reels/grain-selection-sorting.webm",
-      mp4Src: "/media/reels/grain-selection-sorting.mp4",
-      posterSrc: "/media/reels/grain-selection-sorting-poster.jpg",
+      mp4Src: "/media/reels/03-grain-selection.mp4",
+      posterSrc: "/media/reels/03-grain-selection-poster.jpg",
       slideFrom: "right" as const,
     },
   },
@@ -37,9 +35,8 @@ const processSteps = [
     step: "03",
     title: "lamination",
     reel: {
-      webmSrc: "/media/reels/lamination-gluing.webm",
-      mp4Src: "/media/reels/lamination-gluing.mp4",
-      posterSrc: "/media/reels/lamination-gluing-poster.jpg",
+      mp4Src: "/media/reels/04-lamination.mp4",
+      posterSrc: "/media/reels/04-lamination-poster.jpg",
       slideFrom: "left" as const,
     },
   },
@@ -47,9 +44,8 @@ const processSteps = [
     step: "04",
     title: "shaping and sanding",
     reel: {
-      webmSrc: "/media/reels/shaping-sanding.webm",
-      mp4Src: "/media/reels/shaping-sanding.mp4",
-      posterSrc: "/media/reels/shaping-sanding-poster.jpg",
+      mp4Src: "/media/reels/05-shaping.mp4",
+      posterSrc: "/media/reels/05-shaping-poster.jpg",
       slideFrom: "right" as const,
     },
   },
@@ -57,9 +53,8 @@ const processSteps = [
     step: "05",
     title: "finish and handover",
     reel: {
-      webmSrc: "/media/reels/finish-handover.webm",
-      mp4Src: "/media/reels/finish-handover.mp4",
-      posterSrc: "/media/reels/finish-handover-poster.jpg",
+      mp4Src: "/media/reels/06-finish-coastal.mp4",
+      posterSrc: "/media/reels/06-finish-coastal-poster.jpg",
       slideFrom: "left" as const,
     },
   },
@@ -137,10 +132,9 @@ export default function HomePage() {
 
           <div className="relative z-0 w-full min-w-0 justify-self-center lg:justify-self-end">
             <ScrollReel
-              webmSrc="/media/reels/coastal-board-workshop.webm"
-              mp4Src="/media/reels/coastal-board-workshop.mp4"
-              posterSrc="/media/reels/coastal-board-workshop-poster.jpg"
-              alt="Placeholder loop for coastal board and workshop footage"
+              mp4Src="/media/reels/01-hero-coastal.mp4"
+              posterSrc="/media/reels/01-hero-coastal-poster.jpg"
+              alt="Coastal Plankz Deckz board and workshop reel"
               slideFrom="right"
               priority
               className="mx-auto w-full max-w-[42rem] rounded-[2rem] border-ivory/12 bg-sand/8 shadow-[0_32px_90px_rgba(0,0,0,0.32)] lg:mx-0 lg:max-w-none"
@@ -165,23 +159,37 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative z-10 mt-16 space-y-10 sm:mt-20 sm:space-y-14 lg:mt-24 lg:space-y-20">
+        <div className="relative z-10 mt-14 overflow-hidden sm:mt-20 lg:mt-24" aria-label="Plankz Deckz build-flow video sequence">
           {processSteps.map((item, index) => (
             <div
               key={item.step}
               className={cn(
-                "flex w-full overflow-x-clip px-0 sm:px-6 lg:px-8",
-                index % 2 === 1 ? "justify-end" : "justify-start",
+                "relative flex min-h-[58svh] w-full items-center overflow-x-clip py-8 sm:min-h-[68svh] sm:py-10 lg:min-h-[76svh] lg:py-12",
+                index > 0 && "-mt-[7svh] sm:-mt-[10svh] lg:-mt-[12svh]",
+                index % 2 === 1 ? "justify-end pl-[8vw]" : "justify-start pr-[8vw]",
               )}
             >
+              <div
+                aria-hidden="true"
+                className={cn(
+                  "pointer-events-none absolute top-1/2 h-[62%] w-[42vw] -translate-y-1/2 rounded-full blur-3xl",
+                  index % 2 === 1
+                    ? "left-0 bg-teal/12"
+                    : "right-0 bg-coral/10",
+                )}
+              />
               <ScrollReel
-                webmSrc={item.reel.webmSrc}
                 mp4Src={item.reel.mp4Src}
                 posterSrc={item.reel.posterSrc}
-                alt={`Placeholder loop for ${item.title}`}
+                alt={`Plankz Deckz ${item.title} reel`}
                 slideFrom={item.reel.slideFrom}
-                className="w-full rounded-none border-0 shadow-[0_36px_100px_rgba(19,35,33,0.18)] sm:w-[78vw] sm:rounded-[2.4rem] lg:w-[75vw] lg:max-w-[78rem]"
-                mediaClassName="aspect-[16/9] min-h-[17rem] sm:min-h-[28rem] lg:min-h-[34rem]"
+                className={cn(
+                  "relative w-[92vw] border-0 shadow-[0_44px_130px_rgba(19,35,33,0.22)] sm:w-[82vw] lg:w-[75vw] lg:max-w-none",
+                  index % 2 === 1
+                    ? "rounded-l-[2.6rem] rounded-r-none sm:rounded-l-[3.2rem]"
+                    : "rounded-l-none rounded-r-[2.6rem] sm:rounded-r-[3.2rem]",
+                )}
+                mediaClassName="aspect-[16/9] min-h-[20rem] sm:min-h-[34rem] lg:min-h-[42rem]"
               />
             </div>
           ))}
