@@ -85,9 +85,24 @@ export function ScrollReel({
   }, []);
 
   useEffect(() => {
+    if (!priority || prefersReducedMotion || hasEntered) {
+      return;
+    }
+
+    const entryTimer = setTimeout(() => {
+      setShouldLoadVideo(true);
+      setHasEntered(true);
+    }, 120);
+
+    return () => {
+      clearTimeout(entryTimer);
+    };
+  }, [hasEntered, prefersReducedMotion, priority]);
+
+  useEffect(() => {
     const node = rootRef.current;
 
-    if (!node || prefersReducedMotion) {
+    if (!node || prefersReducedMotion || priority) {
       return;
     }
 
@@ -110,7 +125,7 @@ export function ScrollReel({
           observer.disconnect();
         }
       },
-      { rootMargin: "0px", threshold: 0.16 },
+      { rootMargin: "0px 0px -5%", threshold: 0.08 },
     );
 
     observer.observe(node);
@@ -118,7 +133,7 @@ export function ScrollReel({
     return () => {
       observer.disconnect();
     };
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, priority]);
 
   const translateClass = slideFrom === "left" ? "-translate-x-full" : "translate-x-full";
   const motionClass = prefersReducedMotion
@@ -133,7 +148,7 @@ export function ScrollReel({
     <figure
       ref={rootRef}
       className={cn(
-        "group relative overflow-hidden rounded-[2rem] border border-ivory/12 bg-warm-black/72 shadow-[0_28px_70px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-700 ease-out will-change-transform",
+        "group relative overflow-hidden rounded-[2rem] border border-ivory/12 bg-warm-black/72 shadow-[0_28px_70px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-[850ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
         motionClass,
         className,
       )}
@@ -172,7 +187,7 @@ export function ScrollReel({
           </video>
         ) : null}
 
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(126,207,192,0.12),transparent_32%,rgba(168,116,69,0.16)_78%,rgba(19,35,33,0.22))] mix-blend-soft-light" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(126,207,192,0.08),transparent_34%,rgba(168,116,69,0.12)_78%,rgba(19,35,33,0.18))] mix-blend-soft-light" />
 
       </div>
     </figure>

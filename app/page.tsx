@@ -1,7 +1,8 @@
 // app/page.tsx
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, Box, MapPin, Repeat, Ruler, Sparkles } from "lucide-react";
+import { ArrowRight, MapPin, Repeat, Ruler, Sparkles } from "lucide-react";
+import { PaletteSection } from "@/components/palette-section";
 import { ScrollReel } from "@/components/scroll-reel";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 const processSteps = [
   {
     step: "01",
-    title: "Pallet recovery",
+    title: "pallet recovery",
     reel: {
       webmSrc: "/media/reels/pallet-recovery-raw-timber.webm",
       mp4Src: "/media/reels/pallet-recovery-raw-timber.mp4",
@@ -24,7 +25,7 @@ const processSteps = [
   },
   {
     step: "02",
-    title: "Grain selection",
+    title: "grain selection",
     reel: {
       webmSrc: "/media/reels/grain-selection-sorting.webm",
       mp4Src: "/media/reels/grain-selection-sorting.mp4",
@@ -34,7 +35,7 @@ const processSteps = [
   },
   {
     step: "03",
-    title: "Lamination",
+    title: "lamination",
     reel: {
       webmSrc: "/media/reels/lamination-gluing.webm",
       mp4Src: "/media/reels/lamination-gluing.mp4",
@@ -44,7 +45,7 @@ const processSteps = [
   },
   {
     step: "04",
-    title: "Shaping and sanding",
+    title: "shaping and sanding",
     reel: {
       webmSrc: "/media/reels/shaping-sanding.webm",
       mp4Src: "/media/reels/shaping-sanding.mp4",
@@ -54,7 +55,7 @@ const processSteps = [
   },
   {
     step: "05",
-    title: "Finish and handover",
+    title: "finish and handover",
     reel: {
       webmSrc: "/media/reels/finish-handover.webm",
       mp4Src: "/media/reels/finish-handover.mp4",
@@ -86,33 +87,24 @@ const values = [
     desc: "High-value deckz are built for local collection so handover remains personal and controlled.",
   },
   {
-    icon: Box,
-    title: "Boards plus merch",
-    desc: "Deckz anchor the brand, with tees, flannos, stickers, hats, beanies, and wares to follow.",
-  },
-  {
     icon: ArrowRight,
     title: "Built with rider context",
     desc: "Shape, timber, finish, and handover stay connected to how the board will actually be used.",
   },
 ];
 
-const featuredDeckz = [
-  "Reclaimed hardwood cruisers",
-  "Surfskate-inspired outlines",
-  "One-off longboard builds",
-  "OG Plankz merch drops",
-];
-
 export default function HomePage() {
   return (
     <>
-      <section className="coastal-wash plankz-watermark relative overflow-hidden text-warm-white">
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent,rgba(19,35,33,0.34))]" />
+      <PaletteSection
+        palette="dark"
+        className="coastal-wash plankz-watermark relative overflow-hidden text-warm-white"
+      >
+        <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent,rgba(19,35,33,0.42))]" />
         <div className="thin-wood-trim absolute inset-x-0 bottom-0 h-1 opacity-70" />
 
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-[4.5rem] sm:px-6 sm:py-28 lg:grid-cols-[1fr_0.88fr] lg:px-8 lg:py-32">
-          <div className="max-w-3xl">
+        <div className="relative mx-auto grid min-h-[calc(100svh-5rem)] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14 lg:px-8 lg:py-28">
+          <div className="z-10 max-w-3xl">
             <p className="text-xs font-semibold uppercase tracking-[0.32em] text-teal/90">
               PLANKZ DECKZ · Australia
             </p>
@@ -125,7 +117,7 @@ export default function HomePage() {
               Recycled. Reclaimed. One of a Kind.
             </p>
 
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-ivory/75 sm:text-lg">
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-ivory/75 sm:text-lg">
               Handmade skate deckz from reclaimed Australian hardwood.
             </p>
 
@@ -145,117 +137,65 @@ export default function HomePage() {
                 Commission a build
               </Link>
             </div>
-
-            <div className="mt-12 flex flex-wrap gap-x-7 gap-y-3 text-sm text-ivory/64">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-teal/90" />
-                Local pickup
-              </div>
-              <div className="flex items-center gap-2">
-                <Repeat className="h-4 w-4 text-teal/90" />
-                Reclaimed timber
-              </div>
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-teal/90" />
-                One-off builds
-              </div>
-            </div>
           </div>
 
-          <ScrollReel
-            webmSrc="/media/reels/coastal-board-workshop.webm"
-            mp4Src="/media/reels/coastal-board-workshop.mp4"
-            posterSrc="/media/reels/coastal-board-workshop-poster.jpg"
-            alt="Placeholder loop for coastal board and workshop footage"
-            slideFrom="right"
-            priority
-            className="min-h-[340px] bg-sand/8 sm:min-h-[420px]"
-            mediaClassName="aspect-[4/3] min-h-[340px] sm:min-h-[420px]"
-          />
-        </div>
-      </section>
-
-      <section className="bg-warm-white/86 py-20 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-teal">The drop</p>
-            <h2 className="mt-3 font-display text-4xl tracking-[0.08em] text-charcoal sm:text-5xl">
-              Reclaimed timber ride craft
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-charcoal/66">
-              The current catalogue separates one-off recycled hardwood boards from repeatable merch,
-              with sold boards retained as visible craft evidence in the gallery.
-            </p>
-          </div>
-
-          <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredDeckz.map((title, index) => (
-              <div
-                key={title}
-                className="group overflow-hidden rounded-[1.75rem] border border-charcoal/8 bg-ivory/70 shadow-[0_16px_45px_rgba(19,35,33,0.045)] transition-all hover:-translate-y-0.5 hover:shadow-[0_22px_55px_rgba(19,35,33,0.08)]"
-              >
-                <div className="woodgrain-soft relative aspect-[4/3]">
-                  <div className="absolute inset-x-8 top-1/2 h-10 -translate-y-1/2 rotate-[-8deg] rounded-full bg-[linear-gradient(90deg,#7a5335,#d9c3a2,#203a49,#a87445)] shadow-md" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(126,207,192,0.18),transparent_28%),radial-gradient(circle_at_82%_78%,rgba(245,160,160,0.14),transparent_24%)]" />
-                  <span className="absolute left-4 top-4 rounded-full bg-warm-black/70 px-3 py-1 text-xs font-bold text-ivory">
-                    0{index + 1}
-                  </span>
-                </div>
-                <div className="p-5 sm:p-6">
-                  <h3 className="font-display text-2xl tracking-[0.08em] text-charcoal">{title}</h3>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-10">
-            <Link
-              href="/shop"
-              className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.16em] text-charcoal transition-colors hover:text-copper"
-            >
-              View shop
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          <div className="relative z-0 w-full min-w-0 justify-self-center lg:justify-self-end">
+            <ScrollReel
+              webmSrc="/media/reels/coastal-board-workshop.webm"
+              mp4Src="/media/reels/coastal-board-workshop.mp4"
+              posterSrc="/media/reels/coastal-board-workshop-poster.jpg"
+              alt="Placeholder loop for coastal board and workshop footage"
+              slideFrom="right"
+              priority
+              className="mx-auto w-full max-w-[42rem] rounded-[2rem] border-ivory/12 bg-sand/8 shadow-[0_32px_90px_rgba(0,0,0,0.32)] lg:mx-0 lg:max-w-none"
+              mediaClassName="aspect-[4/3] min-h-[18rem] sm:min-h-[28rem] lg:min-h-[34rem]"
+            />
           </div>
         </div>
-      </section>
+      </PaletteSection>
 
-      <section className="woodgrain-soft border-y border-charcoal/5 py-20 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <PaletteSection
+        palette="sand"
+        className="relative overflow-hidden py-24 text-charcoal sm:py-32 lg:py-40"
+      >
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(126,207,192,0.16),transparent_26rem),radial-gradient(circle_at_86%_16%,rgba(168,116,69,0.1),transparent_28rem)]" />
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-[0.26em] text-teal">Build flow</p>
             <h2 className="mt-3 font-display text-4xl tracking-[0.08em] text-charcoal sm:text-5xl">
               From landfill-bound timber to one-off deckz
             </h2>
           </div>
-
-          <div className="mt-14 space-y-8">
-            {processSteps.map((item, index) => (
-              <div
-                key={item.step}
-                className={cn(
-                  "flex justify-center",
-                  index % 2 === 1 ? "lg:justify-end" : "lg:justify-start",
-                )}
-              >
-                <div className="w-full lg:w-1/2">
-                  <ScrollReel
-                    webmSrc={item.reel.webmSrc}
-                    mp4Src={item.reel.mp4Src}
-                    posterSrc={item.reel.posterSrc}
-                    alt={`Placeholder loop for ${item.title.toLowerCase()}`}
-                    slideFrom={item.reel.slideFrom}
-                    className="rounded-[1.6rem] border-charcoal/10 shadow-[0_18px_45px_rgba(19,35,33,0.12)]"
-                    mediaClassName="aspect-[16/10] min-h-[15rem] sm:min-h-[18rem]"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
-      </section>
 
-      <section className="relative overflow-hidden bg-warm-black py-20 text-warm-white sm:py-24">
+        <div className="relative mt-16 space-y-10 sm:mt-20 sm:space-y-14 lg:mt-24 lg:space-y-20">
+          {processSteps.map((item, index) => (
+            <div
+              key={item.step}
+              className={cn(
+                "flex w-full overflow-hidden px-0 sm:px-6 lg:px-8",
+                index % 2 === 1 ? "justify-end" : "justify-start",
+              )}
+            >
+              <ScrollReel
+                webmSrc={item.reel.webmSrc}
+                mp4Src={item.reel.mp4Src}
+                posterSrc={item.reel.posterSrc}
+                alt={`Placeholder loop for ${item.title}`}
+                slideFrom={item.reel.slideFrom}
+                className="w-full rounded-none border-0 shadow-[0_36px_100px_rgba(19,35,33,0.18)] sm:w-[78vw] sm:rounded-[2.4rem] lg:w-[75vw] lg:max-w-[78rem]"
+                mediaClassName="aspect-[16/9] min-h-[17rem] sm:min-h-[28rem] lg:min-h-[34rem]"
+              />
+            </div>
+          ))}
+        </div>
+      </PaletteSection>
+
+      <PaletteSection
+        palette="dark"
+        className="relative overflow-hidden bg-warm-black py-24 text-warm-white sm:py-32"
+      >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(126,207,192,0.12),transparent_24rem),radial-gradient(circle_at_92%_20%,rgba(245,160,160,0.07),transparent_24rem)]" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
@@ -264,8 +204,8 @@ export default function HomePage() {
               Coastal, recycled, handmade
             </h2>
             <p className="mt-4 text-base leading-relaxed text-ivory/72">
-              PLANKZ DECKZ is not a mass-manufactured board catalogue. It is a local lifestyle brand built
-              around craftsmanship, recovered materials, and individual ride objects.
+              A local lifestyle brand built around recovered materials, hand-shaped craft, and individual ride
+              objects.
             </p>
           </div>
 
@@ -279,29 +219,7 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-      </section>
-
-      <section className="bg-warm-white/90 py-20 sm:py-24">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <p className="text-xs font-bold uppercase tracking-[0.26em] text-teal">Custom work</p>
-          <h2 className="mt-3 font-display text-4xl tracking-[0.08em] text-charcoal sm:text-5xl">
-            Want a deck shaped around your ride?
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-charcoal/66">
-            Commissioned builds remain supported by the existing custom infrastructure while the public
-            browsing experience stays simple, curated, and product-led.
-          </p>
-          <div className="mt-8">
-            <Link
-              href="/custom"
-              className="inline-flex items-center gap-2 rounded-full bg-charcoal px-6 py-3 text-sm font-bold uppercase tracking-[0.16em] text-warm-white transition-colors hover:bg-charcoal/90"
-            >
-              Start a build conversation
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      </PaletteSection>
     </>
   );
 }
