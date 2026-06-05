@@ -110,14 +110,10 @@ export default function HomePage() {
             </p>
 
             <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[0.95] tracking-[0.08em] text-warm-white sm:text-7xl lg:text-8xl">
-              Hand-Crafted Skateboard Deckz
+              Recycled. Reclaimed. One of a Kind.
             </h1>
 
-            <p className="mt-7 max-w-2xl text-xl font-semibold leading-relaxed text-amber/92 sm:text-2xl">
-              Recycled. Reclaimed. One of a Kind.
-            </p>
-
-            <p className="mt-5 max-w-xl text-base leading-relaxed text-ivory/75 sm:text-lg">
+            <p className="mt-7 max-w-xl text-base leading-relaxed text-ivory/78 sm:text-lg">
               Handmade skate deckz from reclaimed Australian hardwood.
             </p>
 
@@ -169,12 +165,12 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="relative mt-16 space-y-10 sm:mt-20 sm:space-y-14 lg:mt-24 lg:space-y-20">
+        <div className="relative z-10 mt-16 space-y-10 sm:mt-20 sm:space-y-14 lg:mt-24 lg:space-y-20">
           {processSteps.map((item, index) => (
             <div
               key={item.step}
               className={cn(
-                "flex w-full overflow-hidden px-0 sm:px-6 lg:px-8",
+                "flex w-full overflow-x-clip px-0 sm:px-6 lg:px-8",
                 index % 2 === 1 ? "justify-end" : "justify-start",
               )}
             >
