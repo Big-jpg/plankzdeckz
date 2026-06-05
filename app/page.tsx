@@ -15,9 +15,7 @@ const processSteps = [
   {
     step: "01",
     title: "Pallet recovery",
-    desc: "Hardwood pallets and raw offcuts are recovered, de-nailed, and assessed before they become landfill.",
     reel: {
-      label: "Raw timber recovery",
       webmSrc: "/media/reels/pallet-recovery-raw-timber.webm",
       mp4Src: "/media/reels/pallet-recovery-raw-timber.mp4",
       posterSrc: "/media/reels/pallet-recovery-raw-timber-poster.jpg",
@@ -27,9 +25,7 @@ const processSteps = [
   {
     step: "02",
     title: "Grain selection",
-    desc: "Each blank is sorted for colour, contrast, grain direction, history, and board-strength potential.",
     reel: {
-      label: "Sorting the grain",
       webmSrc: "/media/reels/grain-selection-sorting.webm",
       mp4Src: "/media/reels/grain-selection-sorting.mp4",
       posterSrc: "/media/reels/grain-selection-sorting-poster.jpg",
@@ -39,9 +35,7 @@ const processSteps = [
   {
     step: "03",
     title: "Lamination",
-    desc: "Selected timber is prepared, glued, and pressed into a stable blank ready for the final deck profile.",
     reel: {
-      label: "Glue-up and press prep",
       webmSrc: "/media/reels/lamination-gluing.webm",
       mp4Src: "/media/reels/lamination-gluing.mp4",
       posterSrc: "/media/reels/lamination-gluing-poster.jpg",
@@ -51,9 +45,7 @@ const processSteps = [
   {
     step: "04",
     title: "Shaping and sanding",
-    desc: "Cruiser, surfskate, and longboard profiles are cut, refined, sanded, and checked by hand.",
     reel: {
-      label: "Hand-shaped deck profile",
       webmSrc: "/media/reels/shaping-sanding.webm",
       mp4Src: "/media/reels/shaping-sanding.mp4",
       posterSrc: "/media/reels/shaping-sanding-poster.jpg",
@@ -63,9 +55,7 @@ const processSteps = [
   {
     step: "05",
     title: "Finish and handover",
-    desc: "Sanding, sealing, hardware fit-up, and ride-ready inspection lead into a local builder-to-rider handover.",
     reel: {
-      label: "Finish and local handover",
       webmSrc: "/media/reels/finish-handover.webm",
       mp4Src: "/media/reels/finish-handover.mp4",
       posterSrc: "/media/reels/finish-handover-poster.jpg",
@@ -136,8 +126,7 @@ export default function HomePage() {
             </p>
 
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-ivory/75 sm:text-lg">
-              Custom-built longboard, cruiser, and surfskate deckz shaped from repurposed timber with a
-              coastal, handmade, Australian beach-lifestyle identity.
+              Handmade skate deckz from reclaimed Australian hardwood.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">
@@ -178,9 +167,6 @@ export default function HomePage() {
             mp4Src="/media/reels/coastal-board-workshop.mp4"
             posterSrc="/media/reels/coastal-board-workshop-poster.jpg"
             alt="Placeholder loop for coastal board and workshop footage"
-            eyebrow="Coastal workshop reel"
-            label="Recovered timber, ride-ready craft"
-            caption="Placeholder footage until the real Plankz Deckz coastal, board, and workshop cuts are available."
             slideFrom="right"
             priority
             className="min-h-[340px] bg-sand/8 sm:min-h-[420px]"
@@ -217,9 +203,6 @@ export default function HomePage() {
                 </div>
                 <div className="p-5 sm:p-6">
                   <h3 className="font-display text-2xl tracking-[0.08em] text-charcoal">{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-charcoal/58">
-                    Browse the live catalogue for one-off boards, merch drops, and sold-board references.
-                  </p>
                 </div>
               </div>
             ))}
@@ -244,44 +227,29 @@ export default function HomePage() {
             <h2 className="mt-3 font-display text-4xl tracking-[0.08em] text-charcoal sm:text-5xl">
               From landfill-bound timber to one-off deckz
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-charcoal/66">
-              We let the wood do the talking, then make it better: select, shape, finish, and hand over
-              locally.
-            </p>
           </div>
 
           <div className="mt-14 space-y-8">
             {processSteps.map((item, index) => (
-              <article
+              <div
                 key={item.step}
-                className="grid grid-cols-1 items-center gap-6 rounded-[2rem] border border-charcoal/8 bg-warm-white/54 p-4 shadow-[0_18px_50px_rgba(19,35,33,0.055)] backdrop-blur-sm sm:p-5 lg:grid-cols-2 lg:gap-8"
+                className={cn(
+                  "flex justify-center",
+                  index % 2 === 1 ? "lg:justify-end" : "lg:justify-start",
+                )}
               >
-                <div className={cn(index % 2 === 1 && "lg:order-2")}>
+                <div className="w-full lg:w-1/2">
                   <ScrollReel
                     webmSrc={item.reel.webmSrc}
                     mp4Src={item.reel.mp4Src}
                     posterSrc={item.reel.posterSrc}
                     alt={`Placeholder loop for ${item.title.toLowerCase()}`}
-                    eyebrow={`Step ${item.step}`}
-                    label={item.reel.label}
-                    caption="Evidence loop placeholder for the final Plankz Deckz workshop footage."
                     slideFrom={item.reel.slideFrom}
                     className="rounded-[1.6rem] border-charcoal/10 shadow-[0_18px_45px_rgba(19,35,33,0.12)]"
                     mediaClassName="aspect-[16/10] min-h-[15rem] sm:min-h-[18rem]"
                   />
                 </div>
-
-                <div className="px-2 py-4 sm:px-5 lg:px-7">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-copper/20 bg-warm-white/72 text-sm font-bold text-copper shadow-sm">
-                    {item.step}
-                  </div>
-                  <h3 className="mt-6 font-display text-3xl tracking-[0.08em] text-charcoal sm:text-4xl">
-                    {item.title}
-                  </h3>
-                  <p className="mt-4 text-base leading-relaxed text-charcoal/66">{item.desc}</p>
-                  <div className="mt-6 h-px w-28 bg-[linear-gradient(90deg,rgba(168,116,69,0.55),rgba(126,207,192,0.28),transparent)]" />
-                </div>
-              </article>
+              </div>
             ))}
           </div>
         </div>
