@@ -4,6 +4,41 @@
 :root {
   --background: #f4efe6;
   --foreground: #243230;
+  --plankz-page-bg-a: #132321;
+  --plankz-page-bg-b: #203a49;
+  --plankz-page-bg-c: #132321;
+  --plankz-page-accent-a: #7ecfc0;
+  --plankz-page-accent-b: #f5a0a0;
+}
+
+@property --plankz-page-bg-a {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #132321;
+}
+
+@property --plankz-page-bg-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #203a49;
+}
+
+@property --plankz-page-bg-c {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #132321;
+}
+
+@property --plankz-page-accent-a {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #7ecfc0;
+}
+
+@property --plankz-page-accent-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f5a0a0;
 }
 
 @theme inline {
@@ -33,11 +68,18 @@
 
 body {
   background:
-    radial-gradient(circle at 12% 8%, rgb(126 207 192 / 0.09), transparent 24rem),
-    radial-gradient(circle at 92% 4%, rgb(245 160 160 / 0.06), transparent 22rem),
-    linear-gradient(135deg, #fff8ed 0%, #f4efe6 46%, #ead8b8 100%);
+    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--plankz-page-accent-a) 12%, transparent), transparent 24rem),
+    radial-gradient(circle at 92% 4%, color-mix(in srgb, var(--plankz-page-accent-b) 8%, transparent), transparent 22rem),
+    linear-gradient(135deg, var(--plankz-page-bg-a) 0%, var(--plankz-page-bg-b) 48%, var(--plankz-page-bg-c) 100%);
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
+  transition:
+    --plankz-page-bg-a 950ms cubic-bezier(0.16, 1, 0.3, 1),
+    --plankz-page-bg-b 950ms cubic-bezier(0.16, 1, 0.3, 1),
+    --plankz-page-bg-c 950ms cubic-bezier(0.16, 1, 0.3, 1),
+    --plankz-page-accent-a 950ms cubic-bezier(0.16, 1, 0.3, 1),
+    --plankz-page-accent-b 950ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 950ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 h1,
@@ -76,7 +118,7 @@ html {
   background:
     radial-gradient(circle at 18% 18%, rgb(126 207 192 / 0.18), transparent 22rem),
     radial-gradient(circle at 84% 12%, rgb(245 160 160 / 0.1), transparent 20rem),
-    linear-gradient(135deg, rgb(19 35 33 / 0.98), rgb(32 58 73 / 0.92));
+    linear-gradient(135deg, rgb(19 35 33 / 0.9), rgb(32 58 73 / 0.82));
 }
 
 .thin-wood-trim {
@@ -87,6 +129,13 @@ html {
     rgb(126 207 192 / 0.2),
     rgb(168 116 69 / 0.3)
   );
+}
+
+.plankz-palette-section {
+  background-color: transparent;
+  transition:
+    background-color 950ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 950ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .plankz-watermark {
@@ -105,4 +154,15 @@ html {
   letter-spacing: 0.08em;
   color: rgb(255 248 237 / 0.045);
   white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  body,
+  .plankz-palette-section {
+    transition: none;
+  }
 }

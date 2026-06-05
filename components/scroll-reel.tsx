@@ -13,9 +13,6 @@ type ScrollReelProps = {
   mp4Src?: string;
   posterSrc: string;
   alt: string;
-  label?: string;
-  eyebrow?: string;
-  caption?: string;
   slideFrom?: SlideFrom;
   priority?: boolean;
   className?: string;
@@ -41,9 +38,6 @@ export function ScrollReel({
   mp4Src,
   posterSrc,
   alt,
-  label,
-  eyebrow,
-  caption,
   slideFrom = "right",
   priority = false,
   className,
@@ -52,7 +46,7 @@ export function ScrollReel({
 }: ScrollReelProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(priority);
-  const [hasEntered, setHasEntered] = useState(priority);
+  const [hasEntered, setHasEntered] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [canPlayVideo, setCanPlayVideo] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
@@ -91,9 +85,24 @@ export function ScrollReel({
   }, []);
 
   useEffect(() => {
+    if (!priority || prefersReducedMotion || hasEntered) {
+      return;
+    }
+
+    const entryTimer = setTimeout(() => {
+      setShouldLoadVideo(true);
+      setHasEntered(true);
+    }, 120);
+
+    return () => {
+      clearTimeout(entryTimer);
+    };
+  }, [hasEntered, prefersReducedMotion, priority]);
+
+  useEffect(() => {
     const node = rootRef.current;
 
-    if (!node || prefersReducedMotion) {
+    if (!node || prefersReducedMotion || priority) {
       return;
     }
 
@@ -113,9 +122,10 @@ export function ScrollReel({
         if (entry.isIntersecting) {
           setShouldLoadVideo(true);
           setHasEntered(true);
+          observer.disconnect();
         }
       },
-      { rootMargin: "220px 0px 140px" },
+      { rootMargin: "0px 0px -5%", threshold: 0.08 },
     );
 
     observer.observe(node);
@@ -123,9 +133,9 @@ export function ScrollReel({
     return () => {
       observer.disconnect();
     };
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, priority]);
 
-  const translateClass = slideFrom === "left" ? "-translate-x-8" : "translate-x-8";
+  const translateClass = slideFrom === "left" ? "-translate-x-full" : "translate-x-full";
   const motionClass = prefersReducedMotion
     ? "translate-x-0 opacity-100"
     : hasEntered
@@ -138,7 +148,7 @@ export function ScrollReel({
     <figure
       ref={rootRef}
       className={cn(
-        "group relative overflow-hidden rounded-[2rem] border border-ivory/12 bg-warm-black/72 shadow-[0_28px_70px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-700 ease-out will-change-transform",
+        "group relative overflow-hidden rounded-[2rem] border border-ivory/12 bg-warm-black/72 shadow-[0_28px_70px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-[850ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
         motionClass,
         className,
       )}
@@ -177,17 +187,8 @@ export function ScrollReel({
           </video>
         ) : null}
 
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(126,207,192,0.12),transparent_32%,rgba(168,116,69,0.16)_78%,rgba(19,35,33,0.22))] mix-blend-soft-light" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(126,207,192,0.08),transparent_34%,rgba(168,116,69,0.12)_78%,rgba(19,35,33,0.18))] mix-blend-soft-light" />
 
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-          <div className="rounded-3xl border border-warm-white/18 bg-warm-black/58 p-4 shadow-[0_18px_45px_rgba(0,0,0,0.18)] backdrop-blur-sm">
-            {eyebrow ? (
-              <p className="text-[0.68rem] font-bold uppercase tracking-[0.24em] text-coral/88">{eyebrow}</p>
-            ) : null}
-            {label ? <figcaption className="mt-1 font-display text-2xl tracking-[0.08em] text-warm-white">{label}</figcaption> : null}
-            {caption ? <p className="mt-2 text-sm leading-relaxed text-ivory/74">{caption}</p> : null}
-          </div>
-        </div>
       </div>
     </figure>
   );
