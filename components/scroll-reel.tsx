@@ -44,12 +44,13 @@ export function ScrollReel({
   mediaClassName,
   posterClassName,
 }: ScrollReelProps) {
-  const rootRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLElement | null>(null);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(priority);
-  const [hasEntered, setHasEntered] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [canPlayVideo, setCanPlayVideo] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [enhanceSlideIn, setEnhanceSlideIn] = useState(false);
+  const [hasEntered, setHasEntered] = useState(true);
 
   const sources = useMemo(() => {
     const reelSources: Array<{ src: string; type?: string }> = [];
@@ -73,7 +74,13 @@ export function ScrollReel({
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     function handleMotionPreferenceChange() {
-      setPrefersReducedMotion(motionQuery.matches);
+      const shouldReduce = motionQuery.matches;
+      setPrefersReducedMotion(shouldReduce);
+
+      if (shouldReduce) {
+        setEnhanceSlideIn(false);
+        setHasEntered(true);
+      }
     }
 
     handleMotionPreferenceChange();
@@ -85,24 +92,28 @@ export function ScrollReel({
   }, []);
 
   useEffect(() => {
-    if (!priority || prefersReducedMotion || hasEntered) {
+    const node = rootRef.current;
+
+    if (!node || prefersReducedMotion) {
       return;
     }
 
-    const entryTimer = setTimeout(() => {
-      setShouldLoadVideo(true);
-      setHasEntered(true);
-    }, 120);
+    const { top } = node.getBoundingClientRect();
+    const startsBelowViewport = top > window.innerHeight;
 
-    return () => {
-      clearTimeout(entryTimer);
-    };
-  }, [hasEntered, prefersReducedMotion, priority]);
+    if (startsBelowViewport) {
+      setEnhanceSlideIn(true);
+      setHasEntered(false);
+    } else {
+      setEnhanceSlideIn(false);
+      setHasEntered(true);
+    }
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     const node = rootRef.current;
 
-    if (!node || prefersReducedMotion || priority) {
+    if (!node || prefersReducedMotion) {
       return;
     }
 
@@ -125,7 +136,7 @@ export function ScrollReel({
           observer.disconnect();
         }
       },
-      { rootMargin: "0px 0px -5%", threshold: 0.08 },
+      { rootMargin: "160px 0px -8%", threshold: 0.01 },
     );
 
     observer.observe(node);
@@ -133,14 +144,13 @@ export function ScrollReel({
     return () => {
       observer.disconnect();
     };
-  }, [prefersReducedMotion, priority]);
+  }, [prefersReducedMotion]);
 
-  const translateClass = slideFrom === "left" ? "-translate-x-full" : "translate-x-full";
-  const motionClass = prefersReducedMotion
-    ? "translate-x-0 opacity-100"
-    : hasEntered
-      ? "translate-x-0 opacity-100"
-      : `${translateClass} opacity-0`;
+  const translateClass = slideFrom === "left" ? "-translate-x-[14vw]" : "translate-x-[14vw]";
+  const motionClass =
+    enhanceSlideIn && !hasEntered && !prefersReducedMotion
+      ? `${translateClass} opacity-90`
+      : "translate-x-0 opacity-100";
 
   const shouldRenderVideo = shouldLoadVideo && !prefersReducedMotion && !videoFailed && sources.length > 0;
 
@@ -148,17 +158,17 @@ export function ScrollReel({
     <figure
       ref={rootRef}
       className={cn(
-        "group relative overflow-hidden rounded-[2rem] border border-ivory/12 bg-warm-black/72 shadow-[0_28px_70px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-[850ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
+        "group relative block w-full overflow-hidden rounded-[2rem] border border-ivory/12 bg-warm-black/72 shadow-[0_28px_70px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
         motionClass,
         className,
       )}
     >
-      <div className={cn("relative aspect-[4/3] min-h-[18rem] overflow-hidden", mediaClassName)}>
+      <div className={cn("relative block aspect-[4/3] min-h-[18rem] w-full overflow-hidden", mediaClassName)}>
         <Image
           src={posterSrc}
           alt={alt}
           fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 620px"
+          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 78vw, 75vw"
           priority={priority}
           className={cn("object-cover", posterClassName)}
         />
@@ -174,6 +184,8 @@ export function ScrollReel({
             playsInline
             poster={posterSrc}
             preload="metadata"
+            width={1280}
+            height={720}
             onCanPlay={() => setCanPlayVideo(true)}
             onError={() => setVideoFailed(true)}
             className={cn(
@@ -188,7 +200,6 @@ export function ScrollReel({
         ) : null}
 
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(126,207,192,0.08),transparent_34%,rgba(168,116,69,0.12)_78%,rgba(19,35,33,0.18))] mix-blend-soft-light" />
-
       </div>
     </figure>
   );
