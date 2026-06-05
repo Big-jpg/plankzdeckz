@@ -9,7 +9,6 @@ type SlideFrom = "left" | "right";
 
 type ScrollReelProps = {
   src?: string;
-  webmSrc?: string;
   mp4Src?: string;
   posterSrc: string;
   alt: string;
@@ -21,10 +20,6 @@ type ScrollReelProps = {
 };
 
 function sourceType(src: string) {
-  if (src.endsWith(".webm")) {
-    return "video/webm";
-  }
-
   if (src.endsWith(".mp4") || src.endsWith(".m4v")) {
     return "video/mp4";
   }
@@ -34,7 +29,6 @@ function sourceType(src: string) {
 
 export function ScrollReel({
   src,
-  webmSrc,
   mp4Src,
   posterSrc,
   alt,
@@ -55,10 +49,6 @@ export function ScrollReel({
   const sources = useMemo(() => {
     const reelSources: Array<{ src: string; type?: string }> = [];
 
-    if (webmSrc) {
-      reelSources.push({ src: webmSrc, type: "video/webm" });
-    }
-
     if (mp4Src) {
       reelSources.push({ src: mp4Src, type: "video/mp4" });
     }
@@ -68,7 +58,7 @@ export function ScrollReel({
     }
 
     return reelSources;
-  }, [mp4Src, src, webmSrc]);
+  }, [mp4Src, src]);
 
   useEffect(() => {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
