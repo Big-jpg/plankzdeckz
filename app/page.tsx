@@ -60,6 +60,41 @@ const processSteps = [
   },
 ];
 
+const buildFlowCaptionTexts = [
+  "Locally sourced hardwood pallets destined for landfill",
+  "Handcrafted one of a kind cruisers, surfskates and longboards",
+  "We let the wood do the talking, then we make it better",
+];
+
+const buildFlowReelSizing = [
+  {
+    frameClassName: "w-[92vw] sm:w-[82vw] lg:w-[75vw]",
+    mediaClassName: "aspect-[16/9] min-h-[20rem] sm:min-h-[34rem] lg:min-h-[42rem]",
+  },
+  {
+    frameClassName: "w-[88vw] sm:w-[78vw] lg:w-[70vw]",
+    mediaClassName: "aspect-[16/9] min-h-[18rem] sm:min-h-[30rem] lg:min-h-[38rem]",
+  },
+  {
+    frameClassName: "w-[84vw] sm:w-[74vw] lg:w-[65vw]",
+    mediaClassName: "aspect-[16/9] min-h-[17rem] sm:min-h-[27rem] lg:min-h-[34rem]",
+  },
+  {
+    frameClassName: "w-[80vw] sm:w-[70vw] lg:w-[60vw]",
+    mediaClassName: "aspect-[16/9] min-h-[16rem] sm:min-h-[24rem] lg:min-h-[30rem]",
+  },
+  {
+    frameClassName: "w-[76vw] sm:w-[66vw] lg:w-[55vw]",
+    mediaClassName: "aspect-[16/9] min-h-[15rem] sm:min-h-[21rem] lg:min-h-[26rem]",
+  },
+] as const;
+
+const buildFlowCaptionPlacements = [
+  "right-3 top-4 text-right sm:right-6 sm:top-6 lg:right-8 lg:top-8",
+  "bottom-4 right-3 text-right sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-8",
+  "right-3 top-1/2 -translate-y-1/2 text-right sm:right-6 lg:right-8",
+] as const;
+
 const values = [
   {
     icon: Repeat,
@@ -160,39 +195,58 @@ export default function HomePage() {
         </div>
 
         <div className="relative z-10 mt-14 overflow-hidden sm:mt-20 lg:mt-24" aria-label="Plankz Deckz build-flow video sequence">
-          {processSteps.map((item, index) => (
-            <div
-              key={item.step}
-              className={cn(
-                "relative flex min-h-[58svh] w-full items-center overflow-x-clip py-8 sm:min-h-[68svh] sm:py-10 lg:min-h-[76svh] lg:py-12",
-                index > 0 && "-mt-[7svh] sm:-mt-[10svh] lg:-mt-[12svh]",
-                index % 2 === 1 ? "justify-end pl-[8vw]" : "justify-start pr-[8vw]",
-              )}
-            >
+          {processSteps.map((item, index) => {
+            const sizing = buildFlowReelSizing[index] ?? buildFlowReelSizing[buildFlowReelSizing.length - 1];
+            const captionIndex = Math.floor(index / 2);
+            const captionText = index % 2 === 0 ? buildFlowCaptionTexts[captionIndex % buildFlowCaptionTexts.length] : null;
+            const captionPlacement = buildFlowCaptionPlacements[captionIndex % buildFlowCaptionPlacements.length];
+
+            return (
               <div
-                aria-hidden="true"
+                key={item.step}
                 className={cn(
-                  "pointer-events-none absolute top-1/2 h-[62%] w-[42vw] -translate-y-1/2 rounded-full blur-3xl",
-                  index % 2 === 1
-                    ? "left-0 bg-teal/12"
-                    : "right-0 bg-coral/10",
+                  "relative flex min-h-[58svh] w-full items-center overflow-x-clip py-8 sm:min-h-[68svh] sm:py-10 lg:min-h-[76svh] lg:py-12",
+                  index > 0 && "-mt-[7svh] sm:-mt-[10svh] lg:-mt-[12svh]",
+                  index % 2 === 1 ? "justify-end pl-[8vw]" : "justify-start pr-[8vw]",
                 )}
-              />
-              <ScrollReel
-                mp4Src={item.reel.mp4Src}
-                posterSrc={item.reel.posterSrc}
-                alt={`Plankz Deckz ${item.title} reel`}
-                slideFrom={item.reel.slideFrom}
-                className={cn(
-                  "relative w-[92vw] border-0 shadow-[0_44px_130px_rgba(19,35,33,0.22)] sm:w-[82vw] lg:w-[75vw] lg:max-w-none",
-                  index % 2 === 1
-                    ? "rounded-l-[2.6rem] rounded-r-none sm:rounded-l-[3.2rem]"
-                    : "rounded-l-none rounded-r-[2.6rem] sm:rounded-r-[3.2rem]",
-                )}
-                mediaClassName="aspect-[16/9] min-h-[20rem] sm:min-h-[34rem] lg:min-h-[42rem]"
-              />
-            </div>
-          ))}
+              >
+                <div
+                  aria-hidden="true"
+                  className={cn(
+                    "pointer-events-none absolute top-1/2 h-[62%] w-[42vw] -translate-y-1/2 rounded-full blur-3xl",
+                    index % 2 === 1 ? "left-0 bg-teal/12" : "right-0 bg-coral/10",
+                  )}
+                />
+
+                <div className={cn("relative", sizing.frameClassName)}>
+                  <ScrollReel
+                    mp4Src={item.reel.mp4Src}
+                    posterSrc={item.reel.posterSrc}
+                    alt={`Plankz Deckz ${item.title} reel`}
+                    slideFrom={item.reel.slideFrom}
+                    className={cn(
+                      "relative border-0 shadow-[0_44px_130px_rgba(19,35,33,0.22)] lg:max-w-none",
+                      index % 2 === 1
+                        ? "rounded-l-[2.6rem] rounded-r-none sm:rounded-l-[3.2rem]"
+                        : "rounded-l-none rounded-r-[2.6rem] sm:rounded-r-[3.2rem]",
+                    )}
+                    mediaClassName={sizing.mediaClassName}
+                  />
+
+                  {captionText ? (
+                    <p
+                      className={cn(
+                        "pointer-events-none absolute z-20 max-w-[13rem] rounded-2xl border border-ivory/18 bg-warm-black/72 px-4 py-3 font-display text-2xl leading-[0.95] tracking-[0.06em] text-warm-white shadow-[0_18px_50px_rgba(19,35,33,0.34)] backdrop-blur-sm sm:max-w-[18rem] sm:px-5 sm:py-4 sm:text-4xl lg:max-w-[22rem] lg:text-5xl",
+                        captionPlacement,
+                      )}
+                    >
+                      {captionText}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </PaletteSection>
 
