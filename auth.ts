@@ -12,23 +12,38 @@ import { PlankzAdapter } from "@/server/auth/adapter";
 // Email transport configuration
 // ---------------------------------------------------------------------------
 
-// When SMTP credentials are present, use them. Otherwise, fall back to a
-// console-logging transport so dev/test works without an email service.
-function getEmailServer(): string | undefined {
-  const host = process.env.EMAIL_SERVER_HOST;
-  const port = process.env.EMAIL_SERVER_PORT;
-  const user = process.env.EMAIL_SERVER_USER;
+// Keep email delivery independent of the SMTP provider. A missing or partial
+// configuration must fail the sign-in request instead of claiming to send it.
+const emailFrom = process.env.EMAIL_FROM?.trim();
+
+function getEmailServer() {
+  const host = process.env.EMAIL_SERVER_HOST?.trim();
+  const port = Number(process.env.EMAIL_SERVER_PORT);
+  const user = process.env.EMAIL_SERVER_USER?.trim();
   const pass = process.env.EMAIL_SERVER_PASSWORD;
 
-  if (host && port && user && pass) {
-    return `smtp://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${host}:${port}`;
+  if (
+    !host ||
+    !Number.isInteger(port) ||
+    port < 1 ||
+    port > 65535 ||
+    !user ||
+    !pass ||
+    !emailFrom
+  ) {
+    return undefined;
   }
 
-  return undefined;
+  return {
+    host,
+    port,
+    secure: port === 465,
+    requireTLS: port !== 465,
+    auth: { user, pass },
+  };
 }
 
 const emailServer = getEmailServer();
-const emailFrom = process.env.EMAIL_FROM || "PLANKZ DECKZ <noreply@plankzdeckz.com>";
 
 // ---------------------------------------------------------------------------
 // Auth configuration
@@ -54,23 +69,15 @@ const authConfig: NextAuthConfig = {
   providers: [
     Nodemailer({
       server: emailServer || {
-        host: "localhost",
+        host: "127.0.0.1",
         port: 25,
-        auth: { user: "", pass: "" },
-        secure: false,
       },
-      from: emailFrom,
-      // When no email server is configured, log the magic link to console
+      from: emailFrom || "unconfigured@localhost",
       ...(emailServer
         ? {}
         : {
-            sendVerificationRequest: async ({ identifier, url }) => {
-              console.log("\n╔══════════════════════════════════════════════════════════════╗");
-              console.log("║  PLANKZ DECKZ — Magic Link (dev mode, no SMTP)             ║");
-              console.log("╠══════════════════════════════════════════════════════════════╣");
-              console.log(`║  Email: ${identifier}`);
-              console.log(`║  Link:  ${url}`);
-              console.log("╚══════════════════════════════════════════════════════════════╝\n");
+            sendVerificationRequest: async () => {
+              throw new Error("Email sign-in is not configured");
             },
           }),
     }),
