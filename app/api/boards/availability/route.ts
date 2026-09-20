@@ -4,7 +4,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getProductByHandle } from "@/lib/catalogue";
 import { isBoardProduct } from "@/lib/types";
-import { findBoardHandlesInActiveCheckoutSessions } from "@/server/stripe/reservations";
+import { isBoardHeld } from "@/server/cart/holds";
 
 export const runtime = "nodejs";
 
@@ -26,10 +26,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<BoardAvail
   const product = await getProductByHandle(handle);
 
   if (!product || !isBoardProduct(product)) {
-    return NextResponse.json(
-      { available: false, message: "Board not found." },
-      { status: 404 },
-    );
+    return NextResponse.json({ available: false, message: "Board not found." }, { status: 404 });
   }
 
   if (!product.inStock || product.availabilityStatus === "sold") {
@@ -46,13 +43,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<BoardAvail
     );
   }
 
-  const reservedHandles = await findBoardHandlesInActiveCheckoutSessions([product.handle]);
-
-  if (reservedHandles.has(product.handle)) {
+  if (await isBoardHeld(product.id)) {
     return NextResponse.json(
       {
         available: false,
-        message: "This board is currently held in another checkout session. Please try again shortly.",
+        message:
+          "This board is currently held in another checkout session. Please try again shortly.",
       },
       { status: 409 },
     );

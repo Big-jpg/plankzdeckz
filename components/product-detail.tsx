@@ -9,7 +9,7 @@ import { isBoardProduct, isMerchProduct } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
 import type { CartItem } from "@/lib/cart-types";
-import { ProductVisual } from "@/components/product-visual";
+import { ProductGallery } from "@/components/product-gallery";
 import { Toast } from "@/components/toast";
 
 function formatPrice(product: Product): string {
@@ -63,7 +63,9 @@ function StatusPill({ board }: { board: BoardProduct }) {
 
 export function ProductDetail({ product }: { product: Product }) {
   const [selectedColour] = useState<string>(product.colours[0] ?? "");
-  const [selectedSize, setSelectedSize] = useState<MerchSize | null>(() => initialMerchSize(product));
+  const [selectedSize, setSelectedSize] = useState<MerchSize | null>(() =>
+    initialMerchSize(product),
+  );
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState(`${product.title} added to cart`);
   const [isAdding, setIsAdding] = useState(false);
@@ -81,7 +83,11 @@ export function ProductDetail({ product }: { product: Product }) {
   const isBoard = isBoardProduct(product);
   const isMerch = isMerchProduct(product);
   const boardCanAdd = isBoard && product.availabilityStatus === "available" && product.inStock;
-  const merchCanAdd = isMerch && product.inStock && (!product.sizeRequired || selectedSize !== null);
+  const merchCanAdd =
+    isMerch &&
+    product.inStock &&
+    (!product.sizeRequired || selectedSize !== null) &&
+    (product.stockBySize?.[selectedSize ?? "One size"] ?? 0) > 0;
   const canAdd = (boardCanAdd || merchCanAdd) && !isAdding;
 
   const handleAddToCart = useCallback(async () => {
@@ -98,7 +104,7 @@ export function ProductDetail({ product }: { product: Product }) {
 
       const item: CartItem = {
         productId: product.id,
-        variantId: product.shopifyVariantId ?? null,
+        variantId: null,
         handle: product.handle,
         title: product.title,
         variantTitle,
@@ -166,7 +172,12 @@ export function ProductDetail({ product }: { product: Product }) {
       </div>
 
       {isBoardProduct(product) ? (
-        <BoardDetail product={product} canAdd={canAdd} isAdding={isAdding} onAddToCart={handleAddToCart} />
+        <BoardDetail
+          product={product}
+          canAdd={canAdd}
+          isAdding={isAdding}
+          onAddToCart={handleAddToCart}
+        />
       ) : (
         <MerchDetail
           product={product}
@@ -202,13 +213,7 @@ function BoardDetail({
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-9 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
           <div className="space-y-4">
-            <ProductVisual
-              productType="board"
-              title={product.title}
-              images={product.images}
-              className="aspect-[4/3] min-h-[22rem] bg-ivory/45 sm:min-h-[28rem]"
-              priority
-            />
+            <ProductGallery product={product} />
             <div className="grid grid-cols-3 gap-3">
               {["Timber", "Shape", "WA pickup"].map((label) => (
                 <div key={label} className="rounded-2xl border border-charcoal/8 bg-ivory/38 p-4">
@@ -242,8 +247,8 @@ function BoardDetail({
                 <div>
                   <p className="text-sm font-semibold text-charcoal">No configuration required</p>
                   <p className="mt-1 text-sm leading-6 text-charcoal/70">
-                    This deck is already a finished one-off piece. Add it as-is while available; once
-                    sold, it is retained in the gallery only.
+                    This deck is already a finished one-off piece. Add it as-is while available;
+                    once sold, it is retained in the gallery only.
                   </p>
                 </div>
               </div>
@@ -251,7 +256,10 @@ function BoardDetail({
 
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {product.specs.map((spec) => (
-                <div key={spec.label} className="rounded-2xl border border-charcoal/8 bg-ivory/38 p-4">
+                <div
+                  key={spec.label}
+                  className="rounded-2xl border border-charcoal/8 bg-ivory/38 p-4"
+                >
                   <dt className="text-xs font-semibold uppercase tracking-[0.18em] text-charcoal/45">
                     {spec.label}
                   </dt>
@@ -279,7 +287,9 @@ function BoardDetail({
               </div>
               <div className="flex justify-between gap-6 text-sm">
                 <span className="text-charcoal/50">Finish palette</span>
-                <span className="text-right font-medium text-charcoal">{product.colours.join(", ")}</span>
+                <span className="text-right font-medium text-charcoal">
+                  {product.colours.join(", ")}
+                </span>
               </div>
             </div>
 
@@ -339,13 +349,7 @@ function MerchDetail({
     <section className="bg-warm-white/92 py-10 sm:py-16">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 rounded-[2rem] border border-charcoal/8 bg-ivory/32 p-5 shadow-[0_18px_55px_rgba(19,35,33,0.045)] sm:p-8 lg:grid-cols-[0.9fr_1.1fr]">
-          <ProductVisual
-            productType="merch"
-            title={product.title}
-            images={product.images}
-            className="aspect-square min-h-[20rem] bg-ivory/45"
-            priority
-          />
+          <ProductGallery product={product} />
 
           <div className="flex flex-col">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-coral">
@@ -368,12 +372,15 @@ function MerchDetail({
                   <button
                     key={size}
                     type="button"
+                    disabled={(product.stockBySize?.[size] ?? 0) === 0}
                     onClick={() => setSelectedSize(size)}
                     className={cn(
                       "rounded-full border px-4 py-2 text-sm font-semibold transition-all",
-                      selectedSize === size
-                        ? "border-charcoal bg-charcoal text-warm-white"
-                        : "border-charcoal/15 bg-warm-white/78 text-charcoal hover:border-charcoal/40",
+                      (product.stockBySize?.[size] ?? 0) === 0
+                        ? "cursor-not-allowed border-charcoal/10 text-charcoal/30"
+                        : selectedSize === size
+                          ? "border-charcoal bg-charcoal text-warm-white"
+                          : "border-charcoal/15 bg-warm-white/78 text-charcoal hover:border-charcoal/40",
                     )}
                   >
                     {size}
@@ -389,11 +396,15 @@ function MerchDetail({
               </div>
               <div className="flex justify-between gap-6 text-sm">
                 <span className="text-charcoal/50">Palette</span>
-                <span className="text-right font-medium text-charcoal">{product.colours.join(", ")}</span>
+                <span className="text-right font-medium text-charcoal">
+                  {product.colours.join(", ")}
+                </span>
               </div>
               <div className="flex justify-between gap-6 text-sm">
                 <span className="text-charcoal/50">Fulfilment</span>
-                <span className="text-right font-medium text-charcoal">Western Australia local pickup</span>
+                <span className="text-right font-medium text-charcoal">
+                  Western Australia local pickup
+                </span>
               </div>
             </div>
 

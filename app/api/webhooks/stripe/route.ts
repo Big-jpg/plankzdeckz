@@ -11,6 +11,7 @@ import {
 } from "@/server/db/contracts";
 import { onOrderCreated, onPaymentConfirmed } from "@/server/hooks/buyer-events";
 import { getStripeClient, getStripeWebhookSecret } from "@/server/stripe/client";
+import { applyPaidInventory, releaseCart } from "@/server/cart/holds";
 
 export const runtime = "nodejs";
 
@@ -90,8 +91,11 @@ function productTypeFromMetadata(metadata: Stripe.Metadata | null): "board" | "m
   return metadataString(metadata, "product_type") === "merch" ? "merch" : "board";
 }
 
-function boardStyleFromMetadata(metadata: Stripe.Metadata | null): "cruiser" | "surfskate" | "longboard" | null {
-  const boardStyle = metadataString(metadata, "board_style") ?? metadataString(metadata, "board_type");
+function boardStyleFromMetadata(
+  metadata: Stripe.Metadata | null,
+): "cruiser" | "surfskate" | "longboard" | null {
+  const boardStyle =
+    metadataString(metadata, "board_style") ?? metadataString(metadata, "board_type");
   return boardStyle === "cruiser" || boardStyle === "surfskate" || boardStyle === "longboard"
     ? boardStyle
     : null;
@@ -164,10 +168,6 @@ async function persistCheckoutSessionOrder(session: Stripe.Checkout.Session): Pr
     throw new Error(`Order procedure returned no row for Stripe checkout session ${session.id}.`);
   }
 
-  if (!order.is_new) {
-    return;
-  }
-
   for (const lineItem of lineItems.data) {
     const metadata = productMetadataFromLineItem(lineItem);
 
@@ -190,6 +190,10 @@ async function persistCheckoutSessionOrder(session: Stripe.Checkout.Session): Pr
       metadata: simplifiedLineItemMetadata(metadata, lineItem),
     });
   }
+
+  await applyPaidInventory(session, lineItems.data);
+
+  if (!order.is_new) return;
 
   await onPaymentConfirmed({
     order_id: order.id,
@@ -256,6 +260,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<WebhookRe
     return NextResponse.json({ received: true, duplicate: true, processed: true });
   }
 
+  if (event.type === "checkout.session.expired") {
+    const token = (event.data.object as Stripe.Checkout.Session).metadata?.hold_token;
+    if (token) await releaseCart(token);
+    await markStripeEventProcessed(event.id);
+    return NextResponse.json({ received: true, processed: true });
+  }
   if (event.type !== "checkout.session.completed") {
     await markStripeEventProcessed(event.id);
     return NextResponse.json({ received: true, ignored: true, processed: true });

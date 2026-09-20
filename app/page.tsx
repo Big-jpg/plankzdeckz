@@ -1,283 +1,120 @@
-// app/page.tsx
-import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, MapPin, Repeat, Ruler, Sparkles } from "lucide-react";
-import { PaletteSection } from "@/components/palette-section";
-import { ScrollReel } from "@/components/scroll-reel";
-import { cn } from "@/lib/utils";
-
+import Link from "next/link";
+import { getAvailableBoards } from "@/lib/catalogue";
+import { ProductVisual } from "@/components/product-visual";
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "PLANKZ DECKZ",
+  title: "Handcrafted one of a kind deckz",
   description:
-    "Hand-crafted skateboard deckz made from recycled and reclaimed timber. One-of-a-kind boards, custom builds, merch, and local pickup.",
+    "Complete cruisers, surfskates and longboards made from reclaimed Australian timber. Shop finished boards for local pickup.",
 };
-
-const processSteps = [
-  {
-    step: "01",
-    title: "pallet recovery",
-    reel: {
-      mp4Src: "/media/reels/02-pallet-recovery.mp4",
-      posterSrc: "/media/reels/02-pallet-recovery-poster.jpg",
-      slideFrom: "left" as const,
-    },
-  },
-  {
-    step: "02",
-    title: "grain selection",
-    reel: {
-      mp4Src: "/media/reels/03-grain-selection.mp4",
-      posterSrc: "/media/reels/03-grain-selection-poster.jpg",
-      slideFrom: "right" as const,
-    },
-  },
-  {
-    step: "03",
-    title: "lamination",
-    reel: {
-      mp4Src: "/media/reels/04-lamination.mp4",
-      posterSrc: "/media/reels/04-lamination-poster.jpg",
-      slideFrom: "left" as const,
-    },
-  },
-  {
-    step: "04",
-    title: "shaping and sanding",
-    reel: {
-      mp4Src: "/media/reels/05-shaping.mp4",
-      posterSrc: "/media/reels/05-shaping-poster.jpg",
-      slideFrom: "right" as const,
-    },
-  },
-  {
-    step: "05",
-    title: "finish and handover",
-    reel: {
-      mp4Src: "/media/reels/06-finish-coastal.mp4",
-      posterSrc: "/media/reels/06-finish-coastal-poster.jpg",
-      slideFrom: "left" as const,
-    },
-  },
-];
-
-const buildFlowCaptionTexts = [
-  "Locally sourced hardwood pallets destined for landfill",
-  "Handcrafted one of a kind cruisers, surfskates and longboards",
-  "We let the wood do the talking, then we make it better",
-];
-
-const buildFlowReelSizing = [
-  {
-    frameClassName: "w-[92vw] sm:w-[82vw] lg:w-[75vw]",
-    mediaClassName: "aspect-[16/9] min-h-[20rem] sm:min-h-[34rem] lg:min-h-[42rem]",
-  },
-  {
-    frameClassName: "w-[88vw] sm:w-[78vw] lg:w-[70vw]",
-    mediaClassName: "aspect-[16/9] min-h-[18rem] sm:min-h-[30rem] lg:min-h-[38rem]",
-  },
-  {
-    frameClassName: "w-[84vw] sm:w-[74vw] lg:w-[65vw]",
-    mediaClassName: "aspect-[16/9] min-h-[17rem] sm:min-h-[27rem] lg:min-h-[34rem]",
-  },
-  {
-    frameClassName: "w-[80vw] sm:w-[70vw] lg:w-[60vw]",
-    mediaClassName: "aspect-[16/9] min-h-[16rem] sm:min-h-[24rem] lg:min-h-[30rem]",
-  },
-  {
-    frameClassName: "w-[76vw] sm:w-[66vw] lg:w-[55vw]",
-    mediaClassName: "aspect-[16/9] min-h-[15rem] sm:min-h-[21rem] lg:min-h-[26rem]",
-  },
-] as const;
-
-const buildFlowCaptionPlacements = [
-  "right-3 top-4 text-right sm:right-6 sm:top-6 lg:right-8 lg:top-8",
-  "bottom-4 right-3 text-right sm:bottom-6 sm:right-6 lg:bottom-8 lg:right-8",
-  "right-3 top-1/2 -translate-y-1/2 text-right sm:right-6 lg:right-8",
-] as const;
-
-const values = [
-  {
-    icon: Repeat,
-    title: "Recycled and reclaimed",
-    desc: "Repurposed landfill materials become premium one-off deckz rather than disposable waste.",
-  },
-  {
-    icon: Sparkles,
-    title: "One of a kind",
-    desc: "No two timber runs, resin details, or grain patterns are identical.",
-  },
-  {
-    icon: Ruler,
-    title: "Built by hand",
-    desc: "Surf-inspired shapes, longboard proportions, and custom requests are handled directly.",
-  },
-  {
-    icon: MapPin,
-    title: "Local pickup model",
-    desc: "High-value deckz are built for local collection so handover remains personal and controlled.",
-  },
-  {
-    icon: ArrowRight,
-    title: "Built with rider context",
-    desc: "Shape, timber, finish, and handover stay connected to how the board will actually be used.",
-  },
-];
-
-export default function HomePage() {
+export default async function HomePage() {
+  const boards = await getAvailableBoards();
+  const featured = boards[0];
   return (
-    <>
-      <PaletteSection
-        palette="dark"
-        className="coastal-wash plankz-watermark relative overflow-hidden text-warm-white"
-      >
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent,rgba(19,35,33,0.42))]" />
-        <div className="thin-wood-trim absolute inset-x-0 bottom-0 h-1 opacity-70" />
-
-        <div className="relative mx-auto grid min-h-[calc(100svh-5rem)] max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 sm:py-24 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14 lg:px-8 lg:py-28">
-          <div className="z-10 max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-teal/90">
-              PLANKZ DECKZ · Australia
+    <main className="bg-[#f8f2e5] text-[#332619]">
+      <section className="border-b border-[#332619]/15 px-5 py-14 sm:py-20">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[.9fr_1.1fr]">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.3em] text-[#3f817a]">
+              Western Australian ride craft
             </p>
-
-            <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[0.95] tracking-[0.08em] text-warm-white sm:text-7xl lg:text-8xl">
-              Recycled. Reclaimed. One of a Kind.
+            <h1 className="mt-6 max-w-xl font-display text-[clamp(4rem,9vw,8rem)] leading-[.84] tracking-[.025em]">
+              Reclaimed timber.
+              <br />
+              <span className="text-[#a26349]">Made to ride.</span>
             </h1>
-
-            <p className="mt-7 max-w-xl text-base leading-relaxed text-ivory/78 sm:text-lg">
-              Handmade skate deckz from reclaimed Australian hardwood.
+            <p className="mt-8 max-w-lg text-lg leading-8">
+              One of a kind complete cruisers, surfskates and longboards. Made by hand from
+              reclaimed timber, ready for their next stretch of coast.
             </p>
-
-            <div className="mt-10 flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/shop"
-                className="inline-flex items-center gap-2 rounded-full bg-amber px-6 py-3 text-sm font-bold uppercase tracking-[0.16em] text-warm-black transition-colors hover:bg-amber/90"
+                href="/shop#boards"
+                className="rounded-full bg-[#332619] px-6 py-3 font-bold uppercase tracking-widest text-[#f8f2e5]"
               >
-                Shop deckz and merch
-                <ArrowRight className="h-4 w-4" />
+                Shop deckz →
               </Link>
-
               <Link
-                href="/custom"
-                className="inline-flex items-center gap-2 rounded-full border border-ivory/28 bg-ivory/5 px-6 py-3 text-sm font-bold uppercase tracking-[0.16em] text-ivory transition-colors hover:bg-ivory/12"
+                href="/our-story"
+                className="rounded-full border border-[#332619] px-6 py-3 font-bold uppercase tracking-widest"
               >
-                Commission a build
+                Our story
               </Link>
             </div>
-          </div>
-
-          <div className="relative z-0 w-full min-w-0 justify-self-center lg:justify-self-end">
-            <ScrollReel
-              mp4Src="/media/reels/01-hero-coastal.mp4"
-              posterSrc="/media/reels/01-hero-coastal-poster.jpg"
-              alt="Coastal Plankz Deckz board and workshop reel"
-              slideFrom="right"
-              priority
-              className="mx-auto w-full max-w-[42rem] rounded-[2rem] border-ivory/12 bg-sand/8 shadow-[0_32px_90px_rgba(0,0,0,0.32)] lg:mx-0 lg:max-w-none"
-              mediaClassName="aspect-[4/3] min-h-[18rem] sm:min-h-[28rem] lg:min-h-[34rem]"
-            />
-          </div>
-        </div>
-      </PaletteSection>
-
-      <PaletteSection
-        palette="sand"
-        className="relative overflow-hidden py-24 text-charcoal sm:py-32 lg:py-40"
-      >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_8%,rgba(126,207,192,0.16),transparent_26rem),radial-gradient(circle_at_86%_16%,rgba(168,116,69,0.1),transparent_28rem)]" />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-teal">Build flow</p>
-            <h2 className="mt-3 font-display text-4xl tracking-[0.08em] text-charcoal sm:text-5xl">
-              From landfill-bound timber to one-off deckz
-            </h2>
-          </div>
-        </div>
-
-        <div className="relative z-10 mt-14 overflow-hidden sm:mt-20 lg:mt-24" aria-label="Plankz Deckz build-flow video sequence">
-          {processSteps.map((item, index) => {
-            const sizing = buildFlowReelSizing[index] ?? buildFlowReelSizing[buildFlowReelSizing.length - 1];
-            const captionIndex = Math.floor(index / 2);
-            const captionText = index % 2 === 0 ? buildFlowCaptionTexts[captionIndex % buildFlowCaptionTexts.length] : null;
-            const captionPlacement = buildFlowCaptionPlacements[captionIndex % buildFlowCaptionPlacements.length];
-
-            return (
-              <div
-                key={item.step}
-                className={cn(
-                  "relative flex min-h-[58svh] w-full items-center overflow-x-clip py-8 sm:min-h-[68svh] sm:py-10 lg:min-h-[76svh] lg:py-12",
-                  index > 0 && "-mt-[7svh] sm:-mt-[10svh] lg:-mt-[12svh]",
-                  index % 2 === 1 ? "justify-end pl-[8vw]" : "justify-start pr-[8vw]",
-                )}
-              >
-                <div
-                  aria-hidden="true"
-                  className={cn(
-                    "pointer-events-none absolute top-1/2 h-[62%] w-[42vw] -translate-y-1/2 rounded-full blur-3xl",
-                    index % 2 === 1 ? "left-0 bg-teal/12" : "right-0 bg-coral/10",
-                  )}
-                />
-
-                <div className={cn("relative", sizing.frameClassName)}>
-                  <ScrollReel
-                    mp4Src={item.reel.mp4Src}
-                    posterSrc={item.reel.posterSrc}
-                    alt={`Plankz Deckz ${item.title} reel`}
-                    slideFrom={item.reel.slideFrom}
-                    className={cn(
-                      "relative border-0 shadow-[0_44px_130px_rgba(19,35,33,0.22)] lg:max-w-none",
-                      index % 2 === 1
-                        ? "rounded-l-[2.6rem] rounded-r-none sm:rounded-l-[3.2rem]"
-                        : "rounded-l-none rounded-r-[2.6rem] sm:rounded-r-[3.2rem]",
-                    )}
-                    mediaClassName={sizing.mediaClassName}
-                  />
-
-                  {captionText ? (
-                    <p
-                      className={cn(
-                        "pointer-events-none absolute z-20 max-w-[13rem] rounded-2xl border border-ivory/18 bg-warm-black/72 px-4 py-3 font-display text-2xl leading-[0.95] tracking-[0.06em] text-warm-white shadow-[0_18px_50px_rgba(19,35,33,0.34)] backdrop-blur-sm sm:max-w-[18rem] sm:px-5 sm:py-4 sm:text-4xl lg:max-w-[22rem] lg:text-5xl",
-                        captionPlacement,
-                      )}
-                    >
-                      {captionText}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </PaletteSection>
-
-      <PaletteSection
-        palette="dark"
-        className="relative overflow-hidden bg-warm-black py-24 text-warm-white sm:py-32"
-      >
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(126,207,192,0.12),transparent_24rem),radial-gradient(circle_at_92%_20%,rgba(245,160,160,0.07),transparent_24rem)]" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-coral/88">Brand position</p>
-            <h2 className="mt-3 font-display text-4xl tracking-[0.08em] text-warm-white sm:text-5xl">
-              Coastal, recycled, handmade
-            </h2>
-            <p className="mt-4 text-base leading-relaxed text-ivory/72">
-              A local lifestyle brand built around recovered materials, hand-shaped craft, and individual ride
-              objects.
+            <p className="mt-8 text-sm font-semibold uppercase tracking-widest text-[#332619]/60">
+              Finished boards · secure checkout · local pickup
             </p>
           </div>
-
-          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {values.map((item) => (
-              <div key={item.title} className="border-l border-ivory/12 pl-5">
-                <item.icon className="h-6 w-6 text-teal/90" />
-                <h3 className="mt-5 text-base font-bold text-ivory">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ivory/66">{item.desc}</p>
+          <div className="relative">
+            {featured ? (
+              <Link href={`/products/${featured.handle}`} aria-label={`View ${featured.title}`}>
+                <ProductVisual
+                  productType="board"
+                  title={featured.title}
+                  images={featured.images}
+                  className="aspect-[4/3] rounded-sm border-0 bg-[#eadcc3] shadow-none"
+                  imageClassName="object-cover p-0 sm:p-0"
+                  priority
+                />
+                <div className="flex justify-between gap-4 border-b-2 border-[#332619] py-4">
+                  <span className="font-display text-2xl">{featured.title}</span>
+                  <span className="font-bold">
+                    {new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(
+                      featured.price,
+                    )}
+                  </span>
+                </div>
+              </Link>
+            ) : (
+              <div className="flex aspect-[4/3] items-end border border-[#332619]/15 bg-[#e7d6bd] p-8">
+                <p className="max-w-md font-display text-5xl leading-none">
+                  The next deck is being made. Come back for the first drop.
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
-      </PaletteSection>
-    </>
+      </section>
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-20 lg:grid-cols-[.7fr_1.3fr]">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[.3em] text-[#3f817a]">
+            The Plankz way
+          </p>
+          <h2 className="mt-4 font-display text-5xl">No two boards alike.</h2>
+        </div>
+        <div>
+          <p className="max-w-2xl text-xl leading-9">
+            We turn rescued timber into finished boards with their own grain, shape and feel. Each
+            listing shows the exact board you can take home, from both sides and out in the world.
+          </p>
+          <Link
+            href="/gallery"
+            className="mt-6 inline-block border-b-2 border-[#332619] pb-1 font-bold uppercase tracking-widest"
+          >
+            Explore the gallery →
+          </Link>
+        </div>
+      </section>
+      <section className="bg-[#332619] px-5 py-16 text-[#f8f2e5]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-end justify-between gap-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[.3em] text-[#8acac0]">
+              Plankz wares
+            </p>
+            <h2 className="mt-4 font-display text-5xl">The OG tee.</h2>
+            <p className="mt-3 max-w-md leading-7">
+              The first piece of Plankz gear. Check the shop for available sizes.
+            </p>
+          </div>
+          <Link
+            href="/shop#merch"
+            className="rounded-full border border-[#f8f2e5] px-6 py-3 font-bold uppercase tracking-widest"
+          >
+            Shop wares →
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }

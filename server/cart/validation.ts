@@ -70,25 +70,6 @@ function isValidMerchSize(value: unknown): value is MerchSize {
   return typeof value === "string" && VALID_MERCH_SIZES.includes(value as MerchSize);
 }
 
-function optionalString(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-function optionalStringWithFallback(primary: unknown, fallback: unknown): string | null {
-  return optionalString(primary) ?? optionalString(fallback);
-}
-
-function normaliseMetadata(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-
-  return Object.fromEntries(
-    Object.entries(value).filter(([key]) => typeof key === "string" && key.length > 0),
-  );
-}
-
 function emptyResult(errors: ValidationError[], statusCurrency = "AUD"): CartValidationResult {
   return {
     valid: false,
@@ -107,9 +88,9 @@ export async function validateCartForCheckout(
   const rawItems = input.items;
   const errors: ValidationError[] = [];
 
-  if (!Array.isArray(rawItems) || rawItems.length === 0) {
+  if (!Array.isArray(rawItems) || rawItems.length === 0 || rawItems.length > 20) {
     return emptyResult([
-      { handle: "", field: "items", message: "Cart must contain at least one item." },
+      { handle: "", field: "items", message: "Cart must contain between 1 and 20 items." },
     ]);
   }
 
@@ -140,12 +121,13 @@ export async function validateCartForCheckout(
     if (
       typeof item.quantity !== "number" ||
       item.quantity < 1 ||
+      item.quantity > 20 ||
       !Number.isInteger(item.quantity)
     ) {
       errors.push({
         handle,
         field: "quantity",
-        message: "Quantity must be a positive integer.",
+        message: "Quantity must be a whole number from 1 to 20.",
       });
       continue;
     }
@@ -234,6 +216,13 @@ export async function validateCartForCheckout(
       } else {
         selectedSize = item.selectedSize;
       }
+      if (selectedSize && (catalogueProduct.stockBySize?.[selectedSize] ?? 0) < item.quantity) {
+        errors.push({
+          handle,
+          field: "selectedSize",
+          message: `Size "${selectedSize}" is out of stock in that quantity.`,
+        });
+      }
     }
 
     currency = catalogueProduct.currency;
@@ -266,12 +255,12 @@ export async function validateCartForCheckout(
     verifiedQuantityCount += quantity;
 
     verifiedItems.push({
-      productId: optionalString(item.productId) ?? catalogueProduct.id,
-      variantId: optionalStringWithFallback(item.variantId, catalogueProduct.shopifyVariantId),
+      productId: catalogueProduct.id,
+      variantId: null,
       handle: item.handle,
-      title: optionalString(item.title) ?? catalogueProduct.title,
-      variantTitle: optionalString(item.variantTitle),
-      imageUrl: optionalString(item.imageUrl) ?? catalogueProduct.images[0] ?? null,
+      title: catalogueProduct.title,
+      variantTitle: selectedSize ? `Size ${selectedSize}` : null,
+      imageUrl: catalogueProduct.images[0] ?? null,
       unitPrice: cataloguePrice,
       unitAmount,
       totalAmount,
@@ -279,9 +268,9 @@ export async function validateCartForCheckout(
       quantity,
       productType,
       selectedSize,
-      material: optionalString(item.material) ?? catalogueProduct.material,
-      colour: optionalString(item.colour),
-      metadata: normaliseMetadata(item.metadata),
+      material: catalogueProduct.material,
+      colour: null,
+      metadata: {},
       catalogueProduct,
     });
   }

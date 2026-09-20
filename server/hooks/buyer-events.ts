@@ -29,7 +29,6 @@ interface BuyerHookContext {
   userId?: string | null;
   orderId?: string | null;
   payload?: object;
-  sendShopifyOrderSync?: boolean;
 }
 
 export interface OnCartCreatedParams {
@@ -167,7 +166,6 @@ async function runBuyerHook({
   userId = null,
   orderId = null,
   payload,
-  sendShopifyOrderSync = false,
 }: BuyerHookContext): Promise<BuyerHookResult> {
   const timestamp = new Date().toISOString();
   const eventData = {
@@ -200,10 +198,6 @@ async function runBuyerHook({
     logJson({ ...logPayload, buyer_event_id: eventId });
     console.log(`EMAIL STUB: would send ${eventType} to ${email ?? "unknown email"}`);
     console.log(`SMS STUB: would send ${eventType} to ${phone ?? "unknown phone"}`);
-
-    if (sendShopifyOrderSync && orderId) {
-      console.log(`SHOPIFY SYNC STUB: would sync order ${orderId}`);
-    }
 
     return { eventId, eventType, timestamp };
   } catch (error) {
@@ -244,7 +238,6 @@ export function onPaymentConfirmed(params: OnPaymentConfirmedParams): Promise<Bu
     phone: params.phone,
     orderId: params.order_id,
     payload: params,
-    sendShopifyOrderSync: Boolean(params.order_id),
   });
 }
 
@@ -256,7 +249,6 @@ export function onOrderCreated(params: OnOrderCreatedParams): Promise<BuyerHookR
     userId: params.user_id,
     orderId: params.order_id,
     payload: params,
-    sendShopifyOrderSync: true,
   });
 }
 
@@ -278,7 +270,6 @@ export function onPickupRequested(params: OnPickupRequestedParams): Promise<Buye
     userId: params.user_id,
     orderId: params.order_id,
     payload: params,
-    sendShopifyOrderSync: true,
   });
 }
 
@@ -290,7 +281,6 @@ export function onOrderReadyForPickup(params: OnPickupStatusParams): Promise<Buy
     userId: params.user_id,
     orderId: params.order_id,
     payload: params,
-    sendShopifyOrderSync: true,
   });
 }
 
@@ -302,7 +292,6 @@ export function onOrderCollected(params: OnPickupStatusParams): Promise<BuyerHoo
     userId: params.user_id,
     orderId: params.order_id,
     payload: params,
-    sendShopifyOrderSync: true,
   });
 }
 

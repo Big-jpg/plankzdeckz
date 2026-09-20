@@ -5,14 +5,14 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "FAQ | PLANKZ DECKZ",
   description:
-    "Frequently asked questions about PLANKZ DECKZ pricing, one-of-a-kind boards, custom orders, local pickup, and board care.",
+    "Frequently asked questions about PLANKZ DECKZ finished boards, local pickup, and board care.",
 };
 
 const faqs = [
   {
     question: "How much does a PLANKZ DECKZ board cost?",
     answer:
-      "Boards are typically priced between $900 and $1000. Final pricing depends on the board, timber selection, finish work, hardware assumptions, and any custom detail agreed before the build is confirmed.",
+      "Each finished board has its own price on its product page. The checkout price is checked against the current listing before payment begins.",
   },
   {
     question: "Is every board really one of a kind?",
@@ -20,9 +20,9 @@ const faqs = [
       "Yes. Each board is built from reclaimed hardwood pallet timber, so the grain, colour, strip layout, marks, and finish variation are unique to that deck. Once a one-off board is sold, it cannot be reproduced exactly.",
   },
   {
-    question: "Do you take custom orders?",
+    question: "Can I design a board on the site?",
     answer:
-      "Yes. Custom orders can start from a board style, approximate size, ride feel, timber preference, colour direction, or reference image. The build direction is confirmed before irreversible workshop work proceeds.",
+      "The shop currently sells completed boards only. Each listing shows the exact rideable board available for pickup.",
   },
   {
     question: "Is shipping available?",
@@ -42,12 +42,12 @@ const faqs = [
   {
     question: "Are trucks and wheels included?",
     answer:
-      "Inclusion can vary by board or custom order. Check the individual product notes or contact PLANKZ DECKZ before purchase so the deck, hardware, and intended use are clear.",
+      "Yes. Boards in the shop are complete, rideable builds. Check the individual product photos and details for the exact hardware.",
   },
   {
     question: "Can I inspect the finished board at pickup?",
     answer:
-      "Yes. Local pickup is arranged so the board can be checked at handover, including finish, timber character, dimensions, and any agreed custom details.",
+      "Yes. Local pickup is arranged so the board can be checked at handover, including finish, timber character, dimensions, and hardware.",
   },
 ];
 
@@ -59,8 +59,8 @@ export default function Page() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">Questions</p>
           <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">FAQ</h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-charcoal/75">
-            Practical answers for pricing, custom builds, reclaimed timber variation, board care,
-            and the current local-pickup-only fulfilment model.
+            Practical answers for finished boards, reclaimed timber variation, board care, and the
+            current local-pickup-only fulfilment model.
           </p>
         </div>
       </section>
@@ -82,9 +82,11 @@ export default function Page() {
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-charcoal p-8 text-warm-white sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-display text-2xl tracking-wide text-amber">Need a specific answer?</p>
+            <p className="font-display text-2xl tracking-wide text-amber">
+              Need a specific answer?
+            </p>
             <p className="mt-2 text-sm leading-7 text-warm-white/70">
-              Send through the intended board style, ride use, pickup timing, and any reference notes.
+              Send the product name and your question, or ask about pickup arrangements.
             </p>
           </div>
           <Link

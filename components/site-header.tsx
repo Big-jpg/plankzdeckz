@@ -7,10 +7,10 @@ import { useState } from "react";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
-import { UserMenu } from "@/components/user-menu";
 
 const navLinks = [
-  { href: "/shop", label: "Shop" },
+  { href: "/shop#boards", label: "Deckz" },
+  { href: "/shop#merch", label: "Wares" },
   { href: "/gallery", label: "Gallery" },
   { href: "/our-story", label: "Our Story" },
 ];
@@ -25,7 +25,7 @@ export function SiteHeader() {
         <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="PLANKZ DECKZ home">
           <Image
             src="/plankz-logo.png"
-            alt="PLANKZ DECKZ circular logo placeholder"
+            alt="PLANKZ DECKZ"
             width={56}
             height={56}
             priority
@@ -54,8 +54,6 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2.5">
-          <UserMenu />
-
           <button
             type="button"
             onClick={openDrawer}

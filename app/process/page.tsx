@@ -23,7 +23,7 @@ const processSteps = [
   },
   {
     title: "4. Shape the deck",
-    text: "The blank is cut, shaped, refined, and balanced for the intended board style, whether that direction is cruiser, longboard, surfskate, wall piece, or a custom one-off build.",
+    text: "The blank is cut, shaped, refined, and balanced as a complete cruiser, longboard, or surfskate build.",
   },
   {
     title: "5. Finish by hand",
@@ -40,7 +40,9 @@ export default function Page() {
     <main className="bg-warm-white">
       <section className="border-b border-charcoal/10 bg-weathered-gray/35 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">Workshop process</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">
+            Workshop process
+          </p>
           <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">
             How Boards Are Made
           </h1>
@@ -77,8 +79,8 @@ export default function Page() {
             </h2>
             <p className="mt-4 text-sm leading-7 text-charcoal/72">
               A finished PLANKZ DECKZ board may show different hardwood species, contrasting strips,
-              timber scars, colour shifts, and natural marks from its previous life. Those details are
-              part of the value. They are the difference between a handmade reclaimed deck and a
+              timber scars, colour shifts, and natural marks from its previous life. Those details
+              are part of the value. They are the difference between a handmade reclaimed deck and a
               mass-manufactured blank.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">

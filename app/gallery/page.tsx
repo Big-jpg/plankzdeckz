@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, Hammer, MapPin, Trees } from "lucide-react";
 import { getSoldBoards } from "@/lib/catalogue";
 import { ProductVisual } from "@/components/product-visual";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Gallery | PLANKZ DECKZ",
@@ -43,7 +44,8 @@ export default async function GalleryPage() {
                 No sold boards archived yet.
               </h2>
               <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-charcoal/65">
-                The gallery will populate once one-of-a-kind boards are marked sold in the catalogue.
+                The gallery will populate once one-of-a-kind boards are marked sold in the
+                catalogue.
               </p>
               <Link
                 href="/shop#boards"
@@ -96,13 +98,17 @@ export default async function GalleryPage() {
                         <dt className="text-xs font-semibold uppercase tracking-[0.18em] text-charcoal/45">
                           Shape
                         </dt>
-                        <dd className="mt-2 text-sm font-semibold text-charcoal">{board.boardShape}</dd>
+                        <dd className="mt-2 text-sm font-semibold text-charcoal">
+                          {board.boardShape}
+                        </dd>
                       </div>
                       <div className="rounded-2xl bg-warm-white/80 p-4">
                         <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-charcoal/45">
                           <MapPin className="h-4 w-4" /> Origin
                         </dt>
-                        <dd className="mt-2 text-sm font-semibold text-charcoal">Western Australia</dd>
+                        <dd className="mt-2 text-sm font-semibold text-charcoal">
+                          Western Australia
+                        </dd>
                       </div>
                     </dl>
 

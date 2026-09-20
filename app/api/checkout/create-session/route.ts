@@ -9,7 +9,7 @@ import { isBoardProduct, isMerchProduct } from "@/lib/types";
 import { validateCartForCheckout, type VerifiedCartItem } from "@/server/cart/validation";
 import { onCheckoutStarted } from "@/server/hooks/buyer-events";
 import { getStripeClient } from "@/server/stripe/client";
-import { findBoardHandlesInActiveCheckoutSessions } from "@/server/stripe/reservations";
+import { reserveCart, attachStripeSession, releaseCart } from "@/server/cart/holds";
 
 export const runtime = "nodejs";
 
@@ -135,7 +135,11 @@ function buildSessionMetadata(items: VerifiedCartItem[]): Stripe.MetadataParam {
     product_types: uniqueJoined(items.map((item) => item.productType)),
     board_handles: uniqueJoined(boards.map((item) => item.handle)),
     board_names: uniqueJoined(boards.map((item) => item.title)),
-    board_types: uniqueJoined(boards.map((item) => item.catalogueProduct.designFamily ?? item.material)),
+    board_types: uniqueJoined(
+      boards.map((item) =>
+        isBoardProduct(item.catalogueProduct) ? item.catalogueProduct.boardStyle : null,
+      ),
+    ),
     timber_species: uniqueJoined(
       boards.map((item) =>
         isBoardProduct(item.catalogueProduct)
@@ -171,17 +175,6 @@ function checkoutBaseUrl(request: NextRequest): string {
   return process.env.NEXT_PUBLIC_SITE_URL ?? request.nextUrl.origin;
 }
 
-async function assertNoActiveBoardReservations(items: VerifiedCartItem[]): Promise<void> {
-  const boardHandles = boardItems(items).map((item) => item.handle);
-  const reservedHandles = await findBoardHandlesInActiveCheckoutSessions(boardHandles);
-
-  if (reservedHandles.size > 0) {
-    throw new Error(
-      `Board${reservedHandles.size === 1 ? "" : "s"} ${Array.from(reservedHandles).join(", ")} already held in another active checkout session.`,
-    );
-  }
-}
-
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<CheckoutSessionResponse | CheckoutErrorResponse>> {
@@ -207,41 +200,73 @@ export async function POST(
     );
   }
 
+  let stripe: ReturnType<typeof getStripeClient>;
   try {
-    await assertNoActiveBoardReservations(validation.verifiedItems);
+    stripe = getStripeClient();
+  } catch {
+    return NextResponse.json(
+      { error: "Checkout is unavailable. Please try again later." },
+      { status: 503 },
+    );
+  }
+
+  let holdToken: string;
+  try {
+    holdToken = await reserveCart(validation.verifiedItems);
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "One or more boards are no longer available.",
+        error:
+          error instanceof Error ? error.message : "One or more boards are no longer available.",
       },
       { status: 409 },
     );
   }
 
   const baseUrl = checkoutBaseUrl(request);
-  const stripe = getStripeClient();
 
   // Expire checkout sessions after 30 minutes so one-of-a-kind boards
   // are released quickly if a buyer abandons the payment flow.
   const CHECKOUT_EXPIRY_MINUTES = 30;
   const expiresAt = Math.floor(Date.now() / 1000) + CHECKOUT_EXPIRY_MINUTES * 60;
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    expires_at: expiresAt,
-    line_items: buildLineItems(validation.verifiedItems),
-    metadata: buildSessionMetadata(validation.verifiedItems),
-    success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/checkout/cancel`,
-    allow_promotion_codes: false,
-    billing_address_collection: "auto",
-    phone_number_collection: { enabled: true },
-  });
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      expires_at: expiresAt,
+      line_items: buildLineItems(validation.verifiedItems),
+      metadata: { ...buildSessionMetadata(validation.verifiedItems), hold_token: holdToken },
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/checkout/cancel`,
+      allow_promotion_codes: false,
+      billing_address_collection: "auto",
+      phone_number_collection: { enabled: true },
+    });
+  } catch {
+    await releaseCart(holdToken);
+    return NextResponse.json(
+      { error: "Checkout could not be started. Please try again." },
+      { status: 502 },
+    );
+  }
 
   if (!session.url) {
+    await releaseCart(holdToken);
     return NextResponse.json({ error: "Stripe did not return a checkout URL." }, { status: 502 });
   }
 
+  try {
+    await attachStripeSession(holdToken, session.id);
+  } catch {
+    await stripe.checkout.sessions.expire(session.id).catch(() => undefined);
+    await releaseCart(holdToken).catch(() => undefined);
+    return NextResponse.json(
+      { error: "Checkout could not be linked to stock. Please try again." },
+      { status: 502 },
+    );
+  }
   await onCheckoutStarted({
     stripe_checkout_session_id: session.id,
     item_count: validation.verifiedItems.reduce((sum, item) => sum + item.quantity, 0),

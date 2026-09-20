@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const pickupSteps = [
   {
     title: "1. Order confirmation",
-    text: "After checkout or custom-order confirmation, PLANKZ DECKZ will confirm the order details, contact information, board notes, and expected pickup timing.",
+    text: "After checkout, PLANKZ DECKZ will confirm the order details, contact information, and expected pickup timing.",
   },
   {
     title: "2. Perth-area arrangement",
@@ -19,7 +19,7 @@ const pickupSteps = [
   },
   {
     title: "3. Direct handover",
-    text: "The handover gives you a chance to inspect the deck, finish, timber character, hardware assumptions, and any custom details before taking the board home.",
+    text: "The handover gives you a chance to inspect the deck, finish, timber character, and hardware before taking the board home.",
   },
   {
     title: "4. No shipping yet",
@@ -32,7 +32,9 @@ export default function Page() {
     <main className="bg-warm-white">
       <section className="border-b border-charcoal/10 bg-weathered-gray/35 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">Western Australia</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">
+            Western Australia
+          </p>
           <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">
             Local Pickup
           </h1>

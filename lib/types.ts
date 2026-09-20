@@ -21,21 +21,6 @@ export type ProductCategory =
   | "Merch"
   | "Experimental prototypes";
 
-/**
- * Future-ready metadata fields from the original commerce scaffold.
- * These are optional and populated from Shopify metafields when available.
- */
-export interface ProductMetadata {
-  market_event_id?: string;
-  market_source?: string;
-  qr_campaign?: string;
-  display_sample_id?: string;
-  production_queue_status?: string;
-  timber_material?: string;
-  timber_finish?: string;
-  build_profile?: string;
-}
-
 export interface ProductDimensions {
   display: string;
   lengthInches?: number;
@@ -48,7 +33,11 @@ export interface ProductDimensions {
 }
 
 interface BaseProduct {
-  /** App-level product ID. For Shopify products, this is the Shopify global ID. */
+  publicationStatus?: "draft" | "published" | "archived";
+  imageDetails?: Array<{ url: string; alt: string }>;
+  stockBySize?: Record<string, number>;
+  stockQuantity?: number;
+  /** Stable Postgres product ID. */
   id: string;
   /** URL-safe product handle (slug). */
   handle: string;
@@ -66,26 +55,6 @@ interface BaseProduct {
   colours: string[];
   boardStyles: BoardStyleLabel[];
   inStock: boolean;
-
-  // --- Shopify-specific identifiers (preserved for downstream use) ---
-
-  /** Shopify global product ID, e.g. "gid://shopify/Product/123". Null for mock data. */
-  shopifyProductId?: string | null;
-  /** Shopify global variant ID for the default/base variant. Null for mock data. */
-  shopifyVariantId?: string | null;
-
-  // --- Extended catalogue fields ---
-
-  /** Design family grouping, e.g. "Cruiser", "Longboard", "Merch". */
-  designFamily?: string | null;
-  /** Compatible board styles as raw strings from Shopify before normalisation. */
-  compatibleBoardStyles?: string[] | null;
-  /** Production notes from Shopify metafield. */
-  productionNotes?: string | null;
-
-  // --- Future-ready metadata ---
-
-  metadata?: ProductMetadata | null;
 }
 
 export interface BoardProduct extends BaseProduct {

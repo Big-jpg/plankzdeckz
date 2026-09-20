@@ -1,115 +1,155 @@
-// lib/catalogue.ts
-//
-// Product data source abstraction.
-// Checks for Shopify credentials at runtime:
-//   - If SHOPIFY_STORE_DOMAIN and SHOPIFY_STOREFRONT_ACCESS_TOKEN are set → Shopify Storefront API
-//   - Otherwise → local mock catalogue
-//
-// Phase 2 introduces two distinct catalogue schemas:
-//   - BoardProduct: one-of-a-kind craft pieces with availability status and specs
-//   - MerchProduct: repeatable wares with optional apparel size selection
-//
-// All async exports support both code paths uniformly.
-
-import type { BoardProduct, MerchProduct, Product, ProductCategory } from "./types";
+import "server-only";
+import { queryOne, queryRows } from "@/server/db/client";
+import type { BoardProduct, BoardStyle, MerchProduct, Product, ProductCategory } from "./types";
 import { isBoardProduct, isMerchProduct } from "./types";
 
-// ---------------------------------------------------------------------------
-// Data source detection
-// ---------------------------------------------------------------------------
-
-function hasRealEnvValue(value: string | undefined): value is string {
-  if (!value) return false;
-
-  const normalised = value.trim().toLowerCase();
-
-  return !["null", "undefined", "none", "nil", "false", "0", ""].includes(normalised);
+export type ProductImage = { url: string; alt: string };
+export type PublicationStatus = "draft" | "published" | "archived";
+export interface ProductRecord {
+  id: string;
+  handle: string;
+  title: string;
+  description: string;
+  product_type: "board" | "merch";
+  price_amount: number;
+  currency: string;
+  category: string | null;
+  image_urls: string[];
+  image_details: ProductImage[];
+  timber_species: string[];
+  board_style: BoardStyle | null;
+  length_cm: string | null;
+  width_cm: string | null;
+  thickness_cm: string | null;
+  board_shape: string | null;
+  availability_status: "available" | "sold" | "reserved";
+  merch_kind: string | null;
+  merch_sizes: string[];
+  stock_by_size: Record<string, number>;
+  stock_quantity: number;
+  publication_status: PublicationStatus;
+  metadata: Record<string, unknown>;
 }
 
-function isShopifyConfigured(): boolean {
-  const domain = process.env.SHOPIFY_STORE_DOMAIN?.trim();
+const columns = `id, handle, title, description, product_type, price_amount, currency, category,
+  image_urls, image_details, timber_species, board_style, length_cm, width_cm, thickness_cm,
+  board_shape, availability_status, merch_kind, merch_sizes, stock_by_size, stock_quantity,
+  publication_status, metadata`;
 
-  return (
-    hasRealEnvValue(domain) &&
-    !domain.startsWith("http://") &&
-    !domain.startsWith("https://") &&
-    hasRealEnvValue(process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN)
-  );
+function categoryFor(row: ProductRecord): ProductCategory {
+  if (row.product_type === "merch") return "Merch";
+  if (row.board_style === "surfskate") return "Surfskate deckz";
+  if (row.board_style === "longboard") return "Longboard deckz";
+  return "Reclaimed cruisers";
 }
 
-// ---------------------------------------------------------------------------
-// Mock data imports (lazy, only loaded when Shopify is not configured)
-// ---------------------------------------------------------------------------
-
-async function getMockModule() {
-  return await import("./mock-products");
+export function toProduct(row: ProductRecord): Product {
+  const images = row.image_details.length
+    ? row.image_details.map((image) => image.url)
+    : row.image_urls;
+  const dimensions = [row.length_cm, row.width_cm, row.thickness_cm].filter(Boolean).join(" × ");
+  const dimensionsDisplay = dimensions ? `${dimensions} cm` : "";
+  const common = {
+    id: row.id,
+    handle: row.handle,
+    title: row.title,
+    description: row.description,
+    price: row.price_amount / 100,
+    currency: row.currency.toUpperCase(),
+    images,
+    imageDetails: row.image_details,
+    publicationStatus: row.publication_status,
+    stockBySize: row.stock_by_size,
+    stockQuantity: row.stock_quantity,
+    material: row.timber_species.join(" / "),
+    dimensions: dimensionsDisplay,
+    colours: [],
+    boardStyles: row.board_style
+      ? [
+          row.board_style === "surfskate"
+            ? ("Surfskate" as const)
+            : row.board_style === "longboard"
+              ? ("Longboard" as const)
+              : ("Cruiser" as const),
+        ]
+      : [],
+    inStock:
+      row.product_type === "board"
+        ? row.availability_status === "available" && row.stock_quantity > 0
+        : Object.values(row.stock_by_size).some((quantity) => quantity > 0),
+  };
+  if (row.product_type === "board") {
+    return {
+      ...common,
+      productType: "board",
+      category: categoryFor(row) as BoardProduct["category"],
+      availabilityStatus: row.availability_status,
+      timberSpecies: row.timber_species,
+      boardStyle: row.board_style ?? "cruiser",
+      boardShape: row.board_shape ?? "Complete board",
+      boardDimensions: {
+        display: dimensionsDisplay,
+        lengthCm: Number(row.length_cm) || undefined,
+        widthCm: Number(row.width_cm) || undefined,
+        thicknessCm: Number(row.thickness_cm) || undefined,
+      },
+      specs: [
+        { label: "Shape", value: row.board_shape ?? "Complete board" },
+        { label: "Timber", value: row.timber_species.join(" / ") },
+        { label: "Dimensions", value: dimensionsDisplay },
+      ].filter((item) => item.value),
+      galleryNotes: row.description,
+    };
+  }
+  return {
+    ...common,
+    productType: "merch",
+    category: "Merch",
+    merchKind: "tee",
+    sizes: row.merch_sizes as MerchProduct["sizes"],
+    sizeRequired: row.merch_sizes.length > 1,
+    fitNotes: typeof row.metadata.fit_notes === "string" ? row.metadata.fit_notes : "",
+  };
 }
 
-// ---------------------------------------------------------------------------
-// Public catalogue API
-// ---------------------------------------------------------------------------
-
-/**
- * Returns all products from the active data source.
- * Server-side only — do not import in client components.
- */
 export async function getProducts(): Promise<Product[]> {
-  if (isShopifyConfigured()) {
-    const { shopifyGetProducts } = await import("./shopify");
-    return shopifyGetProducts();
-  }
-  const mock = await getMockModule();
-  return mock.products;
+  const rows = await queryRows<ProductRecord>(
+    `SELECT ${columns} FROM products WHERE publication_status = 'published'
+     AND (product_type = 'board' OR merch_kind = 'tee') ORDER BY created_at DESC`,
+  );
+  return rows.map(toProduct);
 }
-
-/**
- * Returns a single product by its URL handle, or null if not found.
- * Server-side only — do not import in client components.
- */
-export async function getProductByHandle(handle: string): Promise<Product | null> {
-  if (isShopifyConfigured()) {
-    const { shopifyGetProductByHandle } = await import("./shopify");
-    return shopifyGetProductByHandle(handle);
-  }
-  const mock = await getMockModule();
-  return mock.getProductByHandle(handle) ?? null;
+export async function getAdminProducts(): Promise<ProductRecord[]> {
+  return queryRows<ProductRecord>(`SELECT ${columns} FROM products ORDER BY updated_at DESC`);
 }
-
-/** Returns the one-of-a-kind board catalogue, including sold portfolio pieces. */
+export async function getProductByHandle(
+  handle: string,
+  includeDraft = false,
+): Promise<Product | null> {
+  const row = await queryOne<ProductRecord>(
+    `SELECT ${columns} FROM products WHERE handle = $1 AND ($2 OR publication_status = 'published')`,
+    [handle, includeDraft],
+  );
+  return row ? toProduct(row) : null;
+}
+export async function getProductRecord(id: string): Promise<ProductRecord | null> {
+  return queryOne<ProductRecord>(`SELECT ${columns} FROM products WHERE id = $1`, [id]);
+}
 export async function getBoardProducts(): Promise<BoardProduct[]> {
-  const products = await getProducts();
-  return products.filter(isBoardProduct);
+  return (await getProducts()).filter(isBoardProduct);
 }
-
-/** Returns boards currently available to purchase. */
 export async function getAvailableBoards(): Promise<BoardProduct[]> {
-  const boards = await getBoardProducts();
-  return boards.filter((board) => board.availabilityStatus === "available" && board.inStock);
+  return (await getBoardProducts()).filter((board) => board.inStock);
 }
-
-/** Returns sold boards retained as craft and portfolio evidence. */
 export async function getSoldBoards(): Promise<BoardProduct[]> {
-  const boards = await getBoardProducts();
-  return boards.filter((board) => board.availabilityStatus === "sold");
+  return (await getBoardProducts()).filter((board) => board.availabilityStatus === "sold");
 }
-
-/** Returns repeatable merch products. */
 export async function getMerchProducts(): Promise<MerchProduct[]> {
-  const products = await getProducts();
-  return products.filter(isMerchProduct);
+  return (await getProducts()).filter(isMerchProduct);
 }
-
-/**
- * Returns the list of product categories.
- * Categories are intentionally coarse for Phase 2: boards and merch have different behaviours.
- */
 export function getCategories(): ProductCategory[] {
   return ["One-of-a-kind boards", "Merch"];
 }
-
-/**
- * Returns the current catalogue data source name for diagnostics.
- */
-export function getCatalogueSource(): "shopify" | "mock" {
-  return isShopifyConfigured() ? "shopify" : "mock";
+export function getCatalogueSource(): "neon" {
+  return "neon";
 }

@@ -7,8 +7,8 @@ const footerSections = [
   {
     title: "Shop",
     links: [
-      { href: "/shop#boards", label: "Boards" },
-      { href: "/shop#merch", label: "Merch" },
+      { href: "/shop#boards", label: "Deckz" },
+      { href: "/shop#merch", label: "Wares" },
       { href: "/gallery", label: "Gallery" },
     ],
   },
@@ -16,10 +16,7 @@ const footerSections = [
     title: "Brand",
     links: [
       { href: "/our-story", label: "Our Story" },
-      { href: "/materials", label: "Reclaimed Materials" },
-      { href: "/process", label: "Build Process" },
       { href: "/pickup", label: "Local Pickup" },
-      { href: "/faq", label: "FAQ" },
       { href: "/contact", label: "Contact" },
     ],
   },
@@ -61,7 +58,7 @@ export function SiteFooter() {
             <div className="flex items-center gap-3">
               <Image
                 src="/plankz-logo.png"
-                alt="PLANKZ DECKZ circular logo placeholder"
+                alt="PLANKZ DECKZ"
                 width={64}
                 height={64}
                 className="h-14 w-14 rounded-full object-contain"
@@ -74,11 +71,8 @@ export function SiteFooter() {
               </div>
             </div>
             <p className="text-sm leading-relaxed text-ivory/74">
-              Hand-crafted recycled timber deckz, shaped for coastal flow and local handover.
-            </p>
-            <p className="text-sm leading-relaxed text-ivory/52">
-              Built from repurposed materials with a quieter, one-of-a-kind browsing experience around
-              the craft rather than the interface.
+              One of a kind complete boards from reclaimed timber. Made to ride, ready for local
+              pickup.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
               {socialLinks.map((social) => (
@@ -123,8 +117,8 @@ export function SiteFooter() {
 
         <div className="mt-12 border-t border-ivory/10 pt-8">
           <p className="text-center text-xs text-ivory/48">
-            &copy; {new Date().getFullYear()} PLANKZ DECKZ. All rights reserved. Hand-crafted recycled
-            timber deckz for local pickup.
+            &copy; {new Date().getFullYear()} PLANKZ DECKZ. All rights reserved. Hand-crafted
+            recycled timber deckz for local pickup.
           </p>
         </div>
       </div>

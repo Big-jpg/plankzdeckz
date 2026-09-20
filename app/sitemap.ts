@@ -2,6 +2,8 @@
 import type { MetadataRoute } from "next";
 import { getProducts } from "@/lib/catalogue";
 
+export const dynamic = "force-dynamic";
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://plankzdeckz.com";
 
 const publicRoutes: Array<{
@@ -11,7 +13,6 @@ const publicRoutes: Array<{
 }> = [
   { path: "/", changeFrequency: "weekly", priority: 1 },
   { path: "/shop", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/custom", changeFrequency: "monthly", priority: 0.8 },
   { path: "/our-story", changeFrequency: "monthly", priority: 0.8 },
   { path: "/gallery", changeFrequency: "monthly", priority: 0.7 },
   { path: "/materials", changeFrequency: "monthly", priority: 0.7 },

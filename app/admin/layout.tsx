@@ -14,7 +14,6 @@ export const metadata: Metadata = {
 const adminLinks = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/custom-requests", label: "Custom Requests" },
   { href: "/admin/products", label: "Products" },
 ];
 
@@ -30,8 +29,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <div>
               <h1 className="font-display text-4xl font-semibold">PLANKZ operations</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-warm-white/70">
-                Restricted operational surface for orders, pickup transitions, custom requests, and
-                catalogue visibility.
+                Products, orders, and local pickup in one place.
               </p>
             </div>
             <p className="text-sm text-warm-white/60">Signed in as {admin.email}</p>

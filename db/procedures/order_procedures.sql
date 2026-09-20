@@ -170,7 +170,13 @@ BEGIN
     p_colour,
     COALESCE(p_metadata, '{}'::jsonb)
   )
+  ON CONFLICT DO NOTHING
   RETURNING order_items.id INTO v_id;
+
+  IF v_id IS NULL AND p_metadata ? 'stripe_line_item_id' THEN
+    SELECT oi.id INTO v_id FROM order_items oi
+    WHERE oi.metadata->>'stripe_line_item_id' = p_metadata->>'stripe_line_item_id';
+  END IF;
 
   RETURN v_id;
 END;
