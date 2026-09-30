@@ -7,6 +7,13 @@ import { cn } from "@/lib/utils";
 
 type SlideFrom = "left" | "right";
 
+type PlaybackPreferences = {
+  reducedMotion: boolean;
+  saveData: boolean;
+};
+
+type DataConnection = EventTarget & { readonly saveData?: boolean };
+
 type ScrollReelProps = {
   src?: string;
   mp4Src?: string;
@@ -39,12 +46,18 @@ export function ScrollReel({
   posterClassName,
 }: ScrollReelProps) {
   const rootRef = useRef<HTMLElement | null>(null);
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(priority);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  // Priority applies to the poster, not to video before browser preferences are known.
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const [preferences, setPreferences] = useState<PlaybackPreferences | null>(null);
   const [canPlayVideo, setCanPlayVideo] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const [enhanceSlideIn, setEnhanceSlideIn] = useState(false);
   const [hasEntered, setHasEntered] = useState(true);
+
+  const prefersReducedMotion = preferences?.reducedMotion ?? true;
+  const allowVideo = preferences !== null && !preferences.reducedMotion && !preferences.saveData;
 
   const sources = useMemo(() => {
     const reelSources: Array<{ src: string; type?: string }> = [];
@@ -62,29 +75,36 @@ export function ScrollReel({
 
   useEffect(() => {
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const connection = (navigator as Navigator & { connection?: DataConnection }).connection;
 
-    function handleMotionPreferenceChange() {
-      const shouldReduce = motionQuery.matches;
-      setPrefersReducedMotion(shouldReduce);
+    function handlePreferencesChange() {
+      const reducedMotion = motionQuery.matches;
+      const saveData = connection?.saveData === true;
+      setPreferences({ reducedMotion, saveData });
 
-      if (shouldReduce) {
+      if (reducedMotion || saveData) {
+        setIsInView(false);
+        setShouldLoadVideo(false);
+        setCanPlayVideo(false);
         setEnhanceSlideIn(false);
         setHasEntered(true);
       }
     }
 
-    handleMotionPreferenceChange();
-    motionQuery.addEventListener("change", handleMotionPreferenceChange);
+    handlePreferencesChange();
+    motionQuery.addEventListener("change", handlePreferencesChange);
+    connection?.addEventListener?.("change", handlePreferencesChange);
 
     return () => {
-      motionQuery.removeEventListener("change", handleMotionPreferenceChange);
+      motionQuery.removeEventListener("change", handlePreferencesChange);
+      connection?.removeEventListener?.("change", handlePreferencesChange);
     };
   }, []);
 
   useEffect(() => {
     const node = rootRef.current;
 
-    if (!node || prefersReducedMotion) {
+    if (!node || !allowVideo || !("IntersectionObserver" in window)) {
       return;
     }
 
@@ -98,35 +118,26 @@ export function ScrollReel({
       setEnhanceSlideIn(false);
       setHasEntered(true);
     }
-  }, [prefersReducedMotion]);
+  }, [allowVideo]);
 
   useEffect(() => {
     const node = rootRef.current;
 
-    if (!node || prefersReducedMotion) {
+    // Without visibility observation, retain the poster rather than starting every reel.
+    if (!node || !allowVideo || !("IntersectionObserver" in window)) {
       return;
-    }
-
-    if (!("IntersectionObserver" in window)) {
-      const fallbackTimer = setTimeout(() => {
-        setShouldLoadVideo(true);
-        setHasEntered(true);
-      }, 0);
-
-      return () => {
-        clearTimeout(fallbackTimer);
-      };
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
+        setIsInView(entry.isIntersecting);
+
         if (entry.isIntersecting) {
           setShouldLoadVideo(true);
           setHasEntered(true);
-          observer.disconnect();
         }
       },
-      { rootMargin: "160px 0px -8%", threshold: 0.01 },
+      { threshold: 0.01 },
     );
 
     observer.observe(node);
@@ -134,7 +145,34 @@ export function ScrollReel({
     return () => {
       observer.disconnect();
     };
-  }, [prefersReducedMotion]);
+  }, [allowVideo]);
+
+  const shouldRenderVideo = shouldLoadVideo && allowVideo && !videoFailed && sources.length > 0;
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video || !shouldRenderVideo) {
+      return;
+    }
+
+    const updatePlayback = () => {
+      if (isInView && !document.hidden) {
+        // Autoplay can be denied even for muted media. The poster remains the fallback.
+        void video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    };
+
+    updatePlayback();
+    document.addEventListener("visibilitychange", updatePlayback);
+
+    return () => {
+      document.removeEventListener("visibilitychange", updatePlayback);
+      video.pause();
+    };
+  }, [isInView, shouldRenderVideo]);
 
   const translateClass = slideFrom === "left" ? "-translate-x-[14vw]" : "translate-x-[14vw]";
   const motionClass =
@@ -142,13 +180,12 @@ export function ScrollReel({
       ? `${translateClass} opacity-90`
       : "translate-x-0 opacity-100";
 
-  const shouldRenderVideo = shouldLoadVideo && !prefersReducedMotion && !videoFailed && sources.length > 0;
-
   return (
     <figure
       ref={rootRef}
+      data-reel-policy={preferences === null ? "pending" : allowVideo ? "allowed" : "poster"}
       className={cn(
-        "group relative block w-full overflow-hidden rounded-[2rem] border border-ivory/12 bg-warm-black/72 shadow-[0_28px_70px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform",
+        "group relative block w-full overflow-hidden rounded-[2rem] border border-ivory/12 bg-warm-black/72 shadow-[0_28px_70px_rgba(0,0,0,0.22)] transition-[opacity,transform] duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
         motionClass,
         className,
       )}
@@ -167,19 +204,19 @@ export function ScrollReel({
 
         {shouldRenderVideo ? (
           <video
+            ref={videoRef}
             aria-label={alt}
-            autoPlay
             loop
             muted
             playsInline
-            poster={posterSrc}
             preload="metadata"
             width={1280}
             height={720}
-            onCanPlay={() => setCanPlayVideo(true)}
+            onPlaying={() => setCanPlayVideo(true)}
+            onPause={() => setCanPlayVideo(false)}
             onError={() => setVideoFailed(true)}
             className={cn(
-              "absolute inset-0 h-full w-full object-cover transition-opacity duration-500",
+              "absolute inset-0 h-full w-full object-cover transition-opacity duration-500 motion-reduce:transition-none",
               canPlayVideo ? "opacity-100" : "opacity-0",
             )}
           >
