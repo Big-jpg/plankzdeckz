@@ -33,6 +33,7 @@ export interface ProductDimensions {
 }
 
 interface BaseProduct {
+  displayOnly?: boolean;
   publicationStatus?: "draft" | "published" | "archived";
   imageDetails?: Array<{ url: string; alt: string }>;
   stockBySize?: Record<string, number>;

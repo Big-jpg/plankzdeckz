@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getAvailableBoards, getMerchProducts } from "@/lib/catalogue";
 import type { Product } from "@/lib/types";
 import { ProductVisual } from "@/components/product-visual";
+import { getPhotoReviewItems } from "@/lib/photo-review";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Shop",
@@ -35,7 +36,11 @@ function Card({ product }: { product: Product }) {
   );
 }
 export default async function ShopPage() {
-  const [boards, wares] = await Promise.all([getAvailableBoards(), getMerchProducts()]);
+  const [boards, wares, photoReviews] = await Promise.all([
+    getAvailableBoards(),
+    getMerchProducts(),
+    getPhotoReviewItems(),
+  ]);
   const tees = wares.filter((product) => product.inStock && product.merchKind === "tee");
   return (
     <main className="bg-[#f8f2e5] text-[#332619]">
@@ -47,6 +52,14 @@ export default async function ShopPage() {
             Finished boards are individually photographed and sold once. The OG tee is stocked by
             size. Everything is collected locally by arrangement.
           </p>
+          {photoReviews.length > 0 && (
+            <Link
+              href="/photo-review"
+              className="mt-5 inline-block border-b border-[#332619] pb-1 font-semibold"
+            >
+              Review supplied photos · local preview →
+            </Link>
+          )}
         </div>
       </header>
       <section id="boards" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-16">

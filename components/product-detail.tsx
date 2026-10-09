@@ -11,6 +11,7 @@ import { useCart } from "@/lib/cart-context";
 import type { CartItem } from "@/lib/cart-types";
 import { ProductGallery } from "@/components/product-gallery";
 import { Toast } from "@/components/toast";
+import { hasSupportedSaleDetails, isPurchasableProduct } from "@/lib/sellability";
 
 function formatPrice(product: Product): string {
   return `$${product.price.toFixed(0)} ${product.currency}`;
@@ -82,10 +83,11 @@ export function ProductDetail({ product }: { product: Product }) {
 
   const isBoard = isBoardProduct(product);
   const isMerch = isMerchProduct(product);
-  const boardCanAdd = isBoard && product.availabilityStatus === "available" && product.inStock;
+  const saleAllowed = isPurchasableProduct(product);
+  const boardCanAdd = saleAllowed && isBoard;
   const merchCanAdd =
     isMerch &&
-    product.inStock &&
+    saleAllowed &&
     (!product.sizeRequired || selectedSize !== null) &&
     (product.stockBySize?.[selectedSize ?? "One size"] ?? 0) > 0;
   const canAdd = (boardCanAdd || merchCanAdd) && !isAdding;
@@ -171,7 +173,20 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
       </div>
 
-      {isBoardProduct(product) ? (
+      {!hasSupportedSaleDetails(product) ? (
+        <section className="bg-warm-white/92 py-10 sm:py-16">
+          <div className="mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+            <ProductGallery product={product} />
+            <div>
+              <h1 className="font-display text-4xl font-bold text-charcoal sm:text-5xl">
+                {product.title}
+              </h1>
+              <p className="mt-5 font-semibold text-charcoal">Not available for sale</p>
+              <p className="mt-6 text-base leading-8 text-charcoal/75">{product.description}</p>
+            </div>
+          </div>
+        </section>
+      ) : isBoardProduct(product) ? (
         <BoardDetail
           product={product}
           canAdd={canAdd}

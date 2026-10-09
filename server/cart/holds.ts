@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import type Stripe from "stripe";
 import { pool } from "@/server/db/client";
 import type { VerifiedCartItem } from "./validation";
+import { canReserveLockedProduct } from "@/lib/sellability";
 
 export async function reserveCart(items: VerifiedCartItem[]): Promise<string> {
   const token = randomUUID();
@@ -15,22 +16,23 @@ export async function reserveCart(items: VerifiedCartItem[]): Promise<string> {
       publication_status: string;
       price_amount: number;
       product_type: string;
+      currency: string;
+      merch_kind: string | null;
+      merch_sizes: string[];
+      metadata: Record<string, unknown>;
       availability_status: string;
       stock_quantity: number;
       stock_by_size: Record<string, number>;
     }>(
-      `SELECT id,publication_status,price_amount,product_type,availability_status,stock_quantity,stock_by_size
+      `SELECT id,publication_status,price_amount,product_type,currency,merch_kind,merch_sizes,
+       metadata,availability_status,stock_quantity,stock_by_size
        FROM products WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE`,
       [ids],
     );
     const byId = new Map(locked.rows.map((row) => [row.id, row]));
     for (const item of items) {
       const product = byId.get(item.productId);
-      if (
-        !product ||
-        product.publication_status !== "published" ||
-        product.price_amount !== item.unitAmount
-      )
+      if (!product || !canReserveLockedProduct(product, item))
         throw new Error("A product changed. Please refresh your cart.");
       if (item.productType === "board") {
         if (product.availability_status !== "available" || product.stock_quantity !== 1)

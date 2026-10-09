@@ -3,7 +3,7 @@
 // Protects /account/* and /admin/* routes by redirecting unauthenticated users to /login.
 // Admin email allowlist enforcement happens server-side via Auth.js session checks.
 // Guest checkout (/cart, /checkout/*) is NOT protected.
-// All other public routes pass through unmodified.
+// Local photo review routes are unavailable in production.
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -15,6 +15,18 @@ const SESSION_COOKIE_NAMES = ["authjs.session-token", "__Secure-authjs.session-t
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Reject private/reserved routes before Next.js starts streaming page HTML.
+  if (
+    (process.env.NODE_ENV !== "development" &&
+      (pathname === "/photo-review" || pathname.startsWith("/photo-review/"))) ||
+    pathname.startsWith("/products/photo-review-")
+  ) {
+    return new NextResponse("Not found", {
+      status: 404,
+      headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" },
+    });
+  }
 
   // Only protect account and admin routes.
   if (pathname.startsWith("/account") || pathname.startsWith("/admin")) {
@@ -31,6 +43,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Only run middleware on protected page routes. Exclude API routes, static files, etc.
-  matcher: ["/account/:path*", "/admin/:path*"],
+  matcher: ["/account/:path*", "/admin/:path*", "/photo-review/:path*", "/products/:path*"],
 };

@@ -12,6 +12,14 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+__pycache__/
+*.py[cod]
+
+# Private photo intake and local review derivatives (release requires owner approval)
+/.photo-intake/
+/public/photo-review/
 
 # next.js
 /.next/

@@ -14,6 +14,8 @@ An allowed admin signs in and creates a board or OG tee. The editor saves incomp
 
 Checkout revalidates the current database price and stock. A Postgres hold reserves each board or tee quantity before a Stripe session is created. The verified paid webhook records the order and applies stock changes idempotently. Sessions expire after 30 minutes; the matching expiry event releases the hold. Pickup details are tracked in the existing order admin.
 
+For private photo intake, local non-purchasable category previews, reproducible derivatives, and photo-only saves that preserve price and stock, follow [the photography operator guide](docs/photo-intake.md). This workflow needs no migration and does not publish incoming imagery.
+
 ## Preview verification
 
 Apply the migration and Blob token to a preview environment first. Create a draft, edit it, upload four original product views, preview, publish, and confirm the public URL. Exercise stale price, unavailable size, simultaneous board checkouts, abandoned session, and duplicate webhook cases. Confirm the order and pickup fields before any production migration or deployment. No product imagery or inventory is seeded by this repository.
