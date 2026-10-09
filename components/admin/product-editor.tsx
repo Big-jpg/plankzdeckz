@@ -32,9 +32,35 @@ const slug = (value: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+
+export function isPhotoOnlyProductSave(
+  saved: ProductInput,
+  current: ProductInput,
+  publicationStatus: ProductInput["publicationStatus"],
+): boolean {
+  function productFields(input: ProductInput): string {
+    const fields = Object.entries(input)
+      .filter(([key]) => key !== "images")
+      .map(([key, value]) => [
+        key,
+        key === "stockBySize"
+          ? Object.entries(value as ProductInput["stockBySize"]).sort(([a], [b]) =>
+              a.localeCompare(b),
+            )
+          : value,
+      ])
+      .sort(([a], [b]) => String(a).localeCompare(String(b)));
+    return JSON.stringify(fields);
+  }
+  return (
+    publicationStatus === saved.publicationStatus && productFields(saved) === productFields(current)
+  );
+}
+
 export function ProductEditor({ id, initial }: { id?: string; initial?: ProductInput }) {
   const router = useRouter();
   const [data, setData] = useState<ProductInput>(initial ?? blank);
+  const [saved, setSaved] = useState<ProductInput>(initial ?? blank);
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -42,6 +68,11 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
     setData((current) => ({ ...current, [key]: value }));
   }
   async function save(publicationStatus: ProductInput["publicationStatus"]) {
+    // Preview saves must not send stale sale fields when only photos were edited.
+    if (id && isPhotoOnlyProductSave(saved, data, publicationStatus)) {
+      await savePhotos();
+      return;
+    }
     setBusy(true);
     setMessage("");
     try {
@@ -53,6 +84,7 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Could not save product.");
       update("publicationStatus", publicationStatus);
+      setSaved({ ...data, publicationStatus });
       setMessage("Saved.");
       router.refresh();
       if (!id) router.replace(`/admin/products/${result.id}`);
@@ -85,6 +117,27 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
     } finally {
       setBusy(false);
       event.target.value = "";
+    }
+  }
+  async function savePhotos() {
+    if (!id) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ images: data.images }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error ?? "Could not save photos.");
+      setSaved((current) => ({ ...current, images: data.images }));
+      setMessage("Photos saved. Price, stock, and publication status are unchanged.");
+      router.refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not save photos.");
+    } finally {
+      setBusy(false);
     }
   }
   function move(index: number, delta: number) {
@@ -411,10 +464,18 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
           <button
             type="button"
             disabled={busy}
-            onClick={() => save(data.publicationStatus === "published" ? "published" : "draft")}
+            onClick={() =>
+              id && step === 2
+                ? savePhotos()
+                : save(data.publicationStatus === "published" ? "published" : "draft")
+            }
             className="rounded-full border border-charcoal px-5 py-3 font-bold"
           >
-            {data.publicationStatus === "published" ? "Save changes" : "Save draft"}
+            {id && step === 2
+              ? "Save photos only"
+              : data.publicationStatus === "published"
+                ? "Save changes"
+                : "Save draft"}
           </button>
           {step < 3 ? (
             <button

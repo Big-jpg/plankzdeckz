@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  outputFileTracingExcludes: {
+    "/*": ["./.photo-intake/**/*"],
+  },
   async redirects() {
     return [
       { source: "/custom", destination: "/shop", permanent: false },

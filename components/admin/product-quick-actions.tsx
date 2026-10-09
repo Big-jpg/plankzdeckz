@@ -61,7 +61,7 @@ export function ProductQuickActions({ id, initial }: { id: string; initial: Prod
             save({
               ...product,
               availabilityStatus: product.availabilityStatus === "sold" ? "available" : "sold",
-              stockQuantity: 1,
+              stockQuantity: product.availabilityStatus === "sold" ? 1 : 0,
             })
           }
           className="rounded-lg border border-charcoal/20 px-3 py-2"

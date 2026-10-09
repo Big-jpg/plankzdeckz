@@ -2,6 +2,7 @@ import "server-only";
 import { queryOne, queryRows } from "@/server/db/client";
 import type { BoardProduct, BoardStyle, MerchProduct, Product, ProductCategory } from "./types";
 import { isBoardProduct, isMerchProduct } from "./types";
+import { hasDisplayOnlyFlag, isPhotoReviewHandle, isPurchasableRecord } from "./sellability";
 
 export type ProductImage = { url: string; alt: string };
 export type PublicationStatus = "draft" | "published" | "archived";
@@ -44,6 +45,8 @@ function categoryFor(row: ProductRecord): ProductCategory {
 }
 
 export function toProduct(row: ProductRecord): Product {
+  if (row.product_type !== "board" && (row.product_type !== "merch" || row.merch_kind !== "tee"))
+    throw new Error("Unsupported commerce product type.");
   const images = row.image_details.length
     ? row.image_details.map((image) => image.url)
     : row.image_urls;
@@ -59,6 +62,7 @@ export function toProduct(row: ProductRecord): Product {
     images,
     imageDetails: row.image_details,
     publicationStatus: row.publication_status,
+    displayOnly: hasDisplayOnlyFlag(row.metadata),
     stockBySize: row.stock_by_size,
     stockQuantity: row.stock_quantity,
     material: row.timber_species.join(" / "),
@@ -73,10 +77,7 @@ export function toProduct(row: ProductRecord): Product {
               : ("Cruiser" as const),
         ]
       : [],
-    inStock:
-      row.product_type === "board"
-        ? row.availability_status === "available" && row.stock_quantity > 0
-        : Object.values(row.stock_by_size).some((quantity) => quantity > 0),
+    inStock: isPurchasableRecord(row),
   };
   if (row.product_type === "board") {
     return {
@@ -115,7 +116,7 @@ export function toProduct(row: ProductRecord): Product {
 export async function getProducts(): Promise<Product[]> {
   const rows = await queryRows<ProductRecord>(
     `SELECT ${columns} FROM products WHERE publication_status = 'published'
-     AND (product_type = 'board' OR merch_kind = 'tee') ORDER BY created_at DESC`,
+     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind = 'tee')) ORDER BY created_at DESC`,
   );
   return rows.map(toProduct);
 }
@@ -126,8 +127,10 @@ export async function getProductByHandle(
   handle: string,
   includeDraft = false,
 ): Promise<Product | null> {
+  if (isPhotoReviewHandle(handle)) return null;
   const row = await queryOne<ProductRecord>(
-    `SELECT ${columns} FROM products WHERE handle = $1 AND ($2 OR publication_status = 'published')`,
+    `SELECT ${columns} FROM products WHERE handle = $1 AND ($2 OR publication_status = 'published')
+     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind = 'tee'))`,
     [handle, includeDraft],
   );
   return row ? toProduct(row) : null;
