@@ -3,10 +3,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart-context";
+import { SALES_ENABLED } from "@/lib/commerce-config";
 
 const navLinks = [
   { href: "/shop#boards", label: "Deckz" },
@@ -17,10 +18,19 @@ const navLinks = [
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const { itemCount, openDrawer } = useCart();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-charcoal/8 bg-warm-white/88 shadow-[0_12px_36px_rgba(19,35,33,0.04)] backdrop-blur-md">
+    <header
+      className="sticky top-0 z-50 w-full border-b border-charcoal/8 bg-warm-white/88 shadow-[0_12px_36px_rgba(19,35,33,0.04)] backdrop-blur-md"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && mobileOpen) {
+          setMobileOpen(false);
+          menuButton.current?.focus();
+        }
+      }}
+    >
       <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="PLANKZ DECKZ home">
           <Image
@@ -54,25 +64,30 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={openDrawer}
-            className="relative flex items-center justify-center rounded-full border border-charcoal/10 bg-ivory/70 p-2.5 text-charcoal/72 transition-colors hover:border-teal/50 hover:bg-warm-white hover:text-charcoal"
-            aria-label={`Cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
-          >
-            <ShoppingBag className="h-5 w-5" />
-            {itemCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-coral text-[10px] font-bold text-charcoal">
-                {itemCount > 99 ? "99+" : itemCount}
-              </span>
-            )}
-          </button>
+          {SALES_ENABLED && (
+            <button
+              type="button"
+              onClick={openDrawer}
+              className="relative flex items-center justify-center rounded-full border border-charcoal/10 bg-ivory/70 p-3 text-charcoal/72 transition-colors hover:border-teal/50 hover:bg-warm-white hover:text-charcoal"
+              aria-label={`Cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
+            >
+              <ShoppingBag className="h-5 w-5" />
+              {itemCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-coral text-[10px] font-bold text-charcoal">
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
+              )}
+            </button>
+          )}
 
           <button
+            ref={menuButton}
             type="button"
-            className="flex items-center justify-center rounded-full border border-charcoal/10 bg-ivory/70 p-2.5 text-charcoal/72 transition-colors hover:border-teal/50 hover:bg-warm-white hover:text-charcoal md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
+            className="flex items-center justify-center rounded-full border border-charcoal/10 bg-ivory/70 p-3 text-charcoal/72 transition-colors hover:border-teal/50 hover:bg-warm-white hover:text-charcoal md:hidden"
+            onClick={() => setMobileOpen((open) => !open)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -81,6 +96,8 @@ export function SiteHeader() {
       <div className="thin-wood-trim h-px opacity-70" />
 
       <div
+        id="mobile-navigation"
+        hidden={!mobileOpen}
         className={cn(
           "overflow-hidden bg-warm-white/96 transition-all duration-200 ease-in-out md:hidden",
           mobileOpen ? "max-h-80 border-t border-charcoal/8" : "max-h-0",

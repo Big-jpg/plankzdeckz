@@ -1,6 +1,7 @@
 // app/sitemap.ts
 import type { MetadataRoute } from "next";
 import { getProducts } from "@/lib/catalogue";
+import { PUBLIC_CATALOGUE } from "@/lib/public-catalogue";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ function absoluteUrl(path: string): string {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
-  const products = await getProducts();
+  const products = await getProducts().catch(() => []);
 
   return [
     ...publicRoutes.map((route) => ({
@@ -38,6 +39,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified,
       changeFrequency: route.changeFrequency,
       priority: route.priority,
+    })),
+    ...PUBLIC_CATALOGUE.map((item) => ({
+      url: absoluteUrl("/shop/" + item.handle),
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
     })),
     ...products.map((product) => ({
       url: absoluteUrl(`/products/${product.handle}`),

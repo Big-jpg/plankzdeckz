@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAvailableBoards } from "@/lib/catalogue";
+import { getPublicCatalogueItems } from "@/lib/public-catalogue";
 import { ProductVisual } from "@/components/product-visual";
-export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Handcrafted one of a kind deckz",
   description:
-    "Complete cruisers, surfskates and longboards made from reclaimed Australian timber. Shop finished boards for local pickup.",
+    "Complete cruisers, surfskates and longboards made from reclaimed Australian timber. Explore the board and wares photo catalogue.",
 };
-export default async function HomePage() {
-  const boards = await getAvailableBoards();
+export default function HomePage() {
+  const boards = getPublicCatalogueItems("boards");
   const featured = boards[0];
   return (
-    <main className="bg-[#f8f2e5] text-[#332619]">
+    <div className="bg-[#f8f2e5] text-[#332619]">
       <section className="border-b border-[#332619]/15 px-5 py-14 sm:py-20">
         <div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[.9fr_1.1fr]">
           <div>
@@ -26,14 +25,14 @@ export default async function HomePage() {
             </h1>
             <p className="mt-8 max-w-lg text-lg leading-8">
               One of a kind complete cruisers, surfskates and longboards. Made by hand from
-              reclaimed timber, ready for their next stretch of coast.
+              reclaimed timber. Explore the boards and the details that make each one different.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/shop#boards"
                 className="rounded-full bg-[#332619] px-6 py-3 font-bold uppercase tracking-widest text-[#f8f2e5]"
               >
-                Shop deckz →
+                Explore deckz →
               </Link>
               <Link
                 href="/our-story"
@@ -43,27 +42,23 @@ export default async function HomePage() {
               </Link>
             </div>
             <p className="mt-8 text-sm font-semibold uppercase tracking-widest text-[#332619]/60">
-              Finished boards · secure checkout · local pickup
+              Boards, wares & details · online sales currently closed
             </p>
           </div>
           <div className="relative">
             {featured ? (
-              <Link href={`/products/${featured.handle}`} aria-label={`View ${featured.title}`}>
+              <Link href={`/shop/${featured.handle}`} aria-label={`View ${featured.title}`}>
                 <ProductVisual
                   productType="board"
                   title={featured.title}
-                  images={featured.images}
+                  images={featured.images.map((image) => image.url)}
                   className="aspect-[4/3] rounded-sm border-0 bg-[#eadcc3] shadow-none"
-                  imageClassName="object-cover p-0 sm:p-0"
+                  imageClassName="object-contain p-0 sm:p-0"
                   priority
                 />
                 <div className="flex justify-between gap-4 border-b-2 border-[#332619] py-4">
                   <span className="font-display text-2xl">{featured.title}</span>
-                  <span className="font-bold">
-                    {new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(
-                      featured.price,
-                    )}
-                  </span>
+                  <span className="font-semibold">View photos →</span>
                 </div>
               </Link>
             ) : (
@@ -85,8 +80,8 @@ export default async function HomePage() {
         </div>
         <div>
           <p className="max-w-2xl text-xl leading-9">
-            We turn rescued timber into finished boards with their own grain, shape and feel. Each
-            listing shows the exact board you can take home, from both sides and out in the world.
+            We turn rescued timber into finished boards with their own grain, shape and feel. The
+            collection shows each photographed board from both sides and out in the world.
           </p>
           <Link
             href="/gallery"
@@ -104,17 +99,17 @@ export default async function HomePage() {
             </p>
             <h2 className="mt-4 font-display text-5xl">The OG tee.</h2>
             <p className="mt-3 max-w-md leading-7">
-              The first piece of Plankz gear. Check the shop for available sizes.
+              The first piece of Plankz gear. Explore the tee, caps, flannos, bearings and stickers.
             </p>
           </div>
           <Link
             href="/shop#merch"
             className="rounded-full border border-[#f8f2e5] px-6 py-3 font-bold uppercase tracking-widest"
           >
-            Shop wares →
+            Explore wares →
           </Link>
         </div>
       </section>
-    </main>
+    </div>
   );
 }

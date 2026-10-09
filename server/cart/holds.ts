@@ -4,8 +4,10 @@ import type Stripe from "stripe";
 import { pool } from "@/server/db/client";
 import type { VerifiedCartItem } from "./validation";
 import { canReserveLockedProduct } from "@/lib/sellability";
+import { SALES_ENABLED, SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
 
 export async function reserveCart(items: VerifiedCartItem[]): Promise<string> {
+  if (!SALES_ENABLED) throw new Error(SALES_DISABLED_MESSAGE);
   const token = randomUUID();
   const client = await pool.connect();
   try {

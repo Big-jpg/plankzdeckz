@@ -10,6 +10,7 @@ import { validateCartForCheckout, type VerifiedCartItem } from "@/server/cart/va
 import { onCheckoutStarted } from "@/server/hooks/buyer-events";
 import { getStripeClient } from "@/server/stripe/client";
 import { reserveCart, attachStripeSession, releaseCart } from "@/server/cart/holds";
+import { SALES_ENABLED, SALES_DISABLED_CODE, SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
 
 export const runtime = "nodejs";
 
@@ -20,6 +21,7 @@ interface CheckoutSessionResponse {
 
 interface CheckoutErrorResponse {
   error: string;
+  code?: string;
   details?: unknown;
 }
 
@@ -178,6 +180,13 @@ function checkoutBaseUrl(request: NextRequest): string {
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse<CheckoutSessionResponse | CheckoutErrorResponse>> {
+  if (!SALES_ENABLED) {
+    return NextResponse.json(
+      { error: SALES_DISABLED_MESSAGE, code: SALES_DISABLED_CODE },
+      { status: 403 },
+    );
+  }
+
   let body: unknown;
 
   try {

@@ -12,6 +12,7 @@ import type { CartItem } from "@/lib/cart-types";
 import { ProductGallery } from "@/components/product-gallery";
 import { Toast } from "@/components/toast";
 import { hasSupportedSaleDetails, isPurchasableProduct } from "@/lib/sellability";
+import { SALES_ENABLED } from "@/lib/commerce-config";
 
 function formatPrice(product: Product): string {
   return `$${product.price.toFixed(0)} ${product.currency}`;
@@ -83,7 +84,7 @@ export function ProductDetail({ product }: { product: Product }) {
 
   const isBoard = isBoardProduct(product);
   const isMerch = isMerchProduct(product);
-  const saleAllowed = isPurchasableProduct(product);
+  const saleAllowed = SALES_ENABLED && isPurchasableProduct(product);
   const boardCanAdd = saleAllowed && isBoard;
   const merchCanAdd =
     isMerch &&
@@ -173,7 +174,7 @@ export function ProductDetail({ product }: { product: Product }) {
         </div>
       </div>
 
-      {!hasSupportedSaleDetails(product) ? (
+      {!SALES_ENABLED || !hasSupportedSaleDetails(product) ? (
         <section className="bg-warm-white/92 py-10 sm:py-16">
           <div className="mx-auto grid max-w-5xl gap-8 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
             <ProductGallery product={product} />
@@ -181,7 +182,11 @@ export function ProductDetail({ product }: { product: Product }) {
               <h1 className="font-display text-4xl font-bold text-charcoal sm:text-5xl">
                 {product.title}
               </h1>
-              <p className="mt-5 font-semibold text-charcoal">Not available for sale</p>
+              <p className="mt-5 font-semibold text-charcoal">
+                {SALES_ENABLED
+                  ? "Not available for sale"
+                  : "Online purchases are currently disabled"}
+              </p>
               <p className="mt-6 text-base leading-8 text-charcoal/75">{product.description}</p>
             </div>
           </div>

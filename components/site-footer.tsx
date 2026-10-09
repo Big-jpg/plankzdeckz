@@ -71,8 +71,8 @@ export function SiteFooter() {
               </div>
             </div>
             <p className="text-sm leading-relaxed text-ivory/74">
-              One of a kind complete boards from reclaimed timber. Made to ride, ready for local
-              pickup.
+              One of a kind complete boards from reclaimed timber. Made to ride. Explore the boards
+              and wares in our photo catalogue.
             </p>
             <div className="flex flex-wrap gap-3 pt-1">
               {socialLinks.map((social) => (

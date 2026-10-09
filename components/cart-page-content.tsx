@@ -9,6 +9,7 @@ import { Minus, Plus, Shirt, ShoppingBag, Trash2 } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { cartItemKey } from "@/lib/cart-types";
 import { cn } from "@/lib/utils";
+import { SALES_ENABLED, SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
 
 interface CheckoutCreateSessionResponse {
   sessionId?: string;
@@ -28,6 +29,7 @@ export function CartPageContent() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   async function handleCheckout(): Promise<void> {
+    if (!SALES_ENABLED) return;
     setCheckoutError(null);
     setIsCheckingOut(true);
 
@@ -53,6 +55,27 @@ export function CartPageContent() {
       );
       setIsCheckingOut(false);
     }
+  }
+
+  if (!SALES_ENABLED) {
+    return (
+      <section className="bg-warm-white py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border border-charcoal/10 bg-ivory/40 p-8 text-center sm:p-12">
+            <h1 className="font-display text-2xl font-semibold text-charcoal">
+              Browse the collection
+            </h1>
+            <p className="mt-4 text-sm leading-7 text-charcoal/65">{SALES_DISABLED_MESSAGE}</p>
+            <Link
+              href="/shop"
+              className="mt-6 inline-flex rounded-full bg-charcoal px-6 py-3 text-sm font-semibold text-warm-white transition-colors hover:bg-charcoal/90"
+            >
+              View deckz and wares
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
   }
 
   if (state.items.length === 0) {
@@ -146,12 +169,14 @@ export function CartPageContent() {
                         </span>
                         {item.productType === "merch" && item.selectedSize && (
                           <span>
-                            Size: <span className="font-medium text-charcoal">{item.selectedSize}</span>
+                            Size:{" "}
+                            <span className="font-medium text-charcoal">{item.selectedSize}</span>
                           </span>
                         )}
                         {item.material && (
                           <span>
-                            Timber: <span className="font-medium text-charcoal">{item.material}</span>
+                            Timber:{" "}
+                            <span className="font-medium text-charcoal">{item.material}</span>
                           </span>
                         )}
                         {item.colour && (
@@ -194,7 +219,9 @@ export function CartPageContent() {
                             ${(item.unitPrice * item.quantity).toFixed(2)}
                           </p>
                           {item.quantity > 1 && (
-                            <p className="text-xs text-charcoal/50">${item.unitPrice.toFixed(2)} each</p>
+                            <p className="text-xs text-charcoal/50">
+                              ${item.unitPrice.toFixed(2)} each
+                            </p>
                           )}
                         </div>
                       </div>
@@ -241,7 +268,8 @@ export function CartPageContent() {
               </div>
 
               <p className="mt-6 rounded-lg border border-amber/20 bg-amber/5 p-4 text-xs leading-relaxed text-charcoal/80">
-                Local pickup only. Handmade board timber character and finish may vary by available reclaimed material.
+                Local pickup only. Handmade board timber character and finish may vary by available
+                reclaimed material.
               </p>
 
               <button
