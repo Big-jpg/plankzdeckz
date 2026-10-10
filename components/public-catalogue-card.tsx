@@ -14,7 +14,7 @@ export function PublicCatalogueCard({ item, context, wide = false }: PublicCatal
   const href = `/shop/${item.handle}${context ? `?category=${context}` : ""}`;
 
   return (
-    <article className={`pc-card${wide ? " pc-card--wide" : ""}`} data-catalogue-card={item.handle}>
+    <article className="pc-card" data-catalogue-card={item.handle}>
       <Link className="pc-card-link" href={href}>
         <div className="pc-card-frame">
           <Image
@@ -28,17 +28,9 @@ export function PublicCatalogueCard({ item, context, wide = false }: PublicCatal
             }
             className="pc-contained-image"
           />
-          <span className="pc-photo-count">
-            {item.images.length} {item.images.length === 1 ? "photo" : "photos"}
-          </span>
         </div>
         <div className="pc-card-copy">
-          <div>
-            <h3>{item.title}</h3>
-            {wide && <p className="pc-card-description">{item.description}</p>}
-            <span className="pc-card-action">View the photos</span>
-            {item.category === "jackets" && <p className="pc-card-note">Not available for sale</p>}
-          </div>
+          <h3>{item.title}</h3>
           <span className="pc-card-arrow" aria-hidden="true">
             <ArrowUpRight size={19} />
           </span>

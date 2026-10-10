@@ -65,36 +65,16 @@ export default async function PublicCatalogueDetail({
         </Link>
         <div className="pc-detail-layout">
           <FadeContent className="pc-detail-heading">
-            <p className="pc-eyebrow">
-              {category.title} / {item.images.length}{" "}
-              {item.images.length === 1 ? "photo" : "photos"}
-            </p>
             <h1>{item.title}</h1>
           </FadeContent>
           <PublicCatalogueGallery title={item.title} images={item.images} />
-          <FadeContent className="pc-detail-copy">
-            <p className="pc-detail-description">{item.description}</p>
-            <div className="pc-sale-note">
-              <ArrowUpRight size={20} aria-hidden="true" />
-              <div>
-                <p>Online sales are currently closed</p>
-                <p>
-                  {item.category === "jackets"
-                    ? "This jacket is not available for sale."
-                    : "This is a photo catalogue. You cannot purchase this item here."}
-                </p>
-              </div>
-            </div>
-            <Link href={backHref} className="pc-text-link">
-              Keep looking <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-          </FadeContent>
+          <p className="pc-sales-status pc-detail-copy">Online sales are currently closed</p>
         </div>
 
         {related.length > 0 && (
           <section className="pc-related" aria-labelledby="related-heading">
             <div className="pc-related-heading">
-              <h2 id="related-heading">More {category.title.toLowerCase()}.</h2>
+              <h2 id="related-heading">More {category.title.toLowerCase()}</h2>
               <Link className="pc-text-link" href={`/shop?category=${item.category}#catalogue`}>
                 View all {category.title.toLowerCase()}{" "}
                 <ArrowUpRight size={16} aria-hidden="true" />
@@ -107,11 +87,6 @@ export default async function PublicCatalogueDetail({
             </div>
           </section>
         )}
-        <div className="pc-detail-end">
-          <Link className="pc-text-link" href="/shop#catalogue">
-            <ArrowLeft size={16} aria-hidden="true" /> The whole collection
-          </Link>
-        </div>
       </div>
     </div>
   );

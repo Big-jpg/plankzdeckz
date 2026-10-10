@@ -56,11 +56,6 @@ for (const width of [360, 390, 768, 1440]) {
       "page",
     );
 
-    await page.locator(".pc-feature-link").click();
-    await expect(page).toHaveURL(/\/shop\/board-1\?category=hats$/);
-    await page.getByRole("link", { name: "Back to hats", exact: true }).click();
-    await expect(page.locator("[data-catalogue-card]")).toHaveCount(5);
-
     const hat = PUBLIC_CATALOGUE.find((item) => item.handle === "hat-beige")!;
     const card = page.locator('[data-catalogue-card="hat-beige"] a');
     await card.focus();
@@ -169,7 +164,7 @@ test("category browsing and every detail photo remain accessible without JavaScr
   await context.close();
 });
 
-test("touch gallery changes the photo and jacket copy stays non-purchasable", async ({
+test("touch gallery changes the photo while jacket sales stay disabled", async ({
   browser,
   baseURL,
 }) => {
@@ -182,9 +177,6 @@ test("touch gallery changes the photo and jacket copy stays non-purchasable", as
     const page = await context.newPage();
     await page.goto("/shop/jacket-beige", { waitUntil: "domcontentloaded" });
     await expectClosedCatalogue(page);
-    await expect(
-      page.getByText("This jacket is not available for sale.", { exact: true }),
-    ).toBeVisible();
     const jacket = PUBLIC_CATALOGUE.find((item) => item.handle === "jacket-beige")!;
     const gallery = page.getByRole("region", { name: `Photos of ${jacket.title}` });
     const photo = gallery.locator("[data-gallery-image]");
@@ -217,7 +209,7 @@ test("touch gallery changes the photo and jacket copy stays non-purchasable", as
         touchPoints: [],
       });
       await expect(photo).toHaveAttribute("alt", jacket.images[1].alt);
-      await expect(page.getByRole("heading", { name: "More jackets." })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "More jackets" })).toBeVisible();
     } finally {
       await session.detach();
     }

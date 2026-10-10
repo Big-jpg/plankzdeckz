@@ -99,26 +99,19 @@ export function PublicCatalogueGallery({ title, images }: PublicCatalogueGallery
           <Maximize2 size={13} aria-hidden="true" /> Larger photo
         </a>
       </div>
-      <div className="pc-gallery-controls">
-        {multiple && (
+      {multiple && (
+        <div className="pc-gallery-controls">
           <button type="button" onClick={() => changePhoto(-1)} aria-label="Previous photo">
             <ArrowLeft size={19} aria-hidden="true" />
           </button>
-        )}
-        <p role="status" aria-live="polite" aria-atomic="true">
-          <span>
+          <p role="status" aria-live="polite" aria-atomic="true">
             {String(active + 1).padStart(2, "0")} / {String(images.length).padStart(2, "0")}
-          </span>
-          <span className="pc-gallery-hint">
-            {multiple ? "Swipe or use the arrows" : "One closer look"}
-          </span>
-        </p>
-        {multiple && (
+          </p>
           <button type="button" onClick={() => changePhoto(1)} aria-label="Next photo">
             <ArrowRight size={19} aria-hidden="true" />
           </button>
-        )}
-      </div>
+        </div>
+      )}
       {multiple && (
         <div className="pc-gallery-thumbnails" ref={thumbnails} aria-label="Choose a photo">
           {images.map((image, index) => (
@@ -143,7 +136,6 @@ export function PublicCatalogueGallery({ title, images }: PublicCatalogueGallery
           ))}
         </div>
       )}
-      <p className="pc-gallery-caption">{photo.alt}</p>
       <noscript>
         <ul className="pc-gallery-fallback">
           {images.map((image, index) => (
