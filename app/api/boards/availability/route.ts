@@ -5,6 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getProductByHandle } from "@/lib/catalogue";
 import { isBoardProduct } from "@/lib/types";
 import { isBoardHeld } from "@/server/cart/holds";
+import { SALES_ENABLED, SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,13 @@ interface BoardAvailabilityResponse {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse<BoardAvailabilityResponse>> {
+  if (!SALES_ENABLED) {
+    return NextResponse.json(
+      { available: false, message: SALES_DISABLED_MESSAGE },
+      { status: 403 },
+    );
+  }
+
   const handle = request.nextUrl.searchParams.get("handle")?.trim();
 
   if (!handle) {

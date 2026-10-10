@@ -8,7 +8,12 @@ import {
   isPurchasableRecord,
   type SaleRecord,
 } from "@/lib/sellability";
-import { preflightCartInput, validateCartItems } from "@/server/cart/validation-core";
+import {
+  preflightCartInput,
+  salesDisabledCartResult,
+  validateCartItems,
+} from "@/server/cart/validation-core";
+import { SALES_ENABLED, SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
 
 function board(): BoardProduct {
   return {
@@ -306,4 +311,17 @@ test("missing flags retain existing sales while ambiguous display-only metadata 
   expect(hasDisplayOnlyFlag({ display_only: false })).toBe(false);
   expect(hasDisplayOnlyFlag({ display_only: null })).toBe(true);
   expect(hasDisplayOnlyFlag(null)).toBe(true);
+});
+
+test("the release closes sales with no verified inventory or price claims", () => {
+  expect(SALES_ENABLED).toBe(false);
+  expect(salesDisabledCartResult()).toEqual({
+    valid: false,
+    errors: [{ handle: "", field: "sales", message: SALES_DISABLED_MESSAGE }],
+    verifiedSubtotal: 0,
+    claimedSubtotal: 0,
+    currency: "AUD",
+    itemCount: 0,
+    verifiedItems: [],
+  });
 });

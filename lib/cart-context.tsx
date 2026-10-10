@@ -18,6 +18,7 @@ import {
   CART_STORAGE_KEY,
   cartItemKey,
 } from "./cart-types";
+import { SALES_ENABLED } from "./commerce-config";
 
 // ---------------------------------------------------------------------------
 // Actions
@@ -172,6 +173,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   const addItem = useCallback((item: CartItem) => {
+    if (!SALES_ENABLED) return;
     dispatch({ type: "ADD_ITEM", payload: item });
     setDrawerOpen(true);
   }, []);
@@ -189,7 +191,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = useCallback(() => dispatch({ type: "CLEAR_CART" }), []);
 
-  const openDrawer = useCallback(() => setDrawerOpen(true), []);
+  const openDrawer = useCallback(() => {
+    if (SALES_ENABLED) setDrawerOpen(true);
+  }, []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   const itemCount = useMemo(

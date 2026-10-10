@@ -13,10 +13,12 @@ export const metadata: Metadata = {
 };
 
 export default async function GalleryPage() {
-  const soldBoards = await getSoldBoards();
+  const { soldBoards, archiveUnavailable } = await getSoldBoards()
+    .then((soldBoards) => ({ soldBoards, archiveUnavailable: false }))
+    .catch(() => ({ soldBoards: [], archiveUnavailable: true }));
 
   return (
-    <main className="bg-warm-white">
+    <div className="bg-warm-white">
       <section className="border-b border-charcoal/10 bg-charcoal py-16 text-warm-white sm:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl">
@@ -41,17 +43,18 @@ export default async function GalleryPage() {
             <div className="rounded-3xl border border-charcoal/10 bg-ivory/60 p-10 text-center">
               <Hammer className="mx-auto h-10 w-10 text-charcoal/30" />
               <h2 className="mt-4 font-display text-3xl font-bold text-charcoal">
-                No sold boards archived yet.
+                {archiveUnavailable
+                  ? "The board archive is temporarily unavailable."
+                  : "No sold boards archived yet."}
               </h2>
               <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-charcoal/65">
-                The gallery will populate once one-of-a-kind boards are marked sold in the
-                catalogue.
+                Explore the current board photo collection for full views and details.
               </p>
               <Link
                 href="/shop#boards"
                 className="mt-6 inline-flex items-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-semibold text-warm-white"
               >
-                Browse available boards <ArrowRight className="h-4 w-4" />
+                Browse the board collection <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           ) : (
@@ -125,6 +128,6 @@ export default async function GalleryPage() {
           )}
         </div>
       </section>
-    </main>
+    </div>
   );
 }

@@ -8,13 +8,14 @@ import { Minus, Plus, Shirt, ShoppingBag, Trash2, X } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { cartItemKey } from "@/lib/cart-types";
 import { cn } from "@/lib/utils";
+import { SALES_ENABLED } from "@/lib/commerce-config";
 
 export function CartDrawer() {
   const { state, itemCount, subtotal, currency, drawerOpen, closeDrawer, removeItem, setQuantity } =
     useCart();
 
   useEffect(() => {
-    if (drawerOpen) {
+    if (SALES_ENABLED && drawerOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
@@ -23,6 +24,8 @@ export function CartDrawer() {
       document.body.style.overflow = "";
     };
   }, [drawerOpen]);
+
+  if (!SALES_ENABLED) return null;
 
   return (
     <>

@@ -1,111 +1,91 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getAvailableBoards, getMerchProducts } from "@/lib/catalogue";
-import type { Product } from "@/lib/types";
-import { ProductVisual } from "@/components/product-visual";
-import { getPhotoReviewItems } from "@/lib/photo-review";
-export const dynamic = "force-dynamic";
+import FadeContent from "@/components/react-bits/fade-content";
+import { PublicCatalogueCard } from "@/components/public-catalogue-card";
+import { PUBLIC_CATALOGUE, PUBLIC_CATALOGUE_CATEGORIES } from "@/lib/public-catalogue";
+import "./catalogue.css";
+
 export const metadata: Metadata = {
-  title: "Shop",
-  description: "Shop finished one of a kind Plankz Deckz boards and the OG tee for local pickup.",
+  title: "Deckz & wares",
+  description: "Plankz boards, hats, tees, jackets, bearings and stickers.",
+  alternates: { canonical: "/shop" },
 };
-function Card({ product }: { product: Product }) {
-  return (
-    <Link href={`/products/${product.handle}`} className="group block">
-      <ProductVisual
-        productType={product.productType}
-        title={product.title}
-        images={product.images}
-        className="aspect-[4/5] rounded-sm border-0 bg-[#eee3d2] shadow-none"
-        imageClassName="object-cover p-0 transition-transform duration-300 group-hover:scale-[1.03] sm:p-0"
-      />
-      <div className="flex items-start justify-between gap-3 border-b border-[#3c2b20]/25 py-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[.2em] text-[#3f817a]">
-            {product.productType === "board" ? "One of a kind complete deck" : "OG logo tee"}
-          </p>
-          <h3 className="mt-1 font-display text-3xl text-[#332619]">{product.title}</h3>
-        </div>
-        <span className="whitespace-nowrap font-bold text-[#332619]">
-          {new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" }).format(
-            product.price,
-          )}
-        </span>
-      </div>
-    </Link>
-  );
+
+interface ShopPageProps {
+  searchParams: Promise<{ category?: string | string[] }>;
 }
-export default async function ShopPage() {
-  const [boards, wares, photoReviews] = await Promise.all([
-    getAvailableBoards(),
-    getMerchProducts(),
-    getPhotoReviewItems(),
-  ]);
-  const tees = wares.filter((product) => product.inStock && product.merchKind === "tee");
+
+export default async function ShopPage({ searchParams }: ShopPageProps) {
+  const query = await searchParams;
+  const selected = PUBLIC_CATALOGUE_CATEGORIES.find(
+    (category) => category.key === query.category,
+  )?.key;
+  const categories = selected
+    ? PUBLIC_CATALOGUE_CATEGORIES.filter((category) => category.key === selected)
+    : PUBLIC_CATALOGUE_CATEGORIES;
+
   return (
-    <main className="bg-[#f8f2e5] text-[#332619]">
-      <header className="border-b border-[#332619]/15 px-5 py-16">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[.3em] text-[#3f817a]">The shop</p>
-          <h1 className="mt-4 font-display text-6xl sm:text-8xl">Deckz & wares.</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8">
-            Finished boards are individually photographed and sold once. The OG tee is stocked by
-            size. Everything is collected locally by arrangement.
-          </p>
-          {photoReviews.length > 0 && (
-            <Link
-              href="/photo-review"
-              className="mt-5 inline-block border-b border-[#332619] pb-1 font-semibold"
-            >
-              Review supplied photos · local preview →
-            </Link>
-          )}
-        </div>
+    <div className="public-catalogue" data-public-catalogue>
+      <header className="pc-shop-heading pc-wrap">
+        <FadeContent>
+          <h1>Deckz &amp; wares</h1>
+        </FadeContent>
+        <p className="pc-sales-status">Online sales are currently closed</p>
       </header>
-      <section id="boards" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-16">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[.3em] text-[#3f817a]">
-              Ready to ride
-            </p>
-            <h2 className="mt-2 font-display text-5xl">Deckz</h2>
-          </div>
-          <Link href="/gallery" className="border-b border-[#332619] pb-1 font-bold">
-            View sold board gallery →
+
+      <div className="pc-category-bar" id="catalogue">
+        <nav className="pc-wrap pc-category-links" aria-label="Catalogue categories">
+          <Link href="/shop#catalogue" aria-current={!selected ? "page" : undefined}>
+            All <span>{PUBLIC_CATALOGUE.length}</span>
           </Link>
-        </div>
-        {boards.length ? (
-          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {boards.map((product) => (
-              <Card key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <p className="border-y border-[#332619]/20 py-14 text-lg">
-            New boards are in the workshop. Check back for the next finished drop.
-          </p>
-        )}
-      </section>
-      <section id="merch" className="scroll-mt-24 bg-[#e7d9c5] px-5 py-16">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-xs font-bold uppercase tracking-[.3em] text-[#3f817a]">Wear it out</p>
-          <h2 className="mt-2 font-display text-5xl">Wares</h2>
-          <p className="mt-4 mb-8 max-w-xl text-lg">
-            The OG logo tee. Other wares will arrive when they are actually ready.
-          </p>
-          {tees.length ? (
-            <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-              {tees.map((product) => (
-                <Card key={product.id} product={product} />
-              ))}
+          {PUBLIC_CATALOGUE_CATEGORIES.map((category) => (
+            <Link
+              key={category.key}
+              href={`/shop?category=${category.key}#catalogue`}
+              aria-current={selected === category.key ? "page" : undefined}
+            >
+              {category.title}
+              <span>
+                {PUBLIC_CATALOGUE.filter((item) => item.category === category.key).length}
+              </span>
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {categories.map((category, index) => {
+        const items = PUBLIC_CATALOGUE.filter((item) => item.category === category.key);
+        return (
+          <section
+            key={category.key}
+            id={category.key}
+            className={`pc-section pc-section--${category.key}${selected ? " pc-section--filtered" : ""}`}
+            aria-labelledby={selected ? undefined : `heading-${category.key}`}
+            aria-label={selected ? category.title : undefined}
+          >
+            {category.key !== "boards" && (selected || index === 1) && (
+              <span id="merch" className="pc-anchor" aria-hidden="true" />
+            )}
+            <div className="pc-wrap">
+              {!selected && (
+                <FadeContent className="pc-section-heading">
+                  <h2 id={`heading-${category.key}`}>{category.title}</h2>
+                </FadeContent>
+              )}
+              <div className={`pc-grid pc-grid--${category.key}`}>
+                {items.map((item) => (
+                  <PublicCatalogueCard
+                    key={item.id}
+                    item={item}
+                    context={selected}
+                    wide={items.length === 1}
+                  />
+                ))}
+              </div>
             </div>
-          ) : (
-            <p className="border-y border-[#332619]/20 py-10">
-              The OG tee is being prepared for the shop.
-            </p>
-          )}
-        </div>
-      </section>
-    </main>
+          </section>
+        );
+      })}
+    </div>
   );
 }

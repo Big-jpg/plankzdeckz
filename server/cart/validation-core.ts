@@ -4,6 +4,7 @@
 import type { MerchSize, Product, ProductType } from "@/lib/types";
 import { isBoardProduct, isMerchProduct } from "@/lib/types";
 import { isPhotoReviewHandle, isPurchasableProduct } from "@/lib/sellability";
+import { SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
 
 export interface CheckoutCartItemInput {
   productId?: unknown;
@@ -78,6 +79,10 @@ function emptyResult(errors: ValidationError[], statusCurrency = "AUD"): CartVal
     itemCount: 0,
     verifiedItems: [],
   };
+}
+
+export function salesDisabledCartResult(): CartValidationResult {
+  return emptyResult([{ handle: "", field: "sales", message: SALES_DISABLED_MESSAGE }]);
 }
 
 export function preflightCartInput(input: CartValidationInput): CartValidationResult | null {

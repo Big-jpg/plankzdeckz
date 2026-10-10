@@ -1,6 +1,8 @@
 # Plankz Deckz
 
-A small Next.js storefront for finished, one of a kind boards and the OG logo tee. Products are authored in `/admin/products`, stored in Neon Postgres, and published to `/shop`. Product images are uploaded to public Vercel Blob storage. Stripe hosted Checkout handles payment; fulfilment is local pickup only.
+A Next.js site for Plankz boards and wares. The public `/shop` is a photo catalogue with online sales disabled. Its 18 display entries and 54 reviewed views render independently of stock records. See [the public catalogue operator guide](docs/public-catalogue.md).
+
+The separate commerce catalogue remains in Neon Postgres and is authored in `/admin/products`, with product images in public Vercel Blob. Stripe checkout code is retained behind the sales closure; existing order recovery and payment webhooks remain available.
 
 ## Setup
 
@@ -10,9 +12,9 @@ For a **new** database, apply `001_initial_schema.sql`, then `002_storefront_cat
 
 ## Product workflow
 
-An allowed admin signs in and creates a board or OG tee. The editor saves incomplete drafts, orders image views, previews the listing, and publishes only after the required price, images, description, and stock details exist. The list also permits quick publication, board availability, and tee size stock changes. Sold published boards remain visible in `/gallery` and on their stable product URLs. Draft and archived products are excluded from public catalogue queries and checkout.
+An allowed admin signs in and creates a board or OG tee. The editor saves incomplete drafts, orders image views, previews the listing, and permits commerce publication only after the required price, images, description, and stock details exist. The list also permits quick publication, board availability, and tee size stock changes. Sold published boards remain visible in `/gallery` and on their stable product URLs. Draft and archived products are excluded from public catalogue queries and checkout.
 
-Checkout revalidates the current database price and stock. A Postgres hold reserves each board or tee quantity before a Stripe session is created. The verified paid webhook records the order and applies stock changes idempotently. Sessions expire after 30 minutes; the matching expiry event releases the hold. Pickup details are tracked in the existing order admin.
+When explicitly enabled, checkout revalidates the current database price and stock. A Postgres hold reserves each board or tee quantity before a Stripe session is created. The verified paid webhook records the order and applies stock changes idempotently. Sessions expire after 30 minutes; the matching expiry event releases the hold. Pickup details are tracked in the existing order admin.
 
 For private photo intake, local non-purchasable category previews, reproducible derivatives, and photo-only saves that preserve price and stock, follow [the photography operator guide](docs/photo-intake.md). This workflow needs no migration and does not publish incoming imagery.
 
