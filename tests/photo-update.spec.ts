@@ -39,6 +39,7 @@ test("photo update writes only photography fields and retains a published lead p
     "image_urls",
     "image_details",
     "updated_at",
+    "revision",
   ]);
   expect(photoUpdateSql).toContain(
     "publication_status <> 'published' OR jsonb_array_length($3::jsonb) > 0",

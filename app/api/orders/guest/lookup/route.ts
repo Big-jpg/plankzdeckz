@@ -46,7 +46,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<LookupResp
       return NextResponse.json(
         {
           status: "pending",
-          message: "Payment succeeded, but the order confirmation has not finished syncing yet.",
+          message:
+            "A confirmed order is not available yet. Payment may still be processing; try again shortly.",
         },
         { status: 202 },
       );
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<LookupResp
 
   const order = await getOrderById(orderId);
 
-  if (!order || order.email.toLowerCase() !== email) {
+  if (!order || order.email?.toLowerCase() !== email) {
     return NextResponse.json(
       { status: "error", error: "Order not found for that email and order ID." },
       { status: 404 },

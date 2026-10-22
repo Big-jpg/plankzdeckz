@@ -119,6 +119,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 interface CartContextValue {
   state: CartState;
+  isHydrated: boolean;
   /** Total number of items (sum of quantities). */
   itemCount: number;
   /** Subtotal in the cart's currency (assumes single currency). */
@@ -144,6 +145,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, EMPTY_CART);
   const hydrated = useRef(false);
+  const [isHydrated, markHydrated] = useReducer(() => true, false);
   const [drawerOpen, setDrawerOpen] = useReducer((_: boolean, next: boolean) => next, false);
 
   // Hydrate from localStorage on mount
@@ -160,6 +162,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Corrupted storage — start fresh
     }
     hydrated.current = true;
+    markHydrated();
   }, []);
 
   // Persist to localStorage on every state change (after hydration)
@@ -211,6 +214,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartContextValue>(
     () => ({
       state,
+      isHydrated,
       itemCount,
       subtotal,
       currency,
@@ -224,6 +228,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }),
     [
       state,
+      isHydrated,
       itemCount,
       subtotal,
       currency,

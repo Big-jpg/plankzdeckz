@@ -162,7 +162,6 @@ function logJson(payload: Record<string, unknown>): void {
 async function runBuyerHook({
   eventType,
   email = null,
-  phone = null,
   userId = null,
   orderId = null,
   payload,
@@ -181,9 +180,6 @@ async function runBuyerHook({
     timestamp,
     user_id: userId,
     order_id: orderId,
-    email,
-    phone,
-    payload: eventData,
   };
 
   try {
@@ -196,8 +192,6 @@ async function runBuyerHook({
     });
 
     logJson({ ...logPayload, buyer_event_id: eventId });
-    console.log(`EMAIL STUB: would send ${eventType} to ${email ?? "unknown email"}`);
-    console.log(`SMS STUB: would send ${eventType} to ${phone ?? "unknown phone"}`);
 
     return { eventId, eventType, timestamp };
   } catch (error) {

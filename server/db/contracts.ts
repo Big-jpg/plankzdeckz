@@ -12,7 +12,16 @@ import { queryOne, queryRows } from "./client";
 export interface Order {
   id: string;
   user_id: string | null;
-  email: string;
+  email: string | null;
+  channel: "online" | "market";
+  operator_email: string | null;
+  sold_at: string;
+  reconciliation_status: string;
+  payment_reference: string | null;
+  refund_status: string;
+  refunded_amount: number;
+  refund_details: Array<{ id: string; amount: number; status: string }>;
+  refund_sync_error: string | null;
   buyer_name: string | null;
   phone: string | null;
   stripe_checkout_session_id: string | null;
@@ -52,7 +61,7 @@ export interface OrderItem {
 
 export interface OrderSummary {
   id: string;
-  email: string;
+  email: string | null;
   buyer_name: string | null;
   stripe_checkout_session_id: string | null;
   status: string;
@@ -521,7 +530,8 @@ export async function getAdminDashboardOverview(): Promise<AdminDashboardOvervie
  */
 export async function getOrderById(orderId: string): Promise<OrderWithItems | null> {
   const row = await queryOne<Order & { items: OrderItem[] | string }>(
-    `SELECT * FROM get_order_by_id($1)`,
+    `SELECT o.*,COALESCE((SELECT jsonb_agg(to_jsonb(i) ORDER BY i.created_at,i.id)
+      FROM order_items i WHERE i.order_id=o.id),'[]'::jsonb) AS items FROM orders o WHERE o.id=$1`,
     [orderId],
   );
   if (!row) return null;
@@ -539,7 +549,8 @@ export async function getOrderByCheckoutSession(
   stripeCheckoutSessionId: string,
 ): Promise<OrderWithItems | null> {
   const row = await queryOne<Order & { items: OrderItem[] | string }>(
-    `SELECT * FROM get_order_by_checkout_session($1)`,
+    `SELECT o.*,COALESCE((SELECT jsonb_agg(to_jsonb(i) ORDER BY i.created_at,i.id)
+      FROM order_items i WHERE i.order_id=o.id),'[]'::jsonb) AS items FROM orders o WHERE o.stripe_checkout_session_id=$1`,
     [stripeCheckoutSessionId],
   );
   if (!row) return null;

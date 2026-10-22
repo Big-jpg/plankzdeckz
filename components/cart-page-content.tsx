@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Shirt, ShoppingBag, Trash2 } from "lucide-react";
@@ -27,6 +27,7 @@ export function CartPageContent() {
   const { state, itemCount, subtotal, currency, removeItem, setQuantity } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const checkoutAttempt = useRef<{ cart: string; id: string } | null>(null);
 
   async function handleCheckout(): Promise<void> {
     if (!SALES_ENABLED) return;
@@ -34,15 +35,46 @@ export function CartPageContent() {
     setIsCheckingOut(true);
 
     try {
+      const cart = JSON.stringify(state.items);
+      if (checkoutAttempt.current?.cart !== cart) {
+        try {
+          checkoutAttempt.current = JSON.parse(
+            sessionStorage.getItem("plankz_checkout_attempt") ?? "null",
+          );
+        } catch {
+          checkoutAttempt.current = null;
+        }
+        if (checkoutAttempt.current?.cart !== cart)
+          checkoutAttempt.current = { cart, id: crypto.randomUUID() };
+        try {
+          sessionStorage.setItem(
+            "plankz_checkout_attempt",
+            JSON.stringify(checkoutAttempt.current),
+          );
+        } catch {
+          /* Storage is optional. */
+        }
+      }
       const response = await fetch("/api/checkout/create-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": checkoutAttempt.current!.id,
+        },
         body: JSON.stringify({ items: state.items }),
       });
 
       const payload = (await response.json().catch(() => ({}))) as CheckoutCreateSessionResponse;
 
       if (!response.ok || !payload.url) {
+        if (response.status === 409) {
+          checkoutAttempt.current = null;
+          try {
+            sessionStorage.removeItem("plankz_checkout_attempt");
+          } catch {
+            /* Storage is optional. */
+          }
+        }
         setCheckoutError(checkoutErrorMessage(payload));
         setIsCheckingOut(false);
         return;

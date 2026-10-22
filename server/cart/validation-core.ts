@@ -2,7 +2,7 @@
 // PLANKZ DECKZ — Shared server-side cart validation for checkout.
 
 import type { MerchSize, Product, ProductType } from "@/lib/types";
-import { isBoardProduct, isMerchProduct } from "@/lib/types";
+import { isBoardProduct, isMerchProduct, isSizeLabel } from "@/lib/types";
 import { isPhotoReviewHandle, isPurchasableProduct } from "@/lib/sellability";
 import { SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
 
@@ -63,12 +63,6 @@ export interface CartValidationResult {
   verifiedItems: VerifiedCartItem[];
 }
 
-const VALID_MERCH_SIZES: MerchSize[] = ["S", "M", "L", "XL", "One size"];
-
-function isValidMerchSize(value: unknown): value is MerchSize {
-  return typeof value === "string" && VALID_MERCH_SIZES.includes(value as MerchSize);
-}
-
 function emptyResult(errors: ValidationError[], statusCurrency = "AUD"): CartValidationResult {
   return {
     valid: false,
@@ -118,6 +112,7 @@ export function validateCartItems(
 
   const verifiedItems: VerifiedCartItem[] = [];
   const boardHandles = new Set<string>();
+  const merchLines = new Map<string, VerifiedCartItem>();
   let verifiedSubtotal = 0;
   let claimedSubtotal = 0;
   let currency = "AUD";
@@ -212,16 +207,16 @@ export function validateCartItems(
 
     if (isMerchProduct(catalogueProduct)) {
       if (item.selectedSize === undefined || item.selectedSize === null) {
-        if (catalogueProduct.sizeRequired) {
+        if (catalogueProduct.sizes.length !== 1 || catalogueProduct.sizes[0] !== "One size") {
           errors.push({
             handle,
             field: "selectedSize",
             message: "A merch size is required for this product.",
           });
         } else {
-          selectedSize = catalogueProduct.sizes[0] ?? "One size";
+          selectedSize = "One size";
         }
-      } else if (!isValidMerchSize(item.selectedSize)) {
+      } else if (!isSizeLabel(item.selectedSize)) {
         errors.push({
           handle,
           field: "selectedSize",
@@ -251,7 +246,10 @@ export function validateCartItems(
 
     if (typeof clientPrice !== "number" || !Number.isFinite(clientPrice) || clientPrice < 0) {
       errors.push({ handle, field: "unitPrice", message: "Invalid unit price." });
-    } else if (Math.abs(clientPrice - cataloguePrice) > 0.01) {
+    } else if (
+      Math.round(clientPrice * 100) !== Math.round(cataloguePrice * 100) ||
+      Math.abs(clientPrice * 100 - Math.round(clientPrice * 100)) > 0.000001
+    ) {
       errors.push({
         handle,
         field: "unitPrice",
@@ -274,12 +272,34 @@ export function validateCartItems(
     claimedSubtotal += (typeof clientPrice === "number" ? clientPrice : 0) * quantity;
     verifiedQuantityCount += quantity;
 
-    verifiedItems.push({
+    const key = JSON.stringify([catalogueProduct.id, selectedSize]);
+    const previous = isMerchProduct(catalogueProduct) ? merchLines.get(key) : undefined;
+    if (previous) {
+      previous.quantity += quantity;
+      previous.totalAmount += totalAmount;
+      if (
+        previous.quantity > 20 ||
+        previous.quantity > (catalogueProduct.stockBySize?.[selectedSize ?? ""] ?? 0)
+      ) {
+        errors.push({
+          handle,
+          field: "quantity",
+          message: "Combined quantity exceeds available stock or the limit of 20.",
+        });
+      }
+      continue;
+    }
+    const verified: VerifiedCartItem = {
       productId: catalogueProduct.id,
       variantId: null,
       handle: item.handle,
       title: catalogueProduct.title,
-      variantTitle: selectedSize ? `Size ${selectedSize}` : null,
+      variantTitle:
+        selectedSize && selectedSize !== "One size"
+          ? `Size ${selectedSize}`
+          : isMerchProduct(catalogueProduct)
+            ? (catalogueProduct.salesUnitLabel ?? null)
+            : null,
       imageUrl: catalogueProduct.images[0] ?? null,
       unitPrice: cataloguePrice,
       unitAmount,
@@ -290,9 +310,16 @@ export function validateCartItems(
       selectedSize,
       material: catalogueProduct.material,
       colour: null,
-      metadata: {},
+      metadata: isMerchProduct(catalogueProduct)
+        ? {
+            merch_kind: catalogueProduct.merchKind,
+            sales_unit_label: catalogueProduct.salesUnitLabel ?? "",
+          }
+        : {},
       catalogueProduct,
-    });
+    };
+    verifiedItems.push(verified);
+    if (isMerchProduct(catalogueProduct)) merchLines.set(key, verified);
   }
 
   return {

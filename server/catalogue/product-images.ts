@@ -37,6 +37,6 @@ export function parsePhotoUpdate(value: unknown): ProductImage[] {
 
 // A separate statement prevents a stale photo editor from overwriting sale fields.
 export const photoUpdateSql = `UPDATE products SET image_urls=$2::jsonb,
-  image_details=$3::jsonb,updated_at=now() WHERE id=$1
+  image_details=$3::jsonb,updated_at=now(),revision=revision+1 WHERE id=$1
   AND (publication_status <> 'published' OR jsonb_array_length($3::jsonb) > 0)
-  RETURNING id`;
+  RETURNING id, revision`;

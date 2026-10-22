@@ -14,6 +14,7 @@ import {
   validateCartItems,
 } from "@/server/cart/validation-core";
 import { SALES_ENABLED, SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
+import { commerceCategory } from "@/lib/commerce-categories";
 
 function board(): BoardProduct {
   return {
@@ -58,6 +59,7 @@ function tee(): MerchProduct {
     stockBySize: { S: 2, M: 0 },
     stockQuantity: 0,
     fitNotes: "",
+    salesUnitLabel: "one tee",
   };
 }
 
@@ -157,13 +159,13 @@ test("legacy sold board with stock 1 retains gallery details but cannot cart or 
   expect(hasSupportedSaleDetails({ ...sold, stockQuantity: 2 })).toBe(false);
 });
 
-test("unknown stock does not become an out-of-stock sales presentation", () => {
+test("unknown stock is blocked while known zero stock can be displayed as unavailable", () => {
   expect(hasSupportedSaleDetails({ ...board(), stockQuantity: undefined })).toBe(false);
-  expect(hasSupportedSaleDetails({ ...board(), stockQuantity: 0 })).toBe(false);
+  expect(hasSupportedSaleDetails({ ...board(), stockQuantity: 0 })).toBe(true);
   expect(hasSupportedSaleDetails({ ...board(), displayOnly: true })).toBe(false);
 });
 
-for (const kind of ["flanno", "sticker_pack", "hat", "bearings", undefined]) {
+for (const kind of ["flanno", "sticker_pack", "wheel", "unknown", undefined]) {
   test(`unsupported merchandise ${String(kind)} cannot check out`, () => {
     const product = { ...tee(), merchKind: kind } as Product;
     expect(isPurchasableProduct(product)).toBe(false);
@@ -237,6 +239,7 @@ test("locked row recheck preserves supported board and tee reservations", () => 
     merch_kind: "tee",
     merch_sizes: ["S", "M"],
     stock_by_size: { S: 2, M: 0 },
+    metadata: { sales_unit_label: "one tee" },
   });
   expect(
     canReserveLockedProduct(teeRecord, {
@@ -291,6 +294,7 @@ test("locked unsupported merchandise and unknown variants fail the same gate", (
     merch_kind: "tee",
     merch_sizes: ["S"],
     stock_by_size: { S: 2 },
+    metadata: { sales_unit_label: "one tee" },
   });
   const verified = {
     productType: "merch",
@@ -299,7 +303,7 @@ test("locked unsupported merchandise and unknown variants fail the same gate", (
     quantity: 1,
     selectedSize: "S",
   };
-  for (const kind of ["flanno", "sticker_pack", "hat", "bearings", null])
+  for (const kind of ["flanno", "sticker_pack", "wheel", "unknown", null])
     expect(canReserveLockedProduct({ ...teeRecord, merch_kind: kind }, verified)).toBe(false);
   expect(canReserveLockedProduct(teeRecord, { ...verified, selectedSize: "M" })).toBe(false);
   expect(canReserveLockedProduct(teeRecord, { ...verified, selectedSize: null })).toBe(false);
@@ -324,4 +328,80 @@ test("the release closes sales with no verified inventory or price claims", () =
     itemCount: 0,
     verifiedItems: [],
   });
+});
+
+test("all merchandise categories use confirmed stock and declared sizes", () => {
+  for (const [kind, category] of [
+    ["hat", "hats"],
+    ["bearings", "bearings"],
+    ["sticker", "stickers"],
+  ] as const) {
+    const product: MerchProduct = {
+      ...tee(),
+      merchKind: kind,
+      sizes: ["One size"],
+      sizeRequired: false,
+      stockBySize: { "One size": 2 },
+      salesUnitLabel: "confirmed sale pack",
+    };
+    expect(commerceCategory(product)).toBe(category);
+    expect(isPurchasableProduct(product)).toBe(true);
+    const result = validateCartItems({ items: [item(product, { selectedSize: undefined })] }, [
+      product,
+    ]);
+    expect(result.valid).toBe(true);
+    expect(result.verifiedItems[0].selectedSize).toBe("One size");
+    expect(result.verifiedItems[0].variantTitle).toBe("confirmed sale pack");
+  }
+  const jacket: MerchProduct = {
+    ...tee(),
+    merchKind: "jacket",
+    sizes: ["XS", "2XL"],
+    stockBySize: { XS: 1, "2XL": 2 },
+    salesUnitLabel: "one jacket",
+  };
+  expect(commerceCategory(jacket)).toBe("jackets");
+  expect(
+    validateCartItems({ items: [item(jacket, { selectedSize: "2XL", quantity: 2 })] }, [jacket])
+      .valid,
+  ).toBe(true);
+  expect(validateCartItems({ items: [item(jacket, { selectedSize: "XL" })] }, [jacket]).valid).toBe(
+    false,
+  );
+  expect(isPurchasableProduct({ ...jacket, salesUnitLabel: "" })).toBe(false);
+});
+
+test("duplicate merchandise lines aggregate before checking stock and reserving", () => {
+  const product = tee();
+  const valid = validateCartItems({ items: [item(product), item(product)] }, [product]);
+  expect(valid.valid).toBe(true);
+  expect(valid.verifiedItems).toHaveLength(1);
+  expect(valid.verifiedItems[0].quantity).toBe(2);
+  expect(valid.verifiedItems[0].totalAmount).toBe(7998);
+  expect(valid.itemCount).toBe(2);
+  expect(
+    validateCartItems({ items: [item(product, { quantity: 2 }), item(product)] }, [product]).valid,
+  ).toBe(false);
+});
+
+test("a pending market sale blocks purchase while preserving confirmed product details", () => {
+  for (const product of [board(), tee()]) {
+    const pending = { ...product, stockUnderReview: true };
+    expect(hasSupportedSaleDetails(pending)).toBe(true);
+    expect(isPurchasableProduct(pending)).toBe(false);
+    expect(validateCartItems({ items: [item(pending)] }, [pending]).valid).toBe(false);
+    expect(pending.stockQuantity).toBe(product.stockQuantity);
+    expect(pending.price).toBe(product.price);
+  }
+  expect(isPurchasableRecord(record({ pending_market_sale: true }))).toBe(false);
+  expect(
+    canReserveLockedProduct(record({ pending_market_sale: true }), {
+      productType: "board",
+      unitAmount: 27500,
+      currency: "AUD",
+      selectedSize: null,
+      quantity: 1,
+    }),
+  ).toBe(false);
+  expect(isPurchasableProduct({ ...board(), stockUnderReview: false })).toBe(true);
 });

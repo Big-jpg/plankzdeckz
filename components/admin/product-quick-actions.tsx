@@ -3,14 +3,20 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ProductInput } from "@/server/catalogue/product-input";
+import { isClothing } from "@/lib/types";
 
 export function ProductQuickActions({ id, initial }: { id: string; initial: ProductInput }) {
   const router = useRouter();
   const [product, setProduct] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const [selectedSize, setSelectedSize] = useState("S");
-  const [quantity, setQuantity] = useState(initial.stockBySize.S ?? 0);
+  const [selectedSize, setSelectedSize] = useState(
+    Object.keys(initial.stockBySize)[0] ?? "One size",
+  );
+  const [quantity, setQuantity] = useState(
+    initial.stockBySize[Object.keys(initial.stockBySize)[0]] ?? 0,
+  );
+  const [reason, setReason] = useState("");
 
   async function save(next: ProductInput) {
     setBusy(true);
@@ -19,11 +25,12 @@ export function ProductQuickActions({ id, initial }: { id: string; initial: Prod
       const response = await fetch(`/api/admin/products/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next),
+        body: JSON.stringify({ ...next, adjustmentReason: reason }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Could not update product.");
-      setProduct(next);
+      setProduct({ ...next, revision: result.revision, adjustmentReason: "" });
+      setReason("");
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not update product.");
@@ -56,7 +63,7 @@ export function ProductQuickActions({ id, initial }: { id: string; initial: Prod
       {product.productType === "board" ? (
         <button
           type="button"
-          disabled={busy || product.publicationStatus !== "published"}
+          disabled={busy || !reason.trim()}
           onClick={() =>
             save({
               ...product,
@@ -66,28 +73,32 @@ export function ProductQuickActions({ id, initial }: { id: string; initial: Prod
           }
           className="rounded-lg border border-charcoal/20 px-3 py-2"
         >
-          {product.availabilityStatus === "sold" ? "Mark available" : "Mark sold"}
+          {product.availabilityStatus === "sold" ? "Restock board" : "Mark sold adjustment"}
         </button>
       ) : (
         <>
-          <label htmlFor={`size-${id}`} className="sr-only">
-            Tee size
-          </label>
-          <select
-            id={`size-${id}`}
-            value={selectedSize}
-            onChange={(event) => {
-              setSelectedSize(event.target.value);
-              setQuantity(product.stockBySize[event.target.value] ?? 0);
-            }}
-            className="rounded-lg border border-charcoal/20 bg-white px-2 py-2"
-          >
-            {["S", "M", "L", "XL"].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+          {isClothing(product.merchKind) && (
+            <>
+              <label htmlFor={`size-${id}`} className="sr-only">
+                Merchandise size
+              </label>
+              <select
+                id={`size-${id}`}
+                value={selectedSize}
+                onChange={(event) => {
+                  setSelectedSize(event.target.value);
+                  setQuantity(product.stockBySize[event.target.value] ?? 0);
+                }}
+                className="rounded-lg border border-charcoal/20 bg-white px-2 py-2"
+              >
+                {Object.keys(product.stockBySize).map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
           <label htmlFor={`stock-${id}`} className="sr-only">
             Stock quantity
           </label>
@@ -101,7 +112,7 @@ export function ProductQuickActions({ id, initial }: { id: string; initial: Prod
           />
           <button
             type="button"
-            disabled={busy || !Number.isSafeInteger(quantity) || quantity < 0}
+            disabled={busy || !reason.trim() || !Number.isSafeInteger(quantity) || quantity < 0}
             onClick={() =>
               save({
                 ...product,
@@ -114,6 +125,17 @@ export function ProductQuickActions({ id, initial }: { id: string; initial: Prod
           </button>
         </>
       )}
+      <label className="sr-only" htmlFor={`reason-${id}`}>
+        Stock adjustment reason
+      </label>
+      <input
+        id={`reason-${id}`}
+        value={reason}
+        maxLength={500}
+        placeholder="Stock adjustment reason"
+        onChange={(event) => setReason(event.target.value)}
+        className="rounded-lg border border-charcoal/20 px-2 py-2"
+      />
       {message && (
         <span role="alert" className="text-red-700">
           {message}

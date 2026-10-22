@@ -11,6 +11,7 @@ import {
   getPublicCatalogueItemByHandle,
 } from "@/lib/public-catalogue";
 import "../catalogue.css";
+import { SALES_ENABLED } from "@/lib/commerce-config";
 
 interface PublicCatalogueDetailProps {
   params: Promise<{ handle: string }>;
@@ -30,7 +31,9 @@ export async function generateMetadata({ params }: PublicCatalogueDetailProps): 
   const photo = item.images[0];
   return {
     title: item.title,
-    description: `${item.description} Online sales are currently closed.`,
+    description: SALES_ENABLED
+      ? item.description
+      : `${item.description} Online sales are currently closed.`,
     alternates: { canonical: `/shop/${item.handle}` },
     openGraph: {
       title: `${item.title} | Plankz Deckz`,
@@ -68,7 +71,13 @@ export default async function PublicCatalogueDetail({
             <h1>{item.title}</h1>
           </FadeContent>
           <PublicCatalogueGallery title={item.title} images={item.images} />
-          <p className="pc-sales-status pc-detail-copy">Online sales are currently closed</p>
+          <p className="pc-sales-status pc-detail-copy">
+            {SALES_ENABLED ? (
+              <Link href="/shop#available-products">View available products</Link>
+            ) : (
+              "Online sales are currently closed"
+            )}
+          </p>
         </div>
 
         {related.length > 0 && (

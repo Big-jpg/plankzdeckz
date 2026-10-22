@@ -5,8 +5,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, type ChangeEvent } from "react";
 import type { ProductInput } from "@/server/catalogue/product-input";
+import { MERCH_KINDS, isClothing, isSizeLabel, type MerchKind } from "@/lib/types";
 
 const blank: ProductInput = {
+  revision: 0,
   handle: "",
   title: "",
   description: "",
@@ -24,6 +26,9 @@ const blank: ProductInput = {
   stockQuantity: 1,
   stockBySize: { S: 0, M: 0, L: 0, XL: 0 },
   fitNotes: "",
+  merchKind: null,
+  salesUnitLabel: "",
+  adjustmentReason: "",
 };
 const steps = ["Type", "Details", "Photos", "Preview"];
 const field = "mt-1 w-full rounded-xl border border-charcoal/20 bg-white px-3 py-2.5 text-charcoal";
@@ -64,6 +69,7 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [newSize, setNewSize] = useState("");
   function update<K extends keyof ProductInput>(key: K, value: ProductInput[K]) {
     setData((current) => ({ ...current, [key]: value }));
   }
@@ -83,8 +89,9 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Could not save product.");
-      update("publicationStatus", publicationStatus);
-      setSaved({ ...data, publicationStatus });
+      const next = { ...data, publicationStatus, revision: result.revision, adjustmentReason: "" };
+      setData(next);
+      setSaved(next);
       setMessage("Saved.");
       router.refresh();
       if (!id) router.replace(`/admin/products/${result.id}`);
@@ -131,8 +138,19 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? "Could not save photos.");
-      setSaved((current) => ({ ...current, images: data.images }));
-      setMessage("Photos saved. Price, stock, and publication status are unchanged.");
+      // Photo saves may follow a sale; never give stale stock the sale's newer revision.
+      const unchanged = result.revision === data.revision + 1;
+      if (unchanged) setData((current) => ({ ...current, revision: result.revision }));
+      setSaved((current) => ({
+        ...current,
+        images: data.images,
+        revision: unchanged ? result.revision : current.revision,
+      }));
+      setMessage(
+        unchanged
+          ? "Photos saved. Price, stock, and publication status are unchanged."
+          : "Photos saved. Product changed elsewhere; reload before changing product details or stock.",
+      );
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Could not save photos.");
@@ -179,14 +197,62 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
                     <input
                       type="radio"
                       checked={data.productType === kind}
-                      onChange={() => update("productType", kind)}
+                      onChange={() =>
+                        setData((current) => ({
+                          ...current,
+                          productType: kind,
+                          merchKind: kind === "merch" ? "tee" : null,
+                          stockBySize: (kind === "merch"
+                            ? { S: 0, M: 0, L: 0, XL: 0 }
+                            : {}) as Record<string, number>,
+                        }))
+                      }
                       disabled={!!id}
                     />{" "}
-                    {kind === "board" ? "One of a kind complete deck" : "OG logo tee"}
+                    {kind === "board" ? "One of a kind complete deck" : "Merchandise"}
                   </label>
                 ))}
               </div>
             </fieldset>
+            {data.productType === "merch" && (
+              <label className="block font-semibold">
+                Category
+                <select
+                  className={field}
+                  value={data.merchKind ?? ""}
+                  onChange={(event) => {
+                    const kind = event.target.value as MerchKind;
+                    setData((current) => ({
+                      ...current,
+                      merchKind: kind,
+                      stockBySize: (isClothing(kind)
+                        ? { S: 0, M: 0, L: 0, XL: 0 }
+                        : { "One size": 0 }) as Record<string, number>,
+                    }));
+                  }}
+                >
+                  <option value="" disabled>
+                    Choose a category
+                  </option>
+                  {MERCH_KINDS.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {
+                        {
+                          tee: "Tees",
+                          hat: "Hats",
+                          jacket: "Jackets",
+                          bearings: "Bearings",
+                          sticker: "Stickers",
+                        }[kind]
+                      }
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-2 block text-sm font-normal">
+                  Use a separate product for each colour, design or sale pack.
+                </span>
+              </label>
+            )}
             <label className="block font-semibold">
               Name
               <input
@@ -321,32 +387,104 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
               </>
             ) : (
               <>
-                {(["S", "M", "L", "XL"] as const).map((size) => (
-                  <label key={size} className="block font-semibold">
-                    Size {size} stock
-                    <input
-                      type="number"
-                      min="0"
-                      className={field}
-                      value={data.stockBySize[size] ?? 0}
-                      onChange={(event) =>
-                        update("stockBySize", {
-                          ...data.stockBySize,
-                          [size]: Number(event.target.value),
-                        })
-                      }
-                    />
-                  </label>
-                ))}
                 <label className="block font-semibold sm:col-span-2">
-                  Fit notes
+                  Unit or pack sold
                   <input
                     className={field}
-                    value={data.fitNotes}
-                    onChange={(event) => update("fitNotes", event.target.value)}
+                    value={data.salesUnitLabel}
+                    maxLength={120}
+                    placeholder="For example: one cap, set of 8 bearings, pack of 3 stickers"
+                    onChange={(event) => update("salesUnitLabel", event.target.value)}
                   />
+                  <span className="mt-1 block text-sm font-normal">
+                    The price and stock count apply to this exact unit or pack.
+                  </span>
                 </label>
+                {Object.keys(data.stockBySize).map((size) => (
+                  <div key={size}>
+                    <label className="block font-semibold">
+                      {isClothing(data.merchKind) ? `Size ${size} stock` : "Stock quantity"}
+                      <input
+                        type="number"
+                        min="0"
+                        className={field}
+                        value={data.stockBySize[size] ?? 0}
+                        onChange={(event) =>
+                          update("stockBySize", {
+                            ...data.stockBySize,
+                            [size]: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                    {isClothing(data.merchKind) && (
+                      <button
+                        type="button"
+                        className="mt-2 text-sm underline"
+                        onClick={() => {
+                          const stock = { ...data.stockBySize };
+                          delete stock[size];
+                          update("stockBySize", stock);
+                        }}
+                      >
+                        Remove size {size}
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {isClothing(data.merchKind) && (
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold">
+                      Add size
+                      <input
+                        className={field}
+                        value={newSize}
+                        maxLength={32}
+                        onChange={(event) => setNewSize(event.target.value)}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="mt-2 underline"
+                      disabled={
+                        !isSizeLabel(newSize.trim()) ||
+                        Object.hasOwn(data.stockBySize, newSize.trim())
+                      }
+                      onClick={() => {
+                        update("stockBySize", { ...data.stockBySize, [newSize.trim()]: 0 });
+                        setNewSize("");
+                      }}
+                    >
+                      Add size
+                    </button>
+                  </div>
+                )}
+                {isClothing(data.merchKind) && (
+                  <label className="block font-semibold sm:col-span-2">
+                    Fit notes
+                    <input
+                      className={field}
+                      value={data.fitNotes}
+                      onChange={(event) => update("fitNotes", event.target.value)}
+                    />
+                  </label>
+                )}
               </>
+            )}
+            {id && (
+              <label className="block font-semibold sm:col-span-2">
+                Stock adjustment reason
+                <input
+                  className={field}
+                  value={data.adjustmentReason}
+                  maxLength={500}
+                  placeholder="Required when changing stock or board availability"
+                  onChange={(event) => update("adjustmentReason", event.target.value)}
+                />
+                <span className="mt-1 block text-sm font-normal">
+                  Use Record market sale for paid market transactions. Refunds do not restock items.
+                </span>
+              </label>
             )}
           </div>
         )}
@@ -441,7 +579,7 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
             <p className="whitespace-pre-line leading-7">{data.description}</p>
             <p className="font-semibold">
               Local pickup only ·{" "}
-              {data.productType === "board" ? data.availabilityStatus : "OG tee"}
+              {data.productType === "board" ? data.availabilityStatus : data.salesUnitLabel}
             </p>
           </div>
         )}

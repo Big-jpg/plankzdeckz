@@ -4,6 +4,7 @@ import type { ProductInput } from "../server/catalogue/product-input";
 
 function product(): ProductInput {
   return {
+    revision: 0,
     handle: "confirmed-product",
     title: "Confirmed product",
     description: "Existing product details",
@@ -21,6 +22,9 @@ function product(): ProductInput {
     stockQuantity: 1,
     stockBySize: { S: 2, M: 0 },
     fitNotes: "Existing metadata must remain part of the saved baseline",
+    merchKind: null,
+    salesUnitLabel: "",
+    adjustmentReason: "",
   };
 }
 

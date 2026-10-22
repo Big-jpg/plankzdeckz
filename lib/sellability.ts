@@ -1,4 +1,5 @@
 import type { Product } from "./types";
+import { isClothing, isMerchKind, isSizeLabel } from "./types";
 
 interface SaleFacts {
   publicationStatus: unknown;
@@ -11,6 +12,8 @@ interface SaleFacts {
   stockQuantity?: unknown;
   sizes?: unknown;
   stockBySize?: unknown;
+  salesUnitLabel?: unknown;
+  stockUnderReview?: unknown;
 }
 
 export interface SaleRecord {
@@ -24,9 +27,9 @@ export interface SaleRecord {
   stock_quantity?: unknown;
   merch_sizes?: unknown;
   stock_by_size?: unknown;
+  pending_market_sale?: unknown;
 }
 
-const supportedSizes = ["S", "M", "L", "XL", "One size"];
 const wholeStock = (value: unknown): value is number =>
   typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 
@@ -46,7 +49,7 @@ export function hasDisplayOnlyFlag(metadata: unknown): boolean {
 function knownStock(facts: SaleFacts): boolean {
   if (facts.productType === "board") {
     if (!wholeStock(facts.stockQuantity) || facts.stockQuantity > 1) return false;
-    if (facts.availabilityStatus === "available") return facts.stockQuantity === 1;
+    if (facts.availabilityStatus === "available") return true;
     // Legacy admin actions left sold boards at 1; their gallery details remain valid.
     if (facts.availabilityStatus === "sold") return true;
     return facts.availabilityStatus === "reserved";
@@ -54,7 +57,8 @@ function knownStock(facts: SaleFacts): boolean {
   if (
     !Array.isArray(facts.sizes) ||
     !facts.sizes.length ||
-    facts.sizes.some((size) => !supportedSizes.includes(size)) ||
+    facts.sizes.length > 20 ||
+    facts.sizes.some((size) => !isSizeLabel(size)) ||
     new Set(facts.sizes).size !== facts.sizes.length ||
     !facts.stockBySize ||
     typeof facts.stockBySize !== "object" ||
@@ -62,6 +66,12 @@ function knownStock(facts: SaleFacts): boolean {
   )
     return false;
   const stock = facts.stockBySize as Record<string, unknown>;
+  if (
+    isMerchKind(facts.merchKind) &&
+    !isClothing(facts.merchKind) &&
+    (facts.sizes.length !== 1 || facts.sizes[0] !== "One size")
+  )
+    return false;
   return facts.sizes.every((size: string) => wholeStock(stock[size]));
 }
 
@@ -69,7 +79,11 @@ function hasSupportedFacts(facts: SaleFacts): boolean {
   return (
     facts.publicationStatus === "published" &&
     (facts.productType === "board" ||
-      (facts.productType === "merch" && facts.merchKind === "tee")) &&
+      (facts.productType === "merch" &&
+        isMerchKind(facts.merchKind) &&
+        typeof facts.salesUnitLabel === "string" &&
+        facts.salesUnitLabel.trim().length > 0 &&
+        facts.salesUnitLabel.length <= 120)) &&
     typeof facts.priceAmount === "number" &&
     Number.isSafeInteger(facts.priceAmount) &&
     facts.priceAmount > 0 &&
@@ -82,6 +96,7 @@ function hasSupportedFacts(facts: SaleFacts): boolean {
 
 function purchasableFacts(facts: SaleFacts): boolean {
   if (!hasSupportedFacts(facts)) return false;
+  if (facts.stockUnderReview !== undefined && facts.stockUnderReview !== false) return false;
   if (facts.productType === "board")
     return facts.availabilityStatus === "available" && facts.stockQuantity === 1;
   const stock = facts.stockBySize as Record<string, number>;
@@ -100,10 +115,12 @@ function productFacts(product: Product): SaleFacts {
         : NaN,
     currency: product.currency,
     displayOnly: product.displayOnly,
+    stockUnderReview: product.stockUnderReview,
     availabilityStatus: product.productType === "board" ? product.availabilityStatus : undefined,
     stockQuantity: product.stockQuantity,
     sizes: product.productType === "merch" ? product.sizes : undefined,
     stockBySize: product.stockBySize,
+    salesUnitLabel: product.productType === "merch" ? product.salesUnitLabel : undefined,
   };
 }
 
@@ -115,10 +132,15 @@ function recordFacts(record: SaleRecord): SaleFacts {
     priceAmount: record.price_amount,
     currency: record.currency,
     displayOnly: hasDisplayOnlyFlag(record.metadata),
+    stockUnderReview: record.pending_market_sale,
     availabilityStatus: record.availability_status,
     stockQuantity: record.stock_quantity,
     sizes: record.merch_sizes,
     stockBySize: record.stock_by_size,
+    salesUnitLabel:
+      record.metadata && typeof record.metadata === "object"
+        ? (record.metadata as Record<string, unknown>).sales_unit_label
+        : undefined,
   };
 }
 

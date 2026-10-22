@@ -2,10 +2,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.PLAYWRIGHT_PORT ?? 3000);
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${PORT}`;
+const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL?.trim();
+const baseURL = externalBaseURL || `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "./tests",
+  testIgnore: "**/integration/**",
   timeout: 30_000,
   expect: {
     timeout: 10_000,
@@ -28,7 +30,7 @@ export default defineConfig({
       },
     },
   ],
-  webServer: process.env.PLAYWRIGHT_BASE_URL
+  webServer: externalBaseURL
     ? undefined
     : {
         command: `pnpm dev --hostname 127.0.0.1 --port ${PORT}`,
@@ -40,6 +42,16 @@ export default defineConfig({
           NEXTAUTH_SECRET: "playwright-smoke-test-secret",
           NEXTAUTH_URL: baseURL,
           NEXT_PUBLIC_SITE_URL: baseURL,
+          NEXT_PUBLIC_SALES_ENABLED: "false",
+          DATABASE_URL: "postgresql://smoke_test@127.0.0.1:1/unconfigured_smoke",
+          STRIPE_SECRET_KEY: "",
+          STRIPE_WEBHOOK_SECRET: "whsec_smoke_not_a_real_endpoint",
+          BLOB_READ_WRITE_TOKEN: "",
+          EMAIL_SERVER_HOST: "",
+          EMAIL_SERVER_PORT: "",
+          EMAIL_SERVER_USER: "",
+          EMAIL_SERVER_PASSWORD: "",
+          EMAIL_FROM: "",
         },
       },
 });

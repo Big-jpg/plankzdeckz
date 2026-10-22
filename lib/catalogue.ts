@@ -1,13 +1,14 @@
 import "server-only";
 import { queryOne, queryRows } from "@/server/db/client";
 import type { BoardProduct, BoardStyle, MerchProduct, Product, ProductCategory } from "./types";
-import { isBoardProduct, isMerchProduct } from "./types";
+import { isBoardProduct, isMerchKind, isMerchProduct } from "./types";
 import { hasDisplayOnlyFlag, isPhotoReviewHandle, isPurchasableRecord } from "./sellability";
 
 export type ProductImage = { url: string; alt: string };
 export type PublicationStatus = "draft" | "published" | "archived";
 export interface ProductRecord {
   id: string;
+  revision: number;
   handle: string;
   title: string;
   description: string;
@@ -30,12 +31,15 @@ export interface ProductRecord {
   stock_quantity: number;
   publication_status: PublicationStatus;
   metadata: Record<string, unknown>;
+  pending_market_sale?: boolean;
 }
 
-const columns = `id, handle, title, description, product_type, price_amount, currency, category,
+const columns = `id, revision, handle, title, description, product_type, price_amount, currency, category,
   image_urls, image_details, timber_species, board_style, length_cm, width_cm, thickness_cm,
   board_shape, availability_status, merch_kind, merch_sizes, stock_by_size, stock_quantity,
-  publication_status, metadata`;
+  publication_status, metadata,
+  EXISTS (SELECT 1 FROM market_sales pending_sale WHERE pending_sale.status = 'needs_review'
+    AND pending_sale.items @> jsonb_build_array(jsonb_build_object('productId', products.id::text))) AS pending_market_sale`;
 
 function categoryFor(row: ProductRecord): ProductCategory {
   if (row.product_type === "merch") return "Merch";
@@ -45,7 +49,10 @@ function categoryFor(row: ProductRecord): ProductCategory {
 }
 
 export function toProduct(row: ProductRecord): Product {
-  if (row.product_type !== "board" && (row.product_type !== "merch" || row.merch_kind !== "tee"))
+  if (
+    row.product_type !== "board" &&
+    (row.product_type !== "merch" || !isMerchKind(row.merch_kind))
+  )
     throw new Error("Unsupported commerce product type.");
   const images = row.image_details.length
     ? row.image_details.map((image) => image.url)
@@ -63,6 +70,7 @@ export function toProduct(row: ProductRecord): Product {
     imageDetails: row.image_details,
     publicationStatus: row.publication_status,
     displayOnly: hasDisplayOnlyFlag(row.metadata),
+    stockUnderReview: row.pending_market_sale === true,
     stockBySize: row.stock_by_size,
     stockQuantity: row.stock_quantity,
     material: row.timber_species.join(" / "),
@@ -106,17 +114,19 @@ export function toProduct(row: ProductRecord): Product {
     ...common,
     productType: "merch",
     category: "Merch",
-    merchKind: "tee",
+    merchKind: row.merch_kind as MerchProduct["merchKind"],
     sizes: row.merch_sizes as MerchProduct["sizes"],
-    sizeRequired: row.merch_sizes.length > 1,
+    sizeRequired: row.merch_sizes.length !== 1 || row.merch_sizes[0] !== "One size",
     fitNotes: typeof row.metadata.fit_notes === "string" ? row.metadata.fit_notes : "",
+    salesUnitLabel:
+      typeof row.metadata.sales_unit_label === "string" ? row.metadata.sales_unit_label : "",
   };
 }
 
 export async function getProducts(): Promise<Product[]> {
   const rows = await queryRows<ProductRecord>(
     `SELECT ${columns} FROM products WHERE publication_status = 'published'
-     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind = 'tee')) ORDER BY created_at DESC`,
+     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind IN ('tee','hat','jacket','bearings','sticker'))) ORDER BY created_at DESC`,
   );
   return rows.map(toProduct);
 }
@@ -130,7 +140,7 @@ export async function getProductByHandle(
   if (isPhotoReviewHandle(handle)) return null;
   const row = await queryOne<ProductRecord>(
     `SELECT ${columns} FROM products WHERE handle = $1 AND ($2 OR publication_status = 'published')
-     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind = 'tee'))`,
+     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind IN ('tee','hat','jacket','bearings','sticker')))`,
     [handle, includeDraft],
   );
   return row ? toProduct(row) : null;

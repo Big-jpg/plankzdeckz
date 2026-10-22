@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     ".photo-intake/**",
+    ".commerce-test-runtime/**",
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 
