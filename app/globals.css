@@ -62,15 +62,29 @@
   --color-teal: #7ecfc0;
   --color-weathered-gray: #d8d4c8;
   --color-timber: #9a6a3f;
+  --color-brand-brown: #332619;
   --color-sand: #ead8b8;
   --color-deep-navy: #203a49;
 }
 
 body {
   background:
-    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--plankz-page-accent-a) 12%, transparent), transparent 24rem),
-    radial-gradient(circle at 92% 4%, color-mix(in srgb, var(--plankz-page-accent-b) 8%, transparent), transparent 22rem),
-    linear-gradient(135deg, var(--plankz-page-bg-a) 0%, var(--plankz-page-bg-b) 48%, var(--plankz-page-bg-c) 100%);
+    radial-gradient(
+      circle at 12% 8%,
+      color-mix(in srgb, var(--plankz-page-accent-a) 12%, transparent),
+      transparent 24rem
+    ),
+    radial-gradient(
+      circle at 92% 4%,
+      color-mix(in srgb, var(--plankz-page-accent-b) 8%, transparent),
+      transparent 22rem
+    ),
+    linear-gradient(
+      135deg,
+      var(--plankz-page-bg-a) 0%,
+      var(--plankz-page-bg-b) 48%,
+      var(--plankz-page-bg-c) 100%
+    );
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, sans-serif;
   transition:
@@ -154,6 +168,52 @@ html {
   letter-spacing: 0.08em;
   color: rgb(255 248 237 / 0.045);
   white-space: nowrap;
+}
+
+.homepage-carousel:focus-visible,
+.homepage-carousel a:focus-visible,
+.homepage-carousel button:focus-visible {
+  outline: 2px solid #332619;
+  outline-offset: 4px;
+}
+
+.carousel-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid #33261940;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.carousel-control:hover:not(:disabled) {
+  background: #332619;
+  color: #f8f2e5;
+}
+
+.carousel-control:disabled {
+  cursor: default;
+}
+
+.carousel-dot {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.carousel-dot span {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #332619;
+  border-radius: 50%;
+}
+
+.carousel-dot[aria-pressed="true"] span {
+  background: #332619;
 }
 
 @media (prefers-reduced-motion: reduce) {

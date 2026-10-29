@@ -2,9 +2,15 @@
 // PLANKZ DECKZ — Shared server-side cart validation for checkout.
 
 import type { MerchSize, Product, ProductType } from "@/lib/types";
-import { isBoardProduct, isMerchProduct } from "@/lib/types";
+import { isBoardProduct, isMerchProduct, isSizeLabel } from "@/lib/types";
 import { isPhotoReviewHandle, isPurchasableProduct } from "@/lib/sellability";
 import { SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
+import {
+  hatUnitAmount,
+  isHatPricingFamily,
+  type HatPricingFamily,
+  type CartLineQuote,
+} from "@/lib/hat-pricing";
 
 export interface CheckoutCartItemInput {
   productId?: unknown;
@@ -42,6 +48,9 @@ export interface VerifiedCartItem {
   imageUrl: string | null;
   unitPrice: number;
   unitAmount: number;
+  retailUnitAmount?: number;
+  hatPricingFamily?: HatPricingFamily | null;
+  hatFamilyQuantity?: number;
   totalAmount: number;
   currency: string;
   quantity: number;
@@ -57,16 +66,13 @@ export interface CartValidationResult {
   valid: boolean;
   errors: ValidationError[];
   verifiedSubtotal: number;
+  retailSubtotal: number;
+  discountAmount: number;
+  lineQuotes: CartLineQuote[];
   claimedSubtotal: number;
   currency: string;
   itemCount: number;
   verifiedItems: VerifiedCartItem[];
-}
-
-const VALID_MERCH_SIZES: MerchSize[] = ["S", "M", "L", "XL", "One size"];
-
-function isValidMerchSize(value: unknown): value is MerchSize {
-  return typeof value === "string" && VALID_MERCH_SIZES.includes(value as MerchSize);
 }
 
 function emptyResult(errors: ValidationError[], statusCurrency = "AUD"): CartValidationResult {
@@ -74,6 +80,9 @@ function emptyResult(errors: ValidationError[], statusCurrency = "AUD"): CartVal
     valid: false,
     errors,
     verifiedSubtotal: 0,
+    retailSubtotal: 0,
+    discountAmount: 0,
+    lineQuotes: [],
     claimedSubtotal: 0,
     currency: statusCurrency,
     itemCount: 0,
@@ -118,7 +127,8 @@ export function validateCartItems(
 
   const verifiedItems: VerifiedCartItem[] = [];
   const boardHandles = new Set<string>();
-  let verifiedSubtotal = 0;
+  const merchLines = new Map<string, VerifiedCartItem>();
+  let retailAmount = 0;
   let claimedSubtotal = 0;
   let currency = "AUD";
   let verifiedQuantityCount = 0;
@@ -212,16 +222,16 @@ export function validateCartItems(
 
     if (isMerchProduct(catalogueProduct)) {
       if (item.selectedSize === undefined || item.selectedSize === null) {
-        if (catalogueProduct.sizeRequired) {
+        if (catalogueProduct.sizes.length !== 1 || catalogueProduct.sizes[0] !== "One size") {
           errors.push({
             handle,
             field: "selectedSize",
             message: "A merch size is required for this product.",
           });
         } else {
-          selectedSize = catalogueProduct.sizes[0] ?? "One size";
+          selectedSize = "One size";
         }
-      } else if (!isValidMerchSize(item.selectedSize)) {
+      } else if (!isSizeLabel(item.selectedSize)) {
         errors.push({
           handle,
           field: "selectedSize",
@@ -251,7 +261,10 @@ export function validateCartItems(
 
     if (typeof clientPrice !== "number" || !Number.isFinite(clientPrice) || clientPrice < 0) {
       errors.push({ handle, field: "unitPrice", message: "Invalid unit price." });
-    } else if (Math.abs(clientPrice - cataloguePrice) > 0.01) {
+    } else if (
+      Math.round(clientPrice * 100) !== Math.round(cataloguePrice * 100) ||
+      Math.abs(clientPrice * 100 - Math.round(clientPrice * 100)) > 0.000001
+    ) {
       errors.push({
         handle,
         field: "unitPrice",
@@ -270,19 +283,48 @@ export function validateCartItems(
     const unitAmount = Math.round(cataloguePrice * 100);
     const quantity = isBoardProduct(catalogueProduct) ? 1 : item.quantity;
     const totalAmount = unitAmount * quantity;
-    verifiedSubtotal += cataloguePrice * quantity;
+    retailAmount += totalAmount;
     claimedSubtotal += (typeof clientPrice === "number" ? clientPrice : 0) * quantity;
     verifiedQuantityCount += quantity;
 
-    verifiedItems.push({
+    const key = JSON.stringify([catalogueProduct.id, selectedSize]);
+    const previous = isMerchProduct(catalogueProduct) ? merchLines.get(key) : undefined;
+    if (previous) {
+      previous.quantity += quantity;
+      previous.totalAmount += totalAmount;
+      if (
+        previous.quantity > 20 ||
+        previous.quantity > (catalogueProduct.stockBySize?.[selectedSize ?? ""] ?? 0)
+      ) {
+        errors.push({
+          handle,
+          field: "quantity",
+          message: "Combined quantity exceeds available stock or the limit of 20.",
+        });
+      }
+      continue;
+    }
+    const verified: VerifiedCartItem = {
       productId: catalogueProduct.id,
       variantId: null,
       handle: item.handle,
       title: catalogueProduct.title,
-      variantTitle: selectedSize ? `Size ${selectedSize}` : null,
+      variantTitle:
+        selectedSize && selectedSize !== "One size"
+          ? `Size ${selectedSize}`
+          : isMerchProduct(catalogueProduct)
+            ? (catalogueProduct.salesUnitLabel ?? null)
+            : null,
       imageUrl: catalogueProduct.images[0] ?? null,
       unitPrice: cataloguePrice,
       unitAmount,
+      retailUnitAmount: unitAmount,
+      hatPricingFamily:
+        isMerchProduct(catalogueProduct) &&
+        catalogueProduct.merchKind === "hat" &&
+        isHatPricingFamily(catalogueProduct.hatPricingFamily)
+          ? catalogueProduct.hatPricingFamily
+          : null,
       totalAmount,
       currency: catalogueProduct.currency,
       quantity,
@@ -290,15 +332,52 @@ export function validateCartItems(
       selectedSize,
       material: catalogueProduct.material,
       colour: null,
-      metadata: {},
+      metadata: isMerchProduct(catalogueProduct)
+        ? {
+            merch_kind: catalogueProduct.merchKind,
+            sales_unit_label: catalogueProduct.salesUnitLabel ?? "",
+          }
+        : {},
       catalogueProduct,
-    });
+    };
+    verifiedItems.push(verified);
+    if (isMerchProduct(catalogueProduct)) merchLines.set(key, verified);
   }
 
+  const familyQuantities: Record<HatPricingFamily, number> = { trad: 0, cord: 0 };
+  for (const item of verifiedItems) {
+    if (item.hatPricingFamily) familyQuantities[item.hatPricingFamily] += item.quantity;
+  }
+  for (const item of verifiedItems) {
+    if (item.hatPricingFamily) {
+      item.hatFamilyQuantity = familyQuantities[item.hatPricingFamily];
+      item.unitAmount = hatUnitAmount(item.hatPricingFamily, item.hatFamilyQuantity);
+      item.unitPrice = item.unitAmount / 100;
+      item.totalAmount = item.unitAmount * item.quantity;
+      item.metadata = {
+        ...item.metadata,
+        retail_unit_amount: item.retailUnitAmount,
+        hat_pricing_family: item.hatPricingFamily,
+        hat_family_quantity: item.hatFamilyQuantity,
+        hat_pricing_version: "2026-10-owner-tiers-v1",
+      };
+    }
+  }
+  const payableAmount = verifiedItems.reduce((total, item) => total + item.totalAmount, 0);
   return {
     valid: errors.length === 0,
     errors,
-    verifiedSubtotal: Math.round(verifiedSubtotal * 100) / 100,
+    verifiedSubtotal: payableAmount / 100,
+    retailSubtotal: retailAmount / 100,
+    discountAmount: (retailAmount - payableAmount) / 100,
+    lineQuotes: verifiedItems.map((item) => ({
+      handle: item.handle,
+      selectedSize: item.selectedSize,
+      quantity: item.quantity,
+      retailUnitAmount: item.retailUnitAmount ?? item.unitAmount,
+      unitAmount: item.unitAmount,
+      totalAmount: item.totalAmount,
+    })),
     claimedSubtotal: Math.round(claimedSubtotal * 100) / 100,
     currency,
     itemCount: verifiedQuantityCount,

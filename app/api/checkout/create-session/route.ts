@@ -9,10 +9,13 @@ import { isBoardProduct, isMerchProduct } from "@/lib/types";
 import { validateCartForCheckout, type VerifiedCartItem } from "@/server/cart/validation";
 import { onCheckoutStarted } from "@/server/hooks/buyer-events";
 import { getStripeClient } from "@/server/stripe/client";
-import { reserveCart, attachStripeSession, releaseCart } from "@/server/cart/holds";
+import { reserveCart, attachStripeSession, getCheckoutAttempt } from "@/server/cart/holds";
+import { pool } from "@/server/db/client";
+import { reconcileOverdueStock } from "@/server/commerce/checkout";
 import { SALES_ENABLED, SALES_DISABLED_CODE, SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 interface CheckoutSessionResponse {
   sessionId: string;
@@ -219,60 +222,121 @@ export async function POST(
     );
   }
 
-  let holdToken: string;
+  const holdToken = request.headers.get("idempotency-key")?.trim().toLowerCase() ?? "";
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(holdToken))
+    return NextResponse.json(
+      { error: "A valid checkout Idempotency-Key is required." },
+      { status: 400 },
+    );
+  const total = validation.verifiedItems.reduce((sum, item) => sum + item.totalAmount, 0);
+  const expectedTotalAmount =
+    body && typeof body === "object"
+      ? (body as Record<string, unknown>).expectedTotalAmount
+      : undefined;
+  if (
+    expectedTotalAmount !== undefined &&
+    (!Number.isSafeInteger(expectedTotalAmount) || (expectedTotalAmount as number) < 0)
+  )
+    return NextResponse.json(
+      { error: "Expected total must be a whole number of cents." },
+      { status: 422 },
+    );
+  if (
+    !Number.isSafeInteger(total) ||
+    total < 50 ||
+    total > 2_147_483_647 ||
+    validation.currency.toUpperCase() !== "AUD"
+  )
+    return NextResponse.json(
+      { error: "Checkout requires an AUD total of at least $0.50." },
+      { status: 422 },
+    );
+  if (expectedTotalAmount !== undefined && expectedTotalAmount !== total)
+    return NextResponse.json(
+      { error: "Prices changed. Review your cart before checking out.", code: "PRICE_CHANGED" },
+      { status: 409 },
+    );
+  const requestHash = createHash("sha256").update(JSON.stringify(body)).digest("hex");
   try {
-    holdToken = await reserveCart(validation.verifiedItems);
+    await reconcileOverdueStock(validation.verifiedItems.map((item) => item.productId));
+    await reserveCart(validation.verifiedItems, holdToken, requestHash);
   } catch (error) {
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "One or more boards are no longer available.",
-      },
+      { error: error instanceof Error ? error.message : "Stock could not be reserved." },
       { status: 409 },
     );
   }
-
   const baseUrl = checkoutBaseUrl(request);
-
-  // Expire checkout sessions after 30 minutes so one-of-a-kind boards
-  // are released quickly if a buyer abandons the payment flow.
-  const CHECKOUT_EXPIRY_MINUTES = 30;
-  const expiresAt = Math.floor(Date.now() / 1000) + CHECKOUT_EXPIRY_MINUTES * 60;
-
+  const params: CheckoutSessionCreateParams = {
+    mode: "payment",
+    payment_method_types: ["card"],
+    expires_at: Math.floor(Date.now() / 1000) + 35 * 60,
+    line_items: buildLineItems(validation.verifiedItems),
+    metadata: { ...buildSessionMetadata(validation.verifiedItems), hold_token: holdToken },
+    success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}/checkout/cancel`,
+    allow_promotion_codes: false,
+    billing_address_collection: "auto",
+    phone_number_collection: { enabled: true },
+  };
   let session: Stripe.Checkout.Session;
   try {
-    session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      expires_at: expiresAt,
-      line_items: buildLineItems(validation.verifiedItems),
-      metadata: { ...buildSessionMetadata(validation.verifiedItems), hold_token: holdToken },
-      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/checkout/cancel`,
-      allow_promotion_codes: false,
-      billing_address_collection: "auto",
-      phone_number_collection: { enabled: true },
-    });
-  } catch {
-    await releaseCart(holdToken);
-    return NextResponse.json(
-      { error: "Checkout could not be started. Please try again." },
-      { status: 502 },
+    // Store exact creation parameters before the external request, including expiry.
+    const prepared = await pool.query(
+      `UPDATE checkout_attempts SET stripe_params=COALESCE(stripe_params,$2::jsonb),
+      expires_at=COALESCE(expires_at,to_timestamp($3)),updated_at=now() WHERE id=$1 AND status IN ('creating','open','needs_review') RETURNING id`,
+      [holdToken, JSON.stringify(params), params.expires_at],
     );
-  }
-
-  if (!session.url) {
-    await releaseCart(holdToken);
-    return NextResponse.json({ error: "Stripe did not return a checkout URL." }, { status: 502 });
-  }
-
-  try {
+    if (!prepared.rowCount) throw new Error("Checkout reservation is closed.");
+    const attempt = await getCheckoutAttempt(holdToken);
+    if (!attempt?.stripe_params) throw new Error("Checkout attempt could not be recovered.");
+    if (expectedTotalAmount !== undefined && attempt.expected_amount !== expectedTotalAmount)
+      return NextResponse.json(
+        {
+          error:
+            "This checkout retains an earlier price. Its reservation needs owner reconciliation before starting a new checkout.",
+          code: "PRICE_CHANGED",
+        },
+        { status: 409 },
+      );
+    if (Date.now() - new Date(attempt.created_at).getTime() > 23 * 60 * 60 * 1000)
+      return NextResponse.json(
+        {
+          error:
+            "This checkout needs owner review. Start a new cart after the reservation is resolved.",
+        },
+        { status: 409 },
+      );
+    if (!attempt.stripe_session_id) {
+      const claimed = await pool.query(
+        `UPDATE checkout_attempts SET creation_requested_at=now(),updated_at=now()
+        WHERE id=$1 AND status IN ('creating','open','needs_review')
+          AND created_at>now()-interval '23 hours' RETURNING id`,
+        [holdToken],
+      );
+      if (!claimed.rowCount) throw new Error("Checkout reservation is closed.");
+    }
+    session = attempt.stripe_session_id
+      ? await stripe.checkout.sessions.retrieve(attempt.stripe_session_id)
+      : await stripe.checkout.sessions.create(
+          attempt.stripe_params as CheckoutSessionCreateParams,
+          { idempotencyKey: holdToken },
+        );
     await attachStripeSession(holdToken, session.id);
+    if (!session.url || session.status !== "open")
+      throw new Error("This checkout is no longer open.");
   } catch {
-    await stripe.checkout.sessions.expire(session.id).catch(() => undefined);
-    await releaseCart(holdToken).catch(() => undefined);
+    // A rejection on retry is not evidence that an earlier request never created a session.
+    await pool.query(
+      `UPDATE checkout_attempts SET last_error='Session creation or association requires reconciliation',
+        status=CASE WHEN status IN ('creating','open') THEN 'needs_review' ELSE status END,updated_at=now() WHERE id=$1`,
+      [holdToken],
+    );
     return NextResponse.json(
-      { error: "Checkout could not be linked to stock. Please try again." },
+      {
+        error:
+          "Checkout could not be opened. Retry this checkout; its reservation is retained if payment status is uncertain.",
+      },
       { status: 502 },
     );
   }

@@ -2,6 +2,7 @@
 // PLANKZ DECKZ — PostgreSQL connection pool and query helper.
 // Uses the `pg` package (node-postgres). No ORM.
 
+import "server-only";
 import { Pool, QueryResult, QueryResultRow } from "pg";
 
 // ---------------------------------------------------------------------------

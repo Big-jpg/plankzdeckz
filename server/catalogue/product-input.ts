@@ -1,6 +1,9 @@
 import type { ProductImage, ProductRecord, PublicationStatus } from "@/lib/catalogue";
+import { isClothing, isMerchKind, isSizeLabel, type MerchKind } from "@/lib/types";
+import { HAT_PRICING, isHatPricingFamily, type HatPricingFamily } from "@/lib/hat-pricing";
 
 export interface ProductInput {
+  revision: number;
   handle: string;
   title: string;
   description: string;
@@ -18,9 +21,12 @@ export interface ProductInput {
   stockQuantity: number;
   stockBySize: Record<string, number>;
   fitNotes: string;
+  merchKind: MerchKind | null;
+  salesUnitLabel: string;
+  hatPricingFamily?: HatPricingFamily | null;
+  adjustmentReason: string;
 }
 
-const sizes = ["S", "M", "L", "XL", "One size"];
 const imageHost = /^[a-z0-9-]+\.public\.blob\.vercel-storage\.com$/;
 function string(value: unknown, max = 500): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -37,11 +43,30 @@ export function parseProductInput(value: unknown): ProductInput {
   const raw = value as Record<string, unknown>;
   if (raw.productType !== "board" && raw.productType !== "merch")
     throw new Error("Choose a product type.");
-  if (!Number.isSafeInteger(raw.priceAmount) || (raw.priceAmount as number) < 0)
+  if (
+    !Number.isSafeInteger(raw.priceAmount) ||
+    (raw.priceAmount as number) < 0 ||
+    (raw.priceAmount as number) > 2_147_483_647
+  )
     throw new Error("Enter a valid price in cents.");
-  if (!Number.isSafeInteger(raw.stockQuantity) || (raw.stockQuantity as number) < 0)
+  if (
+    !Number.isSafeInteger(raw.stockQuantity) ||
+    (raw.stockQuantity as number) < 0 ||
+    (raw.stockQuantity as number) > 2_147_483_647
+  )
     throw new Error("Enter a valid stock quantity.");
   const productType = raw.productType === "merch" ? "merch" : "board";
+  const merchKind = isMerchKind(raw.merchKind) ? raw.merchKind : null;
+  const hatPricingFamily =
+    raw.hatPricingFamily == null || raw.hatPricingFamily === "" ? null : raw.hatPricingFamily;
+  if (
+    hatPricingFamily !== null &&
+    (!isHatPricingFamily(hatPricingFamily) || productType !== "merch" || merchKind !== "hat")
+  )
+    throw new Error("Quantity pricing can only be assigned to Trad or Cord hats.");
+  if (productType === "merch" && !merchKind) throw new Error("Choose a merchandise category.");
+  if (productType === "board" && (raw.stockQuantity as number) > 1)
+    throw new Error("A unique board can have stock of zero or one.");
   const publicationStatus: PublicationStatus =
     raw.publicationStatus === "published" || raw.publicationStatus === "archived"
       ? raw.publicationStatus
@@ -57,7 +82,13 @@ export function parseProductInput(value: unknown): ProductInput {
         const image = item as Record<string, unknown>;
         const url = string(image.url, 1000);
         const parsed = new URL(url);
-        if (parsed.protocol !== "https:" || !imageHost.test(parsed.hostname))
+        if (
+          parsed.protocol !== "https:" ||
+          !imageHost.test(parsed.hostname) ||
+          parsed.username ||
+          parsed.password ||
+          parsed.port
+        )
           throw new Error("Images must be uploaded to the Plankz image store.");
         return { url, alt: string(image.alt, 180) };
       })
@@ -66,17 +97,32 @@ export function parseProductInput(value: unknown): ProductInput {
   const stockBySize: Record<string, number> = {};
   if (raw.stockBySize && typeof raw.stockBySize === "object" && !Array.isArray(raw.stockBySize)) {
     for (const [size, quantity] of Object.entries(raw.stockBySize)) {
-      if (sizes.includes(size)) {
-        if (!Number.isSafeInteger(quantity) || (quantity as number) < 0)
-          throw new Error(`Enter valid stock for size ${size}.`);
-        stockBySize[size] = quantity as number;
-      }
+      if (!isSizeLabel(size)) throw new Error("Use distinct size labels of at most 32 characters.");
+      if (
+        !Number.isSafeInteger(quantity) ||
+        (quantity as number) < 0 ||
+        (quantity as number) > 2_147_483_647
+      )
+        throw new Error(`Enter valid stock for size ${size}.`);
+      stockBySize[size] = quantity as number;
     }
   }
+  if (Object.keys(stockBySize).length > 20) throw new Error("Use at most 20 sizes.");
+  if (
+    productType === "merch" &&
+    !isClothing(merchKind) &&
+    (publicationStatus === "published" || Object.keys(stockBySize).length > 0) &&
+    (Object.keys(stockBySize).length !== 1 || !Object.hasOwn(stockBySize, "One size"))
+  )
+    throw new Error("Enter a stock quantity for this merchandise product.");
   const boardStyle = ["cruiser", "surfskate", "longboard"].includes(String(raw.boardStyle))
     ? (raw.boardStyle as ProductInput["boardStyle"])
     : null;
   const input: ProductInput = {
+    revision:
+      Number.isSafeInteger(raw.revision) && (raw.revision as number) >= 0
+        ? (raw.revision as number)
+        : 0,
     handle,
     title,
     description: string(raw.description, 4000),
@@ -99,32 +145,38 @@ export function parseProductInput(value: unknown): ProductInput {
     stockQuantity: whole(raw.stockQuantity),
     stockBySize,
     fitNotes: string(raw.fitNotes, 1000),
+    merchKind: productType === "merch" ? merchKind : null,
+    salesUnitLabel: string(raw.salesUnitLabel, 120),
+    hatPricingFamily: isHatPricingFamily(hatPricingFamily) ? hatPricingFamily : null,
+    adjustmentReason: string(raw.adjustmentReason, 500),
   };
   if (publicationStatus === "published") {
-    if (input.priceAmount < 100)
-      throw new Error("A published product needs a price of at least $1.");
-    if (!input.images.length || !input.images[0].alt)
-      throw new Error("Add a primary image and description before publishing.");
+    if (
+      input.hatPricingFamily &&
+      input.priceAmount !== HAT_PRICING[input.hatPricingFamily].retailUnitAmount
+    )
+      throw new Error("The retail price must match the assigned hat quantity-pricing family.");
+    if (input.priceAmount < 1)
+      throw new Error("A published product needs a positive price in cents.");
+    if (!input.images.length || input.images.some((image) => !image.alt))
+      throw new Error("Add photos and describe every image before publishing.");
     if (!input.description) throw new Error("Add a description before publishing.");
     if (
       productType === "board" &&
       (!boardStyle || !input.boardShape || !input.timberSpecies.length)
     )
       throw new Error("Add the board style, shape, and timber before publishing.");
-    if (
-      productType === "board" &&
-      input.availabilityStatus === "available" &&
-      input.stockQuantity !== 1
-    )
-      throw new Error("A purchasable board must have stock of one.");
-    if (productType === "merch" && !Object.values(stockBySize).some((quantity) => quantity > 0))
-      throw new Error("Add stock for at least one tee size before publishing.");
+    if (productType === "board" && input.availabilityStatus === "sold" && input.stockQuantity !== 0)
+      throw new Error("A sold board must have stock of zero.");
+    if (productType === "merch" && (!Object.keys(stockBySize).length || !input.salesUnitLabel))
+      throw new Error("Describe the unit or pack sold and enter its stock before publishing.");
   }
   return input;
 }
 
 export function recordToInput(row: ProductRecord): ProductInput {
   return {
+    revision: row.revision,
     handle: row.handle,
     title: row.title,
     description: row.description,
@@ -142,5 +194,23 @@ export function recordToInput(row: ProductRecord): ProductInput {
     stockQuantity: row.stock_quantity,
     stockBySize: row.stock_by_size,
     fitNotes: typeof row.metadata.fit_notes === "string" ? row.metadata.fit_notes : "",
+    merchKind: isMerchKind(row.merch_kind) ? row.merch_kind : null,
+    salesUnitLabel:
+      typeof row.metadata.sales_unit_label === "string" ? row.metadata.sales_unit_label : "",
+    hatPricingFamily: isHatPricingFamily(row.metadata.hat_pricing_family)
+      ? row.metadata.hat_pricing_family
+      : null,
+    adjustmentReason: "",
   };
+}
+
+export function inventoryChanges(
+  row: Pick<ProductRecord, "product_type" | "stock_quantity" | "stock_by_size">,
+  input: ProductInput,
+) {
+  const before = row.product_type === "board" ? { "": row.stock_quantity } : row.stock_by_size;
+  const after = input.productType === "board" ? { "": input.stockQuantity } : input.stockBySize;
+  return [...new Set([...Object.keys(before), ...Object.keys(after)])]
+    .map((variant) => ({ variant, before: before[variant] ?? 0, after: after[variant] ?? 0 }))
+    .filter((change) => change.before !== change.after);
 }

@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/.commerce-test-runtime/
 /.pnp
 .pnp.*
 .yarn/*

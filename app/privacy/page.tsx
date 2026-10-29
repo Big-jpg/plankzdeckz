@@ -54,12 +54,12 @@ export default function Page() {
         </div>
       </section>
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-charcoal p-8 text-warm-white sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-ivory p-8 text-brand-brown sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-display text-2xl tracking-wide text-amber/90">
+            <p className="font-display text-2xl tracking-wide text-brand-brown/90">
               Hand-Crafted Skateboard Deckz — Recycled. Reclaimed. One of a Kind.
             </p>
-            <p className="mt-2 text-sm text-warm-white/70">
+            <p className="mt-2 text-sm text-brand-brown/70">
               Finished boards, ready for local pickup.
             </p>
           </div>

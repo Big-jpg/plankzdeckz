@@ -12,15 +12,24 @@ export default async function AdminProductsPage() {
           <p className="text-xs font-bold uppercase tracking-[.2em] text-copper">Catalogue</p>
           <h2 className="font-display text-4xl text-charcoal">Products</h2>
           <p className="mt-2 text-charcoal/70">
-            Add a finished deck or manage the OG tee. Drafts stay off the shop.
+            Add boards, tees, hats, jackets, bearings, stickers, trucks and wheels. Drafts stay off
+            the shop.
           </p>
         </div>
-        <Link
-          className="rounded-full bg-charcoal px-5 py-3 font-bold text-white"
-          href="/admin/products/new"
-        >
-          Add product
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            className="rounded-full border border-charcoal px-5 py-3 font-bold"
+            href="/admin/market-sales"
+          >
+            Record market sale
+          </Link>
+          <Link
+            className="rounded-full bg-charcoal px-5 py-3 font-bold text-white"
+            href="/admin/products/new"
+          >
+            Add product
+          </Link>
+        </div>
       </div>
       <div className="overflow-hidden rounded-2xl border border-charcoal/15 bg-white">
         {products.length === 0 ? (
@@ -53,7 +62,11 @@ export default async function AdminProductsPage() {
                   )}
                 </strong>
               </div>
-              <ProductQuickActions id={product.id} initial={recordToInput(product)} />
+              <ProductQuickActions
+                key={`${product.id}:${product.revision}`}
+                id={product.id}
+                initial={recordToInput(product)}
+              />
             </div>
           ))
         )}

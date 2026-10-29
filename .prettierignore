@@ -1,3 +1,6 @@
 .next
 node_modules
 pnpm-lock.yaml
+.commerce-test-runtime
+playwright-report
+test-results

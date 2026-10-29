@@ -8,8 +8,8 @@ import { GuestOrderLookupForm } from "@/components/guest-order-lookup-form";
 import { getOrderByCheckoutSession, type OrderWithItems } from "@/server/db/contracts";
 
 export const metadata: Metadata = {
-  title: "Order Confirmed",
-  description: "Your order has been confirmed.",
+  title: "Order confirmation",
+  description: "Check your payment and order confirmation.",
 };
 
 function formatCurrency(amount: number, currency: string): string {
@@ -170,9 +170,9 @@ function PendingConfirmation() {
         <div>
           <h2 className="text-sm font-semibold text-yellow-900">Confirmation still syncing</h2>
           <p className="mt-2 text-sm leading-relaxed text-yellow-800">
-            Stripe has returned successfully, but the order record is not visible yet. This is
-            usually a short webhook delay. Use the lookup below with your checkout session or the
-            order ID from your confirmation email if this page does not update.
+            A confirmed order is not available yet. Payment may still be processing. Use the lookup
+            below with your checkout session or the order ID from your confirmation email if this
+            page does not update.
           </p>
         </div>
       </div>
@@ -187,45 +187,62 @@ export default async function CheckoutSuccessPage({
 }) {
   const { session_id: sessionId } = await searchParams;
   const order = sessionId ? await getOrderByCheckoutSession(sessionId) : null;
+  const confirmed = order?.status === "paid" && order.items.length > 0;
 
   return (
     <section className="bg-warm-white py-24 sm:py-32">
-      {sessionId && <CheckoutSuccessCartClear />}
+      {confirmed && (
+        <CheckoutSuccessCartClear
+          orderId={order.id}
+          items={order.items.map((item) => ({
+            productId: item.shopify_product_id ?? "",
+            size: item.merch_size,
+            quantity: item.quantity,
+          }))}
+        />
+      )}
       <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
         <div className="rounded-2xl border border-charcoal/10 bg-ivory/30 p-10">
-          <CheckCircle className="mx-auto h-16 w-16 text-green-700" />
+          {confirmed ? (
+            <CheckCircle className="mx-auto h-16 w-16 text-green-700" />
+          ) : (
+            <Clock className="mx-auto h-16 w-16 text-yellow-700" />
+          )}
 
           <h1 className="mt-6 text-2xl font-semibold tracking-tight text-charcoal sm:text-3xl">
-            Order confirmed
+            {confirmed ? "Order confirmed" : "Order confirmation pending"}
           </h1>
 
           <p className="mt-4 text-base leading-relaxed text-charcoal/60">
-            Thank you for your order. Your board or merch has been confirmed for local pickup and
-            preparation will begin shortly.
+            {confirmed
+              ? "Thank you. Your payment and order have been recorded for local pickup."
+              : "Your order will be confirmed here after payment has been verified and recorded."}
           </p>
 
-          {order ? <OrderConfirmationDetails order={order} /> : <PendingConfirmation />}
+          {confirmed ? <OrderConfirmationDetails order={order} /> : <PendingConfirmation />}
 
-          <div className="mt-8 rounded-lg border border-charcoal/10 bg-warm-white p-5 text-left">
-            <h2 className="text-sm font-semibold text-charcoal">What happens next</h2>
+          {confirmed && (
+            <div className="mt-8 rounded-lg border border-charcoal/10 bg-warm-white p-5 text-left">
+              <h2 className="text-sm font-semibold text-charcoal">What happens next</h2>
 
-            <div className="mt-4 space-y-3 text-sm leading-relaxed text-charcoal/60">
-              <p>
-                <strong className="text-charcoal">1.</strong> Your order is reviewed for pickup timing and
-                item availability confirmation.
-              </p>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed text-charcoal/60">
+                <p>
+                  <strong className="text-charcoal">1.</strong> Your order is reviewed for pickup
+                  timing and item availability confirmation.
+                </p>
 
-              <p>
-                <strong className="text-charcoal">2.</strong> The board or merch is prepared and packed for
-                local collection.
-              </p>
+                <p>
+                  <strong className="text-charcoal">2.</strong> The board or merch is prepared and
+                  packed for local collection.
+                </p>
 
-              <p>
-                <strong className="text-charcoal">3.</strong> You will receive another email once
-                the order is ready for collection.
-              </p>
+                <p>
+                  <strong className="text-charcoal">3.</strong> You will receive another email once
+                  the order is ready for collection.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           <GuestOrderLookupForm initialSessionId={sessionId ?? ""} />
 

@@ -44,7 +44,7 @@ export default function Page() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">
             Get in touch
           </p>
-          <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-brown sm:text-6xl">
             Contact
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-charcoal/75">
@@ -61,7 +61,9 @@ export default function Page() {
               key={method.title}
               className="rounded-3xl border border-charcoal/10 bg-ivory/85 p-6 shadow-sm"
             >
-              <h2 className="font-display text-2xl tracking-wide text-amber">{method.title}</h2>
+              <h2 className="font-display text-2xl tracking-wide text-brand-brown">
+                {method.title}
+              </h2>
               <p className="mt-3 break-words text-sm leading-7 text-charcoal/72">{method.text}</p>
               <Link
                 href={method.href}
@@ -78,20 +80,22 @@ export default function Page() {
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-3xl bg-charcoal p-8 text-warm-white">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-coral">
+          <div className="rounded-3xl bg-ivory p-8 text-brand-brown">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-brown/65">
               Direct contact works best
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-wide text-amber">
+            <h2 className="mt-3 font-display text-3xl tracking-wide text-brand-brown">
               Send the practical details first.
             </h2>
-            <p className="mt-4 text-sm leading-7 text-warm-white/72">
+            <p className="mt-4 text-sm leading-7 text-brand-brown/72">
               Tell us which listed product or order you mean. That helps us answer questions about
               the exact board, tee size, or pickup arrangement.
             </p>
           </div>
           <div className="rounded-3xl border border-teal/25 bg-teal/10 p-8">
-            <h2 className="font-display text-2xl tracking-wide text-amber">What to include</h2>
+            <h2 className="font-display text-2xl tracking-wide text-brand-brown">
+              What to include
+            </h2>
             <ul className="mt-5 space-y-4">
               {includeItems.map((item) => (
                 <li key={item} className="flex gap-3 text-sm leading-7 text-charcoal/72">

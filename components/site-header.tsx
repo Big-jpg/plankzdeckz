@@ -34,19 +34,19 @@ export function SiteHeader() {
       <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="PLANKZ DECKZ home">
           <Image
-            src="/plankz-logo.png"
+            src="/plankz-og-logo.png"
             alt="PLANKZ DECKZ"
             width={56}
             height={56}
             priority
-            className="h-11 w-11 shrink-0 rounded-full object-contain sm:h-14 sm:w-14"
+            className="h-11 w-11 shrink-0 object-contain sm:h-14 sm:w-14"
           />
           <span className="hidden min-w-0 flex-col leading-none sm:flex">
             <span className="font-display text-2xl tracking-[0.08em] text-charcoal drop-shadow-[0_1px_0_rgba(255,248,237,0.75)]">
               PLANKZ DECKZ
             </span>
             <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.26em] text-charcoal/55">
-              Recycled timber ride craft
+              HAND-CRAFTED SKATEBOARD DECKZ
             </span>
           </span>
         </Link>

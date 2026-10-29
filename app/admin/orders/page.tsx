@@ -2,7 +2,8 @@
 // Admin-Lite orders list.
 
 import Link from "next/link";
-import { getRecentOrdersAdmin } from "@/server/db/contracts";
+import { searchAdminOrders } from "@/server/commerce/admin-orders";
+import { CheckoutRecovery } from "@/components/admin/checkout-recovery";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,7 @@ function formatDate(dateStr: string): string {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Australia/Perth",
   });
 }
 
@@ -49,8 +51,20 @@ function statusBadge(status: string) {
   );
 }
 
-export default async function AdminOrdersPage() {
-  const orders = await getRecentOrdersAdmin(200, 0, null);
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; channel?: string; page?: string }>;
+}) {
+  const params = await searchParams;
+  const search = (params.q ?? "").slice(0, 255);
+  const channel = params.channel === "online" || params.channel === "market" ? params.channel : "";
+  const page = /^\d+$/.test(params.page ?? "")
+    ? Math.max(1, Math.min(100_000, Number(params.page)))
+    : 1;
+  const { orders, total } = await searchAdminOrders(search, channel, page);
+  const pageHref = (next: number) =>
+    `/admin/orders?${new URLSearchParams({ q: search, channel, page: String(next) })}`;
 
   return (
     <div className="space-y-6">
@@ -58,12 +72,46 @@ export default async function AdminOrdersPage() {
         <div>
           <h2 className="font-serif text-3xl font-semibold text-charcoal">Orders</h2>
           <p className="mt-2 text-sm text-charcoal/60">
-            Most recent first. Open an order to inspect board type, material, finish, and build
-            notes.
+            Find online and market orders by order ID, buyer, checkout session, or Stripe payment
+            reference.
           </p>
         </div>
-        <p className="text-sm text-charcoal/50">Showing {orders.length} orders</p>
+        <p className="text-sm text-charcoal/50">
+          {total} orders · Page {page}
+        </p>
       </div>
+
+      <form className="flex flex-wrap items-end gap-3" action="/admin/orders">
+        <label className="min-w-64 flex-1 text-sm font-medium">
+          Search orders
+          <input
+            name="q"
+            defaultValue={search}
+            maxLength={255}
+            className="mt-1 block w-full rounded-lg border border-charcoal/20 bg-white px-3 py-2"
+          />
+        </label>
+        <label className="text-sm font-medium">
+          Sales channel
+          <select
+            name="channel"
+            defaultValue={channel}
+            className="mt-1 block rounded-lg border border-charcoal/20 bg-white px-3 py-2"
+          >
+            <option value="">All channels</option>
+            <option value="online">Online</option>
+            <option value="market">Market</option>
+          </select>
+        </label>
+        <button className="rounded-lg bg-charcoal px-4 py-2 text-sm font-semibold text-white">
+          Search
+        </button>
+        <Link className="px-2 py-2 text-sm font-semibold underline" href="/admin/market-sales">
+          Record market sale
+        </Link>
+      </form>
+
+      <CheckoutRecovery />
 
       <div className="overflow-hidden rounded-2xl border border-charcoal/10 bg-white shadow-sm">
         <div className="overflow-x-auto">
@@ -74,6 +122,7 @@ export default async function AdminOrdersPage() {
                 <th className="px-4 py-3 font-semibold">Buyer</th>
                 <th className="px-4 py-3 font-semibold">Total</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Channel / refund</th>
                 <th className="px-4 py-3 font-semibold">Pickup</th>
                 <th className="px-4 py-3 font-semibold">Date</th>
               </tr>
@@ -81,7 +130,7 @@ export default async function AdminOrdersPage() {
             <tbody className="divide-y divide-charcoal/10">
               {orders.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-8 text-center text-charcoal/60" colSpan={6}>
+                  <td className="px-4 py-8 text-center text-charcoal/60" colSpan={7}>
                     No orders found.
                   </td>
                 </tr>
@@ -99,14 +148,26 @@ export default async function AdminOrdersPage() {
                     </td>
                     <td className="px-4 py-4">
                       <p className="font-medium text-charcoal">
-                        {order.buyer_name ?? "Unnamed buyer"}
+                        {order.buyer_name ??
+                          (order.channel === "market" ? "Market customer" : "Unnamed buyer")}
                       </p>
-                      <p className="mt-1 text-xs text-charcoal/55">{order.email}</p>
+                      <p className="mt-1 text-xs text-charcoal/55">
+                        {order.email ?? "No email supplied"}
+                      </p>
                     </td>
                     <td className="px-4 py-4 font-semibold text-charcoal">
                       {formatCurrency(order.total_amount, order.currency)}
                     </td>
                     <td className="px-4 py-4">{statusBadge(order.status)}</td>
+                    <td className="px-4 py-4">
+                      <p>{statusLabel(order.channel)}</p>
+                      <p className="mt-1 text-xs text-charcoal/60">
+                        {statusLabel(order.refund_status)}
+                        {order.refunded_amount > 0
+                          ? ` · ${formatCurrency(order.refunded_amount, order.currency)}`
+                          : ""}
+                      </p>
+                    </td>
                     <td className="px-4 py-4">{statusBadge(order.pickup_status)}</td>
                     <td className="px-4 py-4 text-charcoal/60">{formatDate(order.created_at)}</td>
                   </tr>
@@ -116,6 +177,18 @@ export default async function AdminOrdersPage() {
           </table>
         </div>
       </div>
+      <nav aria-label="Order pages" className="flex gap-5 text-sm">
+        {page > 1 && (
+          <Link href={pageHref(page - 1)} className="underline">
+            Previous page
+          </Link>
+        )}
+        {page * 50 < total && (
+          <Link href={pageHref(page + 1)} className="underline">
+            Next page
+          </Link>
+        )}
+      </nav>
     </div>
   );
 }

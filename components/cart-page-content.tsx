@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Shirt, ShoppingBag, Trash2 } from "lucide-react";
@@ -15,6 +15,7 @@ interface CheckoutCreateSessionResponse {
   sessionId?: string;
   url?: string;
   error?: string;
+  code?: string;
   details?: Array<{ message?: string }>;
 }
 
@@ -24,25 +25,61 @@ function checkoutErrorMessage(payload: CheckoutCreateSessionResponse): string {
 }
 
 export function CartPageContent() {
-  const { state, itemCount, subtotal, currency, removeItem, setQuantity } = useCart();
+  const { state, itemCount, quote, quoteStatus, quoteError, retryQuote, removeItem, setQuantity } =
+    useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const checkoutAttempt = useRef<{ cart: string; id: string } | null>(null);
 
   async function handleCheckout(): Promise<void> {
-    if (!SALES_ENABLED) return;
+    if (!SALES_ENABLED || quoteStatus !== "ready" || !quote) return;
     setCheckoutError(null);
     setIsCheckingOut(true);
 
     try {
+      const expectedTotalAmount = Math.round(quote.verifiedSubtotal * 100);
+      const body = { items: state.items, expectedTotalAmount };
+      const cart = JSON.stringify(body);
+      if (checkoutAttempt.current?.cart !== cart) {
+        try {
+          checkoutAttempt.current = JSON.parse(
+            sessionStorage.getItem("plankz_checkout_attempt") ?? "null",
+          );
+        } catch {
+          checkoutAttempt.current = null;
+        }
+        if (checkoutAttempt.current?.cart !== cart)
+          checkoutAttempt.current = { cart, id: crypto.randomUUID() };
+        try {
+          sessionStorage.setItem(
+            "plankz_checkout_attempt",
+            JSON.stringify(checkoutAttempt.current),
+          );
+        } catch {
+          /* Storage is optional. */
+        }
+      }
       const response = await fetch("/api/checkout/create-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: state.items }),
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": checkoutAttempt.current!.id,
+        },
+        body: JSON.stringify(body),
       });
 
       const payload = (await response.json().catch(() => ({}))) as CheckoutCreateSessionResponse;
 
       if (!response.ok || !payload.url) {
+        if (response.status === 409) {
+          checkoutAttempt.current = null;
+          try {
+            sessionStorage.removeItem("plankz_checkout_attempt");
+          } catch {
+            /* Storage is optional. */
+          }
+        }
+        if (payload.code === "PRICE_CHANGED") retryQuote();
         setCheckoutError(checkoutErrorMessage(payload));
         setIsCheckingOut(false);
         return;
@@ -111,6 +148,12 @@ export function CartPageContent() {
               {state.items.map((item) => {
                 const key = cartItemKey(item);
                 const isBoard = (item.productType ?? "board") === "board";
+                const lineQuote = quote?.lineQuotes.find(
+                  (line) =>
+                    line.handle === item.handle &&
+                    line.selectedSize ===
+                      (item.selectedSize ?? (item.productType === "merch" ? "One size" : null)),
+                );
 
                 return (
                   <div
@@ -216,11 +259,15 @@ export function CartPageContent() {
                         )}
                         <div className="text-right">
                           <p className="text-sm font-semibold text-charcoal">
-                            ${(item.unitPrice * item.quantity).toFixed(2)}
+                            {lineQuote
+                              ? `$${((lineQuote.unitAmount * item.quantity) / 100).toFixed(2)}`
+                              : quoteStatus === "loading"
+                                ? "Checking price…"
+                                : "Price unavailable"}
                           </p>
-                          {item.quantity > 1 && (
+                          {item.quantity > 1 && lineQuote && (
                             <p className="text-xs text-charcoal/50">
-                              ${item.unitPrice.toFixed(2)} each
+                              ${(lineQuote.unitAmount / 100).toFixed(2)} each
                             </p>
                           )}
                         </div>
@@ -249,9 +296,17 @@ export function CartPageContent() {
                 <div className="flex justify-between text-sm">
                   <span className="text-charcoal/60">Items ({itemCount})</span>
                   <span className="font-medium text-charcoal">
-                    ${subtotal.toFixed(2)} {currency}
+                    {quote ? `$${quote.retailSubtotal.toFixed(2)} ${quote.currency}` : "—"}
                   </span>
                 </div>
+                {quote && quote.discountAmount > 0 && (
+                  <div className="flex justify-between text-sm" data-cart-savings>
+                    <span className="text-charcoal/60">Hat savings</span>
+                    <span className="font-medium text-charcoal">
+                      −${quote.discountAmount.toFixed(2)} {quote.currency}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-charcoal/60">Fulfilment</span>
                   <span className="text-xs text-charcoal/40">Local pickup only</span>
@@ -262,10 +317,28 @@ export function CartPageContent() {
                 <div className="flex justify-between">
                   <span className="text-base font-semibold text-charcoal">Subtotal</span>
                   <span className="text-base font-semibold text-charcoal">
-                    ${subtotal.toFixed(2)} {currency}
+                    {quote ? `$${quote.verifiedSubtotal.toFixed(2)} ${quote.currency}` : "—"}
                   </span>
                 </div>
               </div>
+
+              {quoteStatus === "loading" && (
+                <p className="mt-3 text-sm text-charcoal/65" role="status">
+                  Confirming prices and availability…
+                </p>
+              )}
+              {quoteError && (
+                <div className="mt-3 text-sm text-red-700" role="alert">
+                  <p>{quoteError}</p>
+                  <button
+                    type="button"
+                    onClick={retryQuote}
+                    className="mt-2 underline underline-offset-2"
+                  >
+                    Retry price check
+                  </button>
+                </div>
+              )}
 
               <p className="mt-6 rounded-lg border border-amber/20 bg-amber/5 p-4 text-xs leading-relaxed text-charcoal/80">
                 Local pickup only. Handmade board timber character and finish may vary by available
@@ -274,12 +347,12 @@ export function CartPageContent() {
 
               <button
                 type="button"
-                disabled={isCheckingOut}
+                disabled={isCheckingOut || quoteStatus !== "ready"}
                 onClick={handleCheckout}
-                aria-busy={isCheckingOut}
+                aria-busy={isCheckingOut || quoteStatus === "loading"}
                 className={cn(
                   "mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-sm font-semibold transition-all",
-                  !isCheckingOut
+                  !isCheckingOut && quoteStatus === "ready"
                     ? "bg-charcoal text-warm-white hover:bg-charcoal/90"
                     : "cursor-not-allowed bg-charcoal/20 text-charcoal/40",
                 )}

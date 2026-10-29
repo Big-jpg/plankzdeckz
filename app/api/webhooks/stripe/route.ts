@@ -1,289 +1,88 @@
-// app/api/webhooks/stripe/route.ts
-// Stripe webhook endpoint for idempotent order persistence.
-
 import { NextResponse, type NextRequest } from "next/server";
-import Stripe from "stripe";
-import {
-  createOrderFromStripeSession,
-  createOrderItem,
-  markStripeEventProcessed,
-  recordStripeEvent,
-} from "@/server/db/contracts";
-import { onOrderCreated, onPaymentConfirmed } from "@/server/hooks/buyer-events";
+import type Stripe from "stripe";
+import { pool } from "@/server/db/client";
 import { getStripeClient, getStripeWebhookSecret } from "@/server/stripe/client";
-import { applyPaidInventory, releaseCart } from "@/server/cart/holds";
+import { finalizeCheckout, reconcileCheckoutAttempt } from "@/server/commerce/checkout";
+import { refreshOrderRefunds } from "@/server/commerce/refunds";
 
 export const runtime = "nodejs";
-
-type WebhookResponse = {
-  received: boolean;
-  processed?: boolean;
-  duplicate?: boolean;
-  ignored?: boolean;
-  error?: string;
-};
-
-function stripeObjectId(value: string | Stripe.PaymentIntent | null): string | null {
-  if (!value) return null;
-  return typeof value === "string" ? value : value.id;
-}
-
-function metadataString(
-  metadata: Stripe.Metadata | null | undefined,
-  key: string,
-  fallback: string | null = null,
-): string | null {
-  const value = metadata?.[key];
-  return value && value.trim().length > 0 ? value : fallback;
-}
-
-function parseMetadataJson(
-  metadata: Stripe.Metadata | null | undefined,
-  key: string,
-): Record<string, unknown> {
-  const value = metadata?.[key];
-  if (!value) return {};
-
-  try {
-    const parsed = JSON.parse(value) as unknown;
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? (parsed as Record<string, unknown>)
-      : {};
-  } catch {
-    return {};
-  }
-}
-
-function productMetadataFromLineItem(lineItem: Stripe.LineItem): Stripe.Metadata | null {
-  const product = lineItem.price?.product;
-
-  if (!product || typeof product === "string" || product.deleted) {
-    return null;
-  }
-
-  return product.metadata;
-}
-
-function lineItemTitle(lineItem: Stripe.LineItem): string {
-  if (lineItem.description && lineItem.description.trim().length > 0) return lineItem.description;
-
-  const product = lineItem.price?.product;
-  if (product && typeof product !== "string" && !product.deleted && product.name) {
-    return product.name;
-  }
-
-  return "PLANKZ DECKZ item";
-}
-
-function checkoutEmail(session: Stripe.Checkout.Session): string | null {
-  return session.customer_details?.email ?? session.customer_email ?? null;
-}
-
-function checkoutBuyerName(session: Stripe.Checkout.Session): string | null {
-  return session.customer_details?.name ?? null;
-}
-
-function checkoutPhone(session: Stripe.Checkout.Session): string | null {
-  return session.customer_details?.phone ?? null;
-}
-
-function productTypeFromMetadata(metadata: Stripe.Metadata | null): "board" | "merch" {
-  return metadataString(metadata, "product_type") === "merch" ? "merch" : "board";
-}
-
-function boardStyleFromMetadata(
-  metadata: Stripe.Metadata | null,
-): "cruiser" | "surfskate" | "longboard" | null {
-  const boardStyle =
-    metadataString(metadata, "board_style") ?? metadataString(metadata, "board_type");
-  return boardStyle === "cruiser" || boardStyle === "surfskate" || boardStyle === "longboard"
-    ? boardStyle
-    : null;
-}
-
-function lineItemVariantTitle(metadata: Stripe.Metadata | null): string | null {
-  const merchSize = metadataString(metadata, "merch_size");
-  if (merchSize) return `Size ${merchSize}`;
-
-  const boardType = metadataString(metadata, "board_type");
-  return boardType ? `Board type: ${boardType}` : null;
-}
-
-function simplifiedLineItemMetadata(
-  metadata: Stripe.Metadata | null,
-  lineItem: Stripe.LineItem,
-): Record<string, unknown> {
-  return {
-    ...parseMetadataJson(metadata, "item_metadata"),
-    stripe_line_item_id: lineItem.id,
-    stripe_price_id: lineItem.price?.id ?? null,
-    stripe_product_id:
-      typeof lineItem.price?.product === "string"
-        ? lineItem.price.product
-        : lineItem.price?.product?.id,
-    handle: metadataString(metadata, "handle"),
-    product_type: metadataString(metadata, "product_type"),
-    board_name: metadataString(metadata, "board_name"),
-    board_type: metadataString(metadata, "board_type"),
-    board_shape: metadataString(metadata, "board_shape"),
-    timber_species: metadataString(metadata, "timber_species"),
-    dimensions: metadataString(metadata, "dimensions"),
-    merch_item: metadataString(metadata, "merch_item"),
-    merch_size: metadataString(metadata, "merch_size"),
-    local_pickup_only: true,
-  };
-}
-
-async function persistCheckoutSessionOrder(session: Stripe.Checkout.Session): Promise<void> {
-  const email = checkoutEmail(session);
-
-  if (!email) {
-    throw new Error(`Stripe checkout session ${session.id} did not include a customer email.`);
-  }
-
-  const stripe = getStripeClient();
-  const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-    limit: 100,
-    expand: ["data.price.product"],
-  });
-
-  const order = await createOrderFromStripeSession({
-    email,
-    buyer_name: checkoutBuyerName(session),
-    phone: checkoutPhone(session),
-    stripe_checkout_session_id: session.id,
-    stripe_payment_intent_id: stripeObjectId(session.payment_intent),
-    status: session.payment_status === "paid" ? "paid" : "pending",
-    fulfilment_method: "local_pickup",
-    subtotal_amount:
-      session.amount_subtotal ??
-      lineItems.data.reduce((total, lineItem) => total + (lineItem.amount_subtotal ?? 0), 0),
-    total_amount:
-      session.amount_total ??
-      lineItems.data.reduce((total, lineItem) => total + (lineItem.amount_total ?? 0), 0),
-    currency: (session.currency ?? lineItems.data[0]?.currency ?? "aud").toUpperCase(),
-  });
-
-  if (!order) {
-    throw new Error(`Order procedure returned no row for Stripe checkout session ${session.id}.`);
-  }
-
-  for (const lineItem of lineItems.data) {
-    const metadata = productMetadataFromLineItem(lineItem);
-
-    await createOrderItem({
-      order_id: order.id,
-      shopify_product_id: metadataString(metadata, "product_id"),
-      shopify_variant_id: metadataString(metadata, "variant_id"),
-      title: lineItemTitle(lineItem),
-      variant_title: lineItemVariantTitle(metadata),
-      quantity: lineItem.quantity ?? 1,
-      unit_amount: lineItem.price?.unit_amount ?? 0,
-      total_amount: lineItem.amount_total ?? 0,
-      image_url: metadataString(metadata, "image_url"),
-      product_type: productTypeFromMetadata(metadata),
-      board_style: boardStyleFromMetadata(metadata),
-      merch_size: metadataString(metadata, "merch_size"),
-      customisation_notes: null,
-      material: metadataString(metadata, "material") ?? metadataString(metadata, "timber_species"),
-      colour: metadataString(metadata, "colour"),
-      metadata: simplifiedLineItemMetadata(metadata, lineItem),
-    });
-  }
-
-  await applyPaidInventory(session, lineItems.data);
-
-  if (!order.is_new) return;
-
-  await onPaymentConfirmed({
-    order_id: order.id,
-    stripe_checkout_session_id: session.id,
-    stripe_payment_intent_id: stripeObjectId(session.payment_intent),
-    email,
-    phone: checkoutPhone(session),
-    amount_total: session.amount_total,
-    currency: (session.currency ?? lineItems.data[0]?.currency ?? "aud").toUpperCase(),
-    payment_status: session.payment_status,
-  });
-
-  await onOrderCreated({
-    order_id: order.id,
-    email,
-    phone: checkoutPhone(session),
-    stripe_checkout_session_id: session.id,
-    stripe_payment_intent_id: stripeObjectId(session.payment_intent),
-    status: order.status,
-    total_amount:
-      session.amount_total ??
-      lineItems.data.reduce((total, lineItem) => total + (lineItem.amount_total ?? 0), 0),
-    currency: (session.currency ?? lineItems.data[0]?.currency ?? "aud").toUpperCase(),
-    item_count: lineItems.data.length,
-  });
-}
-
-export async function POST(request: NextRequest): Promise<NextResponse<WebhookResponse>> {
-  const stripe = getStripeClient();
+export const maxDuration = 60;
+export async function POST(request: NextRequest) {
   const signature = request.headers.get("stripe-signature");
-
-  if (!signature) {
+  if (!signature)
     return NextResponse.json(
-      { received: false, error: "Missing Stripe signature header." },
+      { received: false, error: "Missing Stripe signature." },
       { status: 400 },
     );
-  }
-
-  const rawBody = await request.text();
+  const raw = await request.text();
   let event: Stripe.Event;
-
   try {
-    event = stripe.webhooks.constructEvent(rawBody, signature, getStripeWebhookSecret());
-  } catch (error) {
+    event = getStripeClient().webhooks.constructEvent(raw, signature, getStripeWebhookSecret());
+  } catch {
     return NextResponse.json(
-      {
-        received: false,
-        error: error instanceof Error ? error.message : "Invalid Stripe webhook signature.",
-      },
+      { received: false, error: "Invalid Stripe signature or webhook configuration." },
       { status: 400 },
     );
   }
-
-  const eventRecord = await recordStripeEvent(event.id, event.type, JSON.parse(rawBody));
-
-  if (!eventRecord) {
-    return NextResponse.json(
-      { received: false, error: "Stripe event could not be recorded." },
-      { status: 500 },
-    );
-  }
-
-  if (!eventRecord.is_new && eventRecord.processed) {
-    return NextResponse.json({ received: true, duplicate: true, processed: true });
-  }
-
-  if (event.type === "checkout.session.expired") {
-    const token = (event.data.object as Stripe.Checkout.Session).metadata?.hold_token;
-    if (token) await releaseCart(token);
-    await markStripeEventProcessed(event.id);
-    return NextResponse.json({ received: true, processed: true });
-  }
-  if (event.type !== "checkout.session.completed") {
-    await markStripeEventProcessed(event.id);
-    return NextResponse.json({ received: true, ignored: true, processed: true });
-  }
-
   try {
-    await persistCheckoutSessionOrder(event.data.object as Stripe.Checkout.Session);
-    await markStripeEventProcessed(event.id);
-  } catch (error) {
+    const receipt = await pool.query<{ processed: boolean }>(
+      `INSERT INTO stripe_events(stripe_event_id,event_type,payload)
+      VALUES($1,$2,$3::jsonb) ON CONFLICT(stripe_event_id) DO UPDATE SET stripe_event_id=EXCLUDED.stripe_event_id RETURNING processed`,
+      [event.id, event.type, raw],
+    );
+    if (receipt.rows[0].processed)
+      return NextResponse.json({ received: true, processed: true, duplicate: true });
+    if (
+      event.type === "checkout.session.completed" ||
+      event.type === "checkout.session.expired" ||
+      event.type === "checkout.session.async_payment_succeeded"
+    ) {
+      const object = event.data.object as Stripe.Checkout.Session;
+      if (object.metadata?.source !== "plankz_deckz") {
+        await pool.query(
+          "UPDATE stripe_events SET processed=true,processed_at=now() WHERE stripe_event_id=$1",
+          [event.id],
+        );
+        return NextResponse.json({ received: true, processed: true, ignored: true });
+      }
+      const session = await getStripeClient().checkout.sessions.retrieve(object.id);
+      if (session.payment_status === "paid") await finalizeCheckout(session, event.id);
+      else {
+        const token = session.metadata?.hold_token;
+        if (!token || !/^[0-9a-f-]{36}$/i.test(token))
+          throw new Error("Checkout association requires review.");
+        await reconcileCheckoutAttempt(token);
+        await pool.query(
+          "UPDATE stripe_events SET processed=true,processed_at=now() WHERE stripe_event_id=$1",
+          [event.id],
+        );
+      }
+    } else if (
+      ["charge.refunded", "refund.created", "refund.updated", "refund.failed"].includes(event.type)
+    ) {
+      const object = event.data.object as Stripe.Charge | Stripe.Refund;
+      const reference = object.payment_intent;
+      const id = typeof reference === "string" ? reference : reference?.id;
+      if (id) await refreshOrderRefunds(id);
+      await pool.query(
+        "UPDATE stripe_events SET processed=true,processed_at=now() WHERE stripe_event_id=$1",
+        [event.id],
+      );
+    } else
+      await pool.query(
+        "UPDATE stripe_events SET processed=true,processed_at=now() WHERE stripe_event_id=$1",
+        [event.id],
+      );
+    return NextResponse.json({ received: true, processed: true });
+  } catch {
+    // Retryable failures stay unprocessed. Detailed references are available in admin.
     return NextResponse.json(
       {
         received: true,
         processed: false,
-        error: error instanceof Error ? error.message : "Stripe webhook processing failed.",
+        error: "Payment processing requires retry or reconciliation.",
       },
       { status: 500 },
     );
   }
-
-  return NextResponse.json({ received: true, processed: true });
 }

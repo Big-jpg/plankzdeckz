@@ -4,6 +4,8 @@ export type PublicCatalogueCategory =
   | "tees"
   | "jackets"
   | "bearings"
+  | "trucks"
+  | "wheels"
   | "stickers";
 
 export interface PublicCatalogueImage {
@@ -20,6 +22,7 @@ export interface PublicCatalogueItem {
   readonly handle: string;
   readonly title: string;
   readonly description: string;
+  readonly boardFacts?: readonly { label: string; value: string }[];
   readonly category: PublicCatalogueCategory;
   readonly images: readonly PublicCatalogueImage[];
   readonly purchasable: false;
@@ -31,6 +34,8 @@ export const PUBLIC_CATALOGUE_CATEGORIES = [
   { key: "tees", title: "Tees" },
   { key: "jackets", title: "Jackets" },
   { key: "bearings", title: "Bearings" },
+  { key: "trucks", title: "Trucks" },
+  { key: "wheels", title: "Wheels" },
   { key: "stickers", title: "Stickers" },
 ] as const satisfies readonly { key: PublicCatalogueCategory; title: string }[];
 
@@ -41,7 +46,7 @@ export const PUBLIC_CATALOGUE: readonly PublicCatalogueItem[] = [
     handle: "board-1",
     title: "Board 01",
     description:
-      "Top, underside, detail and held views of a timber board with Plankz branding, trucks and wheels.",
+      "Board #1 is the perfect balance of clean lines and rugged natural textures, making for a smooth and critical ride. Some charred black lines contrast the woods clean limestone appearance, similar to Perth’s coastal scenes along the metro beaches. The board features no flex to replicate a surfy 1960’s – 1970’s OG cruiser feel, when ridden.",
     category: "boards",
     images: [
       {
@@ -92,7 +97,8 @@ export const PUBLIC_CATALOGUE: readonly PublicCatalogueItem[] = [
     handle: "board-3",
     title: "Board 03",
     description:
-      "Top, underside, detail and held views of a timber board with Plankz branding, trucks and wheels.",
+      "Board #3 captures a classic shape & double pin lined cruiser in its simplicity. The contrasting hardwoods, of deep Jarrah & Marri lined with pearlescent blues of the Kalabari coast. The board features no flex to replicate a surfy 1960’s – 1970’s OG cruiser feel, when ridden.",
+    boardFacts: [{ label: "Timber", value: "Jarrah and Marri" }],
     category: "boards",
     images: [
       {
@@ -143,7 +149,8 @@ export const PUBLIC_CATALOGUE: readonly PublicCatalogueItem[] = [
     handle: "board-4",
     title: "Board 04",
     description:
-      "Top, underside, detail and held views of a timber board with Plankz branding, trucks and wheels.",
+      "This board replicates the deeper waters of the west-end past Rottnest. From its blue hues in the nose, darkening through the middle, to a midnight black in the tail. This board paired with Marri wood, creates a blissful centre piece to any room and will surely turn heads when being ridden down the coast. The board features no flex to replicate a surfy 1960’s – 1970’s OG cruiser feel, when ridden.",
+    boardFacts: [{ label: "Timber", value: "Marri" }],
     category: "boards",
     images: [
       {
@@ -194,7 +201,7 @@ export const PUBLIC_CATALOGUE: readonly PublicCatalogueItem[] = [
     handle: "board-5",
     title: "Board 05",
     description:
-      "Top, underside, detail and held views of a timber board with Plankz branding, trucks and wheels.",
+      "A triple pinned cruiser with an extended kick allowing for sharper turns and smooth lines to be drawn. The turquoise and white accents through the resin design are an uncanny reminder that the coast is always close by, with inspiration coming from Yanchep Lagoon on a sunny day. The board features no flex to replicate a surfy 1960’s – 1970’s OG cruiser feel, when ridden.",
     category: "boards",
     images: [
       {
@@ -237,7 +244,8 @@ export const PUBLIC_CATALOGUE: readonly PublicCatalogueItem[] = [
     handle: "board-6",
     title: "Board 06",
     description:
-      "Top, underside, detail and held views of a timber board with Plankz branding, trucks and wheels.",
+      "A longer wheel based cruiser, for those olds school surfy feels. Featuring deep midnight black and notes of purple haze swirled throughout. The effects are that of, starring into the night sky whilst camping in Esperance. Coupled with natural burls and jagged Marri pallet slats, this board is a statement piece that won’t disappoint. The board features no flex to replicate a surfy 1960’s – 1970’s OG cruiser feel, when ridden.",
+    boardFacts: [{ label: "Timber", value: "Marri pallet slats" }],
     category: "boards",
     images: [
       {
@@ -444,8 +452,8 @@ export const PUBLIC_CATALOGUE: readonly PublicCatalogueItem[] = [
   {
     id: "og-tee",
     handle: "og-tee",
-    title: "Plankz tee",
-    description: "A white tee with a small black chest mark and a larger colour print on the back.",
+    title: "OG Logo Tee",
+    description: "White OG Logo Tee. Normal tee, 180GSM.",
     category: "tees",
     images: [
       {
@@ -565,7 +573,7 @@ export const PUBLIC_CATALOGUE: readonly PublicCatalogueItem[] = [
     id: "bearing-photo-set",
     handle: "bearing-photo-set",
     title: "Bearings",
-    description: "Red-sealed bearings photographed beside Fushi packaging.",
+    description: "FUSHI Reds ABEC 9 bearings.",
     category: "bearings",
     images: [
       {

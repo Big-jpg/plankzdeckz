@@ -4,6 +4,10 @@ import Link from "next/link";
 import { ArrowRight, BadgeCheck, Hammer, MapPin, Trees } from "lucide-react";
 import { getSoldBoards } from "@/lib/catalogue";
 import { ProductVisual } from "@/components/product-visual";
+import Image from "next/image";
+import { PublicCatalogueCard } from "@/components/public-catalogue-card";
+import { getPublicCatalogueItems } from "@/lib/public-catalogue";
+import "../shop/catalogue.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
@@ -37,7 +41,20 @@ export default async function GalleryPage() {
         </div>
       </section>
 
-      <section className="py-16 sm:py-20">
+      <section className="public-catalogue pc-section" aria-labelledby="board-collection-heading">
+        <div className="pc-wrap">
+          <div className="pc-section-heading">
+            <h2 id="board-collection-heading">The board collection</h2>
+          </div>
+          <div className="pc-grid">
+            {getPublicCatalogueItems("boards").map((board) => (
+              <PublicCatalogueCard key={board.id} item={board} context="boards" logoOverlay />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 sm:py-20" aria-label="Sold board archive">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {soldBoards.length === 0 ? (
             <div className="rounded-3xl border border-charcoal/10 bg-ivory/60 p-10 text-center">
@@ -64,13 +81,22 @@ export default async function GalleryPage() {
                   key={board.id}
                   className="overflow-hidden rounded-3xl border border-charcoal/10 bg-ivory/40 shadow-sm"
                 >
-                  <ProductVisual
-                    productType="board"
-                    title={board.title}
-                    images={board.images}
-                    className="h-80 rounded-none border-0"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
+                  <div className="relative">
+                    <ProductVisual
+                      productType="board"
+                      title={board.title}
+                      images={board.images}
+                      className="h-80 rounded-none border-0"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                    />
+                    <Image
+                      src="/plankz-og-logo.png"
+                      alt=""
+                      width={90}
+                      height={90}
+                      className="absolute bottom-3 right-3 h-16 w-16 object-contain"
+                    />
+                  </div>
                   <div className="space-y-6 p-6 sm:p-8">
                     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                       <div>

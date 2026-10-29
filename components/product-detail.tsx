@@ -13,9 +13,12 @@ import { ProductGallery } from "@/components/product-gallery";
 import { Toast } from "@/components/toast";
 import { hasSupportedSaleDetails, isPurchasableProduct } from "@/lib/sellability";
 import { SALES_ENABLED } from "@/lib/commerce-config";
+import { HAT_PRICING } from "@/lib/hat-pricing";
 
 function formatPrice(product: Product): string {
-  return `$${product.price.toFixed(0)} ${product.currency}`;
+  return new Intl.NumberFormat("en-AU", { style: "currency", currency: product.currency }).format(
+    product.price,
+  );
 }
 
 function initialMerchSize(product: Product): MerchSize | null {
@@ -58,7 +61,15 @@ function StatusPill({ board }: { board: BoardProduct }) {
       )}
     >
       <BadgeCheck className="h-4 w-4" />
-      {sold ? "Sold" : reserved ? "Reserved" : "Available"}
+      {board.stockUnderReview
+        ? "Stock reconciliation"
+        : sold
+          ? "Sold"
+          : reserved
+            ? "Reserved"
+            : board.stockQuantity === 1
+              ? "Available"
+              : "Unavailable"}
     </span>
   );
 }
@@ -103,7 +114,12 @@ export function ProductDetail({ product }: { product: Product }) {
       }
 
       const selectedMerchSize = isMerchProduct(product) ? (selectedSize ?? "One size") : undefined;
-      const variantTitle = selectedMerchSize ? `Size ${selectedMerchSize}` : "One-of-a-kind board";
+      const variantTitle =
+        selectedMerchSize && selectedMerchSize !== "One size"
+          ? `Size ${selectedMerchSize}`
+          : isMerchProduct(product)
+            ? (product.salesUnitLabel ?? "")
+            : "One-of-a-kind board";
 
       const item: CartItem = {
         productId: product.id,
@@ -173,6 +189,15 @@ export function ProductDetail({ product }: { product: Product }) {
           </Link>
         </div>
       </div>
+
+      {SALES_ENABLED && product.stockUnderReview && (
+        <p
+          role="status"
+          className="mx-auto max-w-7xl px-4 pt-6 text-sm font-semibold text-charcoal sm:px-6 lg:px-8"
+        >
+          Temporarily unavailable while stock is being reconciled.
+        </p>
+      )}
 
       {!SALES_ENABLED || !hasSupportedSaleDetails(product) ? (
         <section className="bg-warm-white/92 py-10 sm:py-16">
@@ -335,13 +360,17 @@ function BoardDetail({
               )}
             >
               <ShoppingBag className="h-4 w-4" />
-              {sold
-                ? "Sold — view only"
-                : reserved
-                  ? "Reserved — view only"
-                  : isAdding
-                    ? "Checking availability..."
-                    : "Add one-of-a-kind board to cart"}
+              {product.stockUnderReview
+                ? "Temporarily unavailable"
+                : sold
+                  ? "Sold — view only"
+                  : reserved
+                    ? "Reserved — view only"
+                    : isAdding
+                      ? "Checking availability..."
+                      : product.inStock
+                        ? "Add one-of-a-kind board to cart"
+                        : "Out of stock"}
             </button>
           </div>
         </div>
@@ -365,6 +394,11 @@ function MerchDetail({
   isAdding: boolean;
   onAddToCart: () => void;
 }) {
+  const hatPolicy =
+    product.merchKind === "hat" && product.hatPricingFamily
+      ? HAT_PRICING[product.hatPricingFamily]
+      : null;
+
   return (
     <section className="bg-warm-white/92 py-10 sm:py-16">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -379,35 +413,85 @@ function MerchDetail({
               {product.title}
             </h1>
             <p className="mt-4 text-3xl font-semibold text-copper">{formatPrice(product)}</p>
+            {product.salesUnitLabel && (
+              <p className="mt-1 text-sm text-charcoal/65">Per {product.salesUnitLabel}</p>
+            )}
             <p className="mt-6 text-base leading-8 text-charcoal/75">{product.description}</p>
 
-            <div className="mt-8 border-t border-charcoal/10 pt-6">
-              <label className="text-sm font-semibold text-charcoal">
-                {product.sizeRequired ? "Select size" : "Size"}
-                {product.sizeRequired && <span className="text-red-600"> *</span>}
-              </label>
-              <p className="mt-1 text-xs text-charcoal/55">{product.fitNotes}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {product.sizes.map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    disabled={(product.stockBySize?.[size] ?? 0) === 0}
-                    onClick={() => setSelectedSize(size)}
-                    className={cn(
-                      "rounded-full border px-4 py-2 text-sm font-semibold transition-all",
-                      (product.stockBySize?.[size] ?? 0) === 0
-                        ? "cursor-not-allowed border-charcoal/10 text-charcoal/30"
-                        : selectedSize === size
-                          ? "border-charcoal bg-charcoal text-warm-white"
-                          : "border-charcoal/15 bg-warm-white/78 text-charcoal hover:border-charcoal/40",
-                    )}
-                  >
-                    {size}
-                  </button>
-                ))}
+            {hatPolicy && (
+              <div className="mt-6 rounded-2xl border border-charcoal/10 bg-warm-white/80 p-4">
+                <h2 className="font-display text-2xl text-brand-brown">
+                  {hatPolicy.label} quantity prices
+                </h2>
+                <table className="mt-3 w-full text-left text-sm">
+                  <caption className="sr-only">Price per hat for {hatPolicy.label}</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="pb-2 font-semibold">
+                        Quantity
+                      </th>
+                      <th scope="col" className="pb-2 text-right font-semibold">
+                        Each
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {hatPolicy.tiers.map((tier, index) => {
+                      const next = hatPolicy.tiers[index + 1];
+                      const quantity = next
+                        ? next.minimumQuantity === tier.minimumQuantity + 1
+                          ? String(tier.minimumQuantity)
+                          : `${tier.minimumQuantity}–${next.minimumQuantity - 1}`
+                        : `${tier.minimumQuantity}+`;
+                      return (
+                        <tr key={tier.minimumQuantity} className="border-t border-charcoal/10">
+                          <th scope="row" className="py-2 font-normal">
+                            {quantity}
+                          </th>
+                          <td className="py-2 text-right">
+                            ${(tier.unitAmount / 100).toFixed(2)} AUD
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <p className="mt-3 text-xs leading-6 text-charcoal/65">
+                  Trad and Cord quantities are priced separately. Your cart confirms the total
+                  before checkout.
+                </p>
               </div>
-            </div>
+            )}
+
+            {!(product.sizes.length === 1 && product.sizes[0] === "One size") && (
+              <div className="mt-8 border-t border-charcoal/10 pt-6">
+                <p className="text-sm font-semibold text-charcoal">
+                  {product.sizeRequired ? "Select size" : "Size"}
+                  {product.sizeRequired && <span className="text-red-600"> *</span>}
+                </p>
+                <p className="mt-1 text-xs text-charcoal/55">{product.fitNotes}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {product.sizes.map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      disabled={(product.stockBySize?.[size] ?? 0) === 0}
+                      onClick={() => setSelectedSize(size)}
+                      className={cn(
+                        "rounded-full border px-4 py-2 text-sm font-semibold transition-all",
+                        (product.stockBySize?.[size] ?? 0) === 0
+                          ? "cursor-not-allowed border-charcoal/10 text-charcoal/30"
+                          : selectedSize === size
+                            ? "border-charcoal bg-charcoal text-warm-white"
+                            : "border-charcoal/15 bg-warm-white/78 text-charcoal hover:border-charcoal/40",
+                      )}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 space-y-3 border-t border-charcoal/10 pt-6">
               <div className="flex justify-between gap-6 text-sm">
@@ -440,7 +524,13 @@ function MerchDetail({
               )}
             >
               <ShoppingBag className="h-4 w-4" />
-              {isAdding ? "Adding..." : product.inStock ? "Add merch to cart" : "Out of stock"}
+              {product.stockUnderReview
+                ? "Temporarily unavailable"
+                : isAdding
+                  ? "Adding..."
+                  : product.inStock
+                    ? "Add merch to cart"
+                    : "Out of stock"}
             </button>
           </div>
         </div>

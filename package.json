@@ -10,10 +10,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:smoke": "playwright test",
-    "db:migrate": "psql $DATABASE_URL -f db/migrations/001_initial_schema.sql",
+    "test:commerce": "node scripts/test-commerce.mjs",
+    "db:migrate": "psql $DATABASE_URL -v ON_ERROR_STOP=1 -f db/migrations/001_initial_schema.sql",
     "db:migrate:catalogue": "psql $DATABASE_URL -v ON_ERROR_STOP=1 -f db/migrations/002_storefront_catalogue.sql",
-    "db:procedures": "psql $DATABASE_URL -f db/procedures/order_procedures.sql && psql $DATABASE_URL -f db/procedures/auth_procedures.sql && psql $DATABASE_URL -f db/procedures/pickup_procedures.sql",
-    "db:setup": "pnpm db:migrate && pnpm db:migrate:catalogue && pnpm db:procedures"
+    "db:migrate:commerce": "psql $DATABASE_URL -v ON_ERROR_STOP=1 -f db/migrations/003_commerce_completion.sql && psql $DATABASE_URL -v ON_ERROR_STOP=1 -f db/migrations/004_order_notifications.sql && psql $DATABASE_URL -v ON_ERROR_STOP=1 -f db/migrations/005_market_sales.sql",
+    "db:procedures": "psql $DATABASE_URL -v ON_ERROR_STOP=1 -f db/procedures/order_procedures.sql && psql $DATABASE_URL -v ON_ERROR_STOP=1 -f db/procedures/auth_procedures.sql && psql $DATABASE_URL -v ON_ERROR_STOP=1 -f db/procedures/pickup_procedures.sql",
+    "db:setup": "pnpm db:migrate && pnpm db:migrate:catalogue && pnpm db:migrate:commerce && pnpm db:procedures"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

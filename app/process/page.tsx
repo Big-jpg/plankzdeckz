@@ -43,8 +43,8 @@ export default function Page() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">
             Workshop process
           </p>
-          <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">
-            How Boards Are Made
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-brown sm:text-6xl">
+            How Plankz Are Made
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-charcoal/75">
             Every PLANKZ DECKZ board is built from reclaimed hardwood pallet timber and shaped by
@@ -61,7 +61,7 @@ export default function Page() {
               key={step.title}
               className="rounded-3xl border border-charcoal/10 bg-ivory/85 p-6 shadow-sm"
             >
-              <h2 className="font-display text-2xl tracking-wide text-amber">{step.title}</h2>
+              <h2 className="font-display text-2xl tracking-wide text-brand-brown">{step.title}</h2>
               <p className="mt-3 text-sm leading-7 text-charcoal/72">{step.text}</p>
             </article>
           ))}
@@ -74,7 +74,7 @@ export default function Page() {
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-charcoal/60">
               One-of-a-kind by design
             </p>
-            <h2 className="mt-3 font-display text-3xl tracking-wide text-amber">
+            <h2 className="mt-3 font-display text-3xl tracking-wide text-brand-brown">
               No two reclaimed boards come out the same.
             </h2>
             <p className="mt-4 text-sm leading-7 text-charcoal/72">
