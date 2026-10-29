@@ -5,6 +5,12 @@ import type { MerchSize, Product, ProductType } from "@/lib/types";
 import { isBoardProduct, isMerchProduct, isSizeLabel } from "@/lib/types";
 import { isPhotoReviewHandle, isPurchasableProduct } from "@/lib/sellability";
 import { SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
+import {
+  hatUnitAmount,
+  isHatPricingFamily,
+  type HatPricingFamily,
+  type CartLineQuote,
+} from "@/lib/hat-pricing";
 
 export interface CheckoutCartItemInput {
   productId?: unknown;
@@ -42,6 +48,9 @@ export interface VerifiedCartItem {
   imageUrl: string | null;
   unitPrice: number;
   unitAmount: number;
+  retailUnitAmount?: number;
+  hatPricingFamily?: HatPricingFamily | null;
+  hatFamilyQuantity?: number;
   totalAmount: number;
   currency: string;
   quantity: number;
@@ -57,6 +66,9 @@ export interface CartValidationResult {
   valid: boolean;
   errors: ValidationError[];
   verifiedSubtotal: number;
+  retailSubtotal: number;
+  discountAmount: number;
+  lineQuotes: CartLineQuote[];
   claimedSubtotal: number;
   currency: string;
   itemCount: number;
@@ -68,6 +80,9 @@ function emptyResult(errors: ValidationError[], statusCurrency = "AUD"): CartVal
     valid: false,
     errors,
     verifiedSubtotal: 0,
+    retailSubtotal: 0,
+    discountAmount: 0,
+    lineQuotes: [],
     claimedSubtotal: 0,
     currency: statusCurrency,
     itemCount: 0,
@@ -113,7 +128,7 @@ export function validateCartItems(
   const verifiedItems: VerifiedCartItem[] = [];
   const boardHandles = new Set<string>();
   const merchLines = new Map<string, VerifiedCartItem>();
-  let verifiedSubtotal = 0;
+  let retailAmount = 0;
   let claimedSubtotal = 0;
   let currency = "AUD";
   let verifiedQuantityCount = 0;
@@ -268,7 +283,7 @@ export function validateCartItems(
     const unitAmount = Math.round(cataloguePrice * 100);
     const quantity = isBoardProduct(catalogueProduct) ? 1 : item.quantity;
     const totalAmount = unitAmount * quantity;
-    verifiedSubtotal += cataloguePrice * quantity;
+    retailAmount += totalAmount;
     claimedSubtotal += (typeof clientPrice === "number" ? clientPrice : 0) * quantity;
     verifiedQuantityCount += quantity;
 
@@ -303,6 +318,13 @@ export function validateCartItems(
       imageUrl: catalogueProduct.images[0] ?? null,
       unitPrice: cataloguePrice,
       unitAmount,
+      retailUnitAmount: unitAmount,
+      hatPricingFamily:
+        isMerchProduct(catalogueProduct) &&
+        catalogueProduct.merchKind === "hat" &&
+        isHatPricingFamily(catalogueProduct.hatPricingFamily)
+          ? catalogueProduct.hatPricingFamily
+          : null,
       totalAmount,
       currency: catalogueProduct.currency,
       quantity,
@@ -322,10 +344,40 @@ export function validateCartItems(
     if (isMerchProduct(catalogueProduct)) merchLines.set(key, verified);
   }
 
+  const familyQuantities: Record<HatPricingFamily, number> = { trad: 0, cord: 0 };
+  for (const item of verifiedItems) {
+    if (item.hatPricingFamily) familyQuantities[item.hatPricingFamily] += item.quantity;
+  }
+  for (const item of verifiedItems) {
+    if (item.hatPricingFamily) {
+      item.hatFamilyQuantity = familyQuantities[item.hatPricingFamily];
+      item.unitAmount = hatUnitAmount(item.hatPricingFamily, item.hatFamilyQuantity);
+      item.unitPrice = item.unitAmount / 100;
+      item.totalAmount = item.unitAmount * item.quantity;
+      item.metadata = {
+        ...item.metadata,
+        retail_unit_amount: item.retailUnitAmount,
+        hat_pricing_family: item.hatPricingFamily,
+        hat_family_quantity: item.hatFamilyQuantity,
+        hat_pricing_version: "2026-10-owner-tiers-v1",
+      };
+    }
+  }
+  const payableAmount = verifiedItems.reduce((total, item) => total + item.totalAmount, 0);
   return {
     valid: errors.length === 0,
     errors,
-    verifiedSubtotal: Math.round(verifiedSubtotal * 100) / 100,
+    verifiedSubtotal: payableAmount / 100,
+    retailSubtotal: retailAmount / 100,
+    discountAmount: (retailAmount - payableAmount) / 100,
+    lineQuotes: verifiedItems.map((item) => ({
+      handle: item.handle,
+      selectedSize: item.selectedSize,
+      quantity: item.quantity,
+      retailUnitAmount: item.retailUnitAmount ?? item.unitAmount,
+      unitAmount: item.unitAmount,
+      totalAmount: item.totalAmount,
+    })),
     claimedSubtotal: Math.round(claimedSubtotal * 100) / 100,
     currency,
     itemCount: verifiedQuantityCount,

@@ -1,4 +1,5 @@
 // lib/types.ts
+import type { HatPricingFamily } from "./hat-pricing";
 
 export type BoardStyleLabel = "Cruiser" | "Longboard" | "Surfskate" | "Custom / not sure";
 
@@ -107,6 +108,7 @@ export interface MerchProduct extends BaseProduct {
   sizeRequired: boolean;
   fitNotes: string;
   salesUnitLabel?: string;
+  hatPricingFamily?: HatPricingFamily | null;
 }
 
 export type Product = BoardProduct | MerchProduct;

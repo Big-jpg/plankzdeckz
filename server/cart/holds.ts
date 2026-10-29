@@ -3,6 +3,7 @@ import { pool } from "@/server/db/client";
 import type { VerifiedCartItem } from "./validation";
 import { canReserveLockedProduct } from "@/lib/sellability";
 import { SALES_ENABLED, SALES_DISABLED_MESSAGE } from "@/lib/commerce-config";
+import { isHatPricingFamily } from "@/lib/hat-pricing";
 
 export interface CheckoutAttempt {
   id: string;
@@ -55,6 +56,17 @@ export async function reserveCart(
       [ids],
     );
     const byId = new Map(locked.rows.map((row) => [row.id, row]));
+    const familyQuantities = { trad: 0, cord: 0 };
+    for (const item of items) {
+      const product = byId.get(item.productId);
+      const family = product?.metadata?.hat_pricing_family;
+      if (
+        product?.product_type === "merch" &&
+        product.merch_kind === "hat" &&
+        isHatPricingFamily(family)
+      )
+        familyQuantities[family] += item.quantity;
+    }
     for (const item of items) {
       const product = byId.get(item.productId);
       const pending = await client.query(
@@ -66,6 +78,11 @@ export async function reserveCart(
         throw new Error("This product is unavailable while a market sale is reconciled.");
       if (!product || !canReserveLockedProduct(product, item))
         throw new Error("A product changed. Refresh your cart.");
+      if (
+        item.hatPricingFamily &&
+        item.hatFamilyQuantity !== familyQuantities[item.hatPricingFamily]
+      )
+        throw new Error("Hat quantities changed. Refresh your cart.");
       if (item.productType === "board") {
         const held = await client.query("SELECT 1 FROM board_checkout_holds WHERE product_id=$1", [
           item.productId,

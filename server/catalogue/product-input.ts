@@ -1,5 +1,6 @@
 import type { ProductImage, ProductRecord, PublicationStatus } from "@/lib/catalogue";
 import { isClothing, isMerchKind, isSizeLabel, type MerchKind } from "@/lib/types";
+import { HAT_PRICING, isHatPricingFamily, type HatPricingFamily } from "@/lib/hat-pricing";
 
 export interface ProductInput {
   revision: number;
@@ -22,6 +23,7 @@ export interface ProductInput {
   fitNotes: string;
   merchKind: MerchKind | null;
   salesUnitLabel: string;
+  hatPricingFamily?: HatPricingFamily | null;
   adjustmentReason: string;
 }
 
@@ -55,6 +57,13 @@ export function parseProductInput(value: unknown): ProductInput {
     throw new Error("Enter a valid stock quantity.");
   const productType = raw.productType === "merch" ? "merch" : "board";
   const merchKind = isMerchKind(raw.merchKind) ? raw.merchKind : null;
+  const hatPricingFamily =
+    raw.hatPricingFamily == null || raw.hatPricingFamily === "" ? null : raw.hatPricingFamily;
+  if (
+    hatPricingFamily !== null &&
+    (!isHatPricingFamily(hatPricingFamily) || productType !== "merch" || merchKind !== "hat")
+  )
+    throw new Error("Quantity pricing can only be assigned to Trad or Cord hats.");
   if (productType === "merch" && !merchKind) throw new Error("Choose a merchandise category.");
   if (productType === "board" && (raw.stockQuantity as number) > 1)
     throw new Error("A unique board can have stock of zero or one.");
@@ -138,9 +147,15 @@ export function parseProductInput(value: unknown): ProductInput {
     fitNotes: string(raw.fitNotes, 1000),
     merchKind: productType === "merch" ? merchKind : null,
     salesUnitLabel: string(raw.salesUnitLabel, 120),
+    hatPricingFamily: isHatPricingFamily(hatPricingFamily) ? hatPricingFamily : null,
     adjustmentReason: string(raw.adjustmentReason, 500),
   };
   if (publicationStatus === "published") {
+    if (
+      input.hatPricingFamily &&
+      input.priceAmount !== HAT_PRICING[input.hatPricingFamily].retailUnitAmount
+    )
+      throw new Error("The retail price must match the assigned hat quantity-pricing family.");
     if (input.priceAmount < 1)
       throw new Error("A published product needs a positive price in cents.");
     if (!input.images.length || input.images.some((image) => !image.alt))
@@ -182,6 +197,9 @@ export function recordToInput(row: ProductRecord): ProductInput {
     merchKind: isMerchKind(row.merch_kind) ? row.merch_kind : null,
     salesUnitLabel:
       typeof row.metadata.sales_unit_label === "string" ? row.metadata.sales_unit_label : "",
+    hatPricingFamily: isHatPricingFamily(row.metadata.hat_pricing_family)
+      ? row.metadata.hat_pricing_family
+      : null,
     adjustmentReason: "",
   };
 }

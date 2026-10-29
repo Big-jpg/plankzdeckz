@@ -1,4 +1,5 @@
 import type { MerchKind } from "@/lib/types";
+import type { HatPricingFamily } from "@/lib/hat-pricing";
 import type { ProductInput } from "@/server/catalogue/product-input";
 
 interface WaresPreset {
@@ -7,6 +8,7 @@ interface WaresPreset {
   merchKind: MerchKind;
   description: string;
   priceAmount: number;
+  hatPricingFamily?: HatPricingFamily;
 }
 
 // Only proposed retail facts from the supplied October 2026 design brief belong here.
@@ -17,6 +19,7 @@ export const WARES_PRESETS = [
     merchKind: "hat",
     description: "Trad hat with the Plankz logo.",
     priceAmount: 2500,
+    hatPricingFamily: "trad",
   },
   {
     handle: "cord-plankz-hat",
@@ -24,6 +27,7 @@ export const WARES_PRESETS = [
     merchKind: "hat",
     description: "Cord hat with the board logo.",
     priceAmount: 4000,
+    hatPricingFamily: "cord",
   },
   {
     handle: "og-logo-tee",
@@ -116,6 +120,7 @@ export function canApplyWaresPreset(current: ProductInput, productId?: string): 
     current.priceAmount === 0 &&
     !current.salesUnitLabel &&
     !current.fitNotes &&
+    !current.hatPricingFamily &&
     !current.boardShape &&
     !current.timberSpecies.length &&
     !current.lengthCm &&

@@ -16,9 +16,26 @@ function publicResult(result: CartValidationResult): PublicValidationResult {
     valid: result.valid,
     errors: result.errors,
     verifiedSubtotal: result.verifiedSubtotal,
+    retailSubtotal: result.retailSubtotal,
+    discountAmount: result.discountAmount,
+    lineQuotes: result.lineQuotes,
     claimedSubtotal: result.claimedSubtotal,
     currency: result.currency,
     itemCount: result.itemCount,
+  };
+}
+
+function unavailableResult(field: string, message: string): PublicValidationResult {
+  return {
+    valid: false,
+    errors: [{ handle: "", field, message }],
+    verifiedSubtotal: 0,
+    retailSubtotal: 0,
+    discountAmount: 0,
+    lineQuotes: [],
+    claimedSubtotal: 0,
+    currency: "AUD",
+    itemCount: 0,
   };
 }
 
@@ -35,22 +52,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<PublicVal
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      {
-        valid: false,
-        errors: [{ handle: "", field: "body", message: "Invalid JSON body." }],
-        verifiedSubtotal: 0,
-        claimedSubtotal: 0,
-        currency: "AUD",
-        itemCount: 0,
-      },
-      { status: 400 },
-    );
+    return NextResponse.json(unavailableResult("body", "Invalid JSON body."), { status: 400 });
   }
 
-  const result = await validateCartForCheckout(
-    body && typeof body === "object" ? body : { items: undefined },
-  );
-
-  return NextResponse.json(publicResult(result), { status: result.valid ? 200 : 422 });
+  try {
+    const result = await validateCartForCheckout(
+      body && typeof body === "object" ? body : { items: undefined },
+    );
+    return NextResponse.json(publicResult(result), { status: result.valid ? 200 : 422 });
+  } catch {
+    return NextResponse.json(
+      unavailableResult("pricing", "Prices could not be confirmed. Try again shortly."),
+      { status: 503 },
+    );
+  }
 }

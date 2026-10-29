@@ -13,6 +13,7 @@ import { ProductGallery } from "@/components/product-gallery";
 import { Toast } from "@/components/toast";
 import { hasSupportedSaleDetails, isPurchasableProduct } from "@/lib/sellability";
 import { SALES_ENABLED } from "@/lib/commerce-config";
+import { HAT_PRICING } from "@/lib/hat-pricing";
 
 function formatPrice(product: Product): string {
   return new Intl.NumberFormat("en-AU", { style: "currency", currency: product.currency }).format(
@@ -393,6 +394,11 @@ function MerchDetail({
   isAdding: boolean;
   onAddToCart: () => void;
 }) {
+  const hatPolicy =
+    product.merchKind === "hat" && product.hatPricingFamily
+      ? HAT_PRICING[product.hatPricingFamily]
+      : null;
+
   return (
     <section className="bg-warm-white/92 py-10 sm:py-16">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
@@ -411,6 +417,51 @@ function MerchDetail({
               <p className="mt-1 text-sm text-charcoal/65">Per {product.salesUnitLabel}</p>
             )}
             <p className="mt-6 text-base leading-8 text-charcoal/75">{product.description}</p>
+
+            {hatPolicy && (
+              <div className="mt-6 rounded-2xl border border-charcoal/10 bg-warm-white/80 p-4">
+                <h2 className="font-display text-2xl text-brand-brown">
+                  {hatPolicy.label} quantity prices
+                </h2>
+                <table className="mt-3 w-full text-left text-sm">
+                  <caption className="sr-only">Price per hat for {hatPolicy.label}</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="pb-2 font-semibold">
+                        Quantity
+                      </th>
+                      <th scope="col" className="pb-2 text-right font-semibold">
+                        Each
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {hatPolicy.tiers.map((tier, index) => {
+                      const next = hatPolicy.tiers[index + 1];
+                      const quantity = next
+                        ? next.minimumQuantity === tier.minimumQuantity + 1
+                          ? String(tier.minimumQuantity)
+                          : `${tier.minimumQuantity}–${next.minimumQuantity - 1}`
+                        : `${tier.minimumQuantity}+`;
+                      return (
+                        <tr key={tier.minimumQuantity} className="border-t border-charcoal/10">
+                          <th scope="row" className="py-2 font-normal">
+                            {quantity}
+                          </th>
+                          <td className="py-2 text-right">
+                            ${(tier.unitAmount / 100).toFixed(2)} AUD
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <p className="mt-3 text-xs leading-6 text-charcoal/65">
+                  Trad and Cord quantities are priced separately. Your cart confirms the total
+                  before checkout.
+                </p>
+              </div>
+            )}
 
             {!(product.sizes.length === 1 && product.sizes[0] === "One size") && (
               <div className="mt-8 border-t border-charcoal/10 pt-6">

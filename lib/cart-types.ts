@@ -4,6 +4,7 @@
 // Cart is client-side only (localStorage) — no backend persistence yet.
 
 import type { MerchSize, ProductType } from "./types";
+import type { CartLineQuote } from "./hat-pricing";
 
 export interface CartItem {
   /** App-level product ID (Shopify global ID or mock ID). */
@@ -48,6 +49,14 @@ export function cartItemKey(
 
 export interface CartState {
   items: CartItem[];
+}
+
+export interface CartQuote {
+  verifiedSubtotal: number;
+  retailSubtotal: number;
+  discountAmount: number;
+  currency: string;
+  lineQuotes: CartLineQuote[];
 }
 
 export const EMPTY_CART: CartState = {

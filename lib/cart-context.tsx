@@ -9,11 +9,13 @@ import {
   useMemo,
   useReducer,
   useRef,
+  useState,
   type ReactNode,
 } from "react";
 import {
   type CartItem,
   type CartState,
+  type CartQuote,
   EMPTY_CART,
   CART_STORAGE_KEY,
   cartItemKey,
@@ -126,6 +128,11 @@ interface CartContextValue {
   subtotal: number;
   /** Currency code from the first item, or "AUD" as default. */
   currency: string;
+  /** Current server quote; never reused after cart contents change. */
+  quote: CartQuote | null;
+  quoteStatus: "idle" | "loading" | "ready" | "error";
+  quoteError: string | null;
+  retryQuote: () => void;
   addItem: (item: CartItem) => void;
   removeItem: (key: string) => void;
   setQuantity: (key: string, quantity: number) => void;
@@ -147,6 +154,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const hydrated = useRef(false);
   const [isHydrated, markHydrated] = useReducer(() => true, false);
   const [drawerOpen, setDrawerOpen] = useReducer((_: boolean, next: boolean) => next, false);
+  const [quoteRevision, refreshQuote] = useReducer((revision: number) => revision + 1, 0);
+  const [quoteResult, setQuoteResult] = useState<{
+    key: string;
+    items: CartState["items"];
+    quote: CartQuote | null;
+    error: string | null;
+  } | null>(null);
 
   // Hydrate from localStorage on mount
   useEffect(() => {
@@ -174,6 +188,69 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Storage full or unavailable — silent fail
     }
   }, [state]);
+
+  const cartBody = JSON.stringify({ items: state.items });
+  const quoteKey = `${quoteRevision}:${cartBody}`;
+  const needsQuote = SALES_ENABLED && isHydrated && state.items.length > 0;
+
+  useEffect(() => {
+    if (!needsQuote) return;
+    const controller = new AbortController();
+    async function loadQuote() {
+      try {
+        const response = await fetch("/api/cart/validate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: cartBody,
+          signal: controller.signal,
+        });
+        const payload = await response.json();
+        if (!response.ok || payload.valid !== true) {
+          throw new Error(
+            payload.errors?.find((error: { message?: string }) => error.message)?.message ??
+              "Your cart could not be priced. Please review its items and try again.",
+          );
+        }
+        if (
+          ![payload.verifiedSubtotal, payload.retailSubtotal, payload.discountAmount].every(
+            (amount) => typeof amount === "number" && Number.isFinite(amount) && amount >= 0,
+          ) ||
+          payload.currency !== "AUD" ||
+          !Array.isArray(payload.lineQuotes)
+        ) {
+          throw new Error("The cart price could not be confirmed. Please try again.");
+        }
+        if (!controller.signal.aborted) {
+          setQuoteResult({
+            key: quoteKey,
+            items: state.items,
+            quote: payload as CartQuote,
+            error: null,
+          });
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setQuoteResult({
+            key: quoteKey,
+            items: state.items,
+            quote: null,
+            error: error instanceof Error ? error.message : "Your cart price could not be loaded.",
+          });
+        }
+      }
+    }
+    void loadQuote();
+    return () => controller.abort();
+  }, [needsQuote, cartBody, quoteKey, state.items]);
+
+  const currentQuote =
+    needsQuote && quoteResult?.key === quoteKey && quoteResult.items === state.items
+      ? quoteResult
+      : null;
+  const quote = currentQuote?.quote ?? null;
+  const quoteError = currentQuote?.error ?? null;
+  const quoteStatus = !needsQuote ? "idle" : !currentQuote ? "loading" : quote ? "ready" : "error";
+  const retryQuote = useCallback(() => refreshQuote(), []);
 
   const addItem = useCallback((item: CartItem) => {
     if (!SALES_ENABLED) return;
@@ -218,6 +295,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itemCount,
       subtotal,
       currency,
+      quote,
+      quoteStatus,
+      quoteError,
+      retryQuote,
       addItem,
       removeItem,
       setQuantity,
@@ -232,6 +313,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       itemCount,
       subtotal,
       currency,
+      quote,
+      quoteStatus,
+      quoteError,
+      retryQuote,
       addItem,
       removeItem,
       setQuantity,

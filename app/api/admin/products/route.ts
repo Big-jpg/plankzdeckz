@@ -40,7 +40,11 @@ export async function POST(request: Request) {
           JSON.stringify(input.stockBySize),
           input.productType === "board" ? input.stockQuantity : 0,
           input.publicationStatus,
-          JSON.stringify({ fit_notes: input.fitNotes, sales_unit_label: input.salesUnitLabel }),
+          JSON.stringify({
+            fit_notes: input.fitNotes,
+            sales_unit_label: input.salesUnitLabel,
+            hat_pricing_family: input.hatPricingFamily ?? null,
+          }),
         ],
       )
     ).rows[0];

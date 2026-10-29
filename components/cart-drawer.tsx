@@ -11,8 +11,18 @@ import { cn } from "@/lib/utils";
 import { SALES_ENABLED } from "@/lib/commerce-config";
 
 export function CartDrawer() {
-  const { state, itemCount, subtotal, currency, drawerOpen, closeDrawer, removeItem, setQuantity } =
-    useCart();
+  const {
+    state,
+    itemCount,
+    quote,
+    quoteStatus,
+    quoteError,
+    retryQuote,
+    drawerOpen,
+    closeDrawer,
+    removeItem,
+    setQuantity,
+  } = useCart();
 
   useEffect(() => {
     if (SALES_ENABLED && drawerOpen) {
@@ -85,6 +95,12 @@ export function CartDrawer() {
                 {state.items.map((item) => {
                   const key = cartItemKey(item);
                   const isBoard = (item.productType ?? "board") === "board";
+                  const lineQuote = quote?.lineQuotes.find(
+                    (line) =>
+                      line.handle === item.handle &&
+                      line.selectedSize ===
+                        (item.selectedSize ?? (item.productType === "merch" ? "One size" : null)),
+                  );
 
                   return (
                     <div
@@ -162,7 +178,11 @@ export function CartDrawer() {
                             </div>
                           )}
                           <p className="text-sm font-semibold text-charcoal">
-                            ${(item.unitPrice * item.quantity).toFixed(2)}
+                            {lineQuote
+                              ? `$${((lineQuote.unitAmount * item.quantity) / 100).toFixed(2)}`
+                              : quoteStatus === "loading"
+                                ? "Checking price…"
+                                : "Price unavailable"}
                           </p>
                         </div>
                       </div>
@@ -176,9 +196,31 @@ export function CartDrawer() {
               <div className="flex justify-between text-sm">
                 <span className="text-charcoal/60">Subtotal</span>
                 <span className="font-semibold text-charcoal">
-                  ${subtotal.toFixed(2)} {currency}
+                  {quote ? `$${quote.verifiedSubtotal.toFixed(2)} ${quote.currency}` : "—"}
                 </span>
               </div>
+              {quote && quote.discountAmount > 0 && (
+                <p className="mt-2 text-sm text-charcoal/65" data-cart-savings>
+                  Hat savings: ${quote.discountAmount.toFixed(2)} {quote.currency}
+                </p>
+              )}
+              {quoteStatus === "loading" && (
+                <p className="mt-2 text-sm text-charcoal/65" role="status">
+                  Confirming prices and availability…
+                </p>
+              )}
+              {quoteError && (
+                <div className="mt-2 text-sm text-red-700" role="alert">
+                  <p>{quoteError}</p>
+                  <button
+                    type="button"
+                    onClick={retryQuote}
+                    className="mt-2 underline underline-offset-2"
+                  >
+                    Retry price check
+                  </button>
+                </div>
+              )}
               <Link
                 href="/cart"
                 onClick={closeDrawer}

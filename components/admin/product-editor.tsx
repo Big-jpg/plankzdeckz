@@ -7,6 +7,7 @@ import { useId, useState, type ChangeEvent } from "react";
 import type { ProductInput } from "@/server/catalogue/product-input";
 import { MERCH_KINDS, isClothing, isSizeLabel, type MerchKind } from "@/lib/types";
 import { applyWaresPreset, canApplyWaresPreset, WARES_PRESETS } from "./wares-presets";
+import { HAT_PRICING, isHatPricingFamily } from "@/lib/hat-pricing";
 
 const blank: ProductInput = {
   revision: 0,
@@ -29,6 +30,7 @@ const blank: ProductInput = {
   fitNotes: "",
   merchKind: null,
   salesUnitLabel: "",
+  hatPricingFamily: null,
   adjustmentReason: "",
 };
 const steps = ["Type", "Details", "Photos", "Preview"];
@@ -234,6 +236,7 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
                           ...current,
                           productType: kind,
                           merchKind: kind === "merch" ? "tee" : null,
+                          hatPricingFamily: null,
                           stockBySize: (kind === "merch"
                             ? { S: 0, M: 0, L: 0, XL: 0 }
                             : {}) as Record<string, number>,
@@ -257,6 +260,7 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
                     setData((current) => ({
                       ...current,
                       merchKind: kind,
+                      hatPricingFamily: kind === "hat" ? current.hatPricingFamily : null,
                       stockBySize: (isClothing(kind)
                         ? { S: 0, M: 0, L: 0, XL: 0 }
                         : { "One size": 0 }) as Record<string, number>,
@@ -421,6 +425,31 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
               </>
             ) : (
               <>
+                {data.merchKind === "hat" && (
+                  <label className="block font-semibold sm:col-span-2">
+                    Hat quantity pricing
+                    <select
+                      className={field}
+                      value={data.hatPricingFamily ?? ""}
+                      onChange={(event) =>
+                        update(
+                          "hatPricingFamily",
+                          isHatPricingFamily(event.target.value) ? event.target.value : null,
+                        )
+                      }
+                    >
+                      <option value="">None — retail price only</option>
+                      <option value="trad">Trad — $25 retail; 2+ at $22.50 each</option>
+                      <option value="cord">Cord — $40 retail; 2–4 at $37.50, 5+ at $31 each</option>
+                    </select>
+                    <span className="mt-1 block text-sm font-normal">
+                      Use only when one sale unit is one hat. Colours in the same family share
+                      quantity pricing; Trad and Cord quantities stay separate.
+                      {data.hatPricingFamily &&
+                        ` Set the retail price to AUD $${(HAT_PRICING[data.hatPricingFamily].retailUnitAmount / 100).toFixed(2)} before publishing.`}
+                    </span>
+                  </label>
+                )}
                 <div className="font-semibold sm:col-span-2">
                   <label htmlFor={salesUnitId} className="block">
                     Unit or pack sold

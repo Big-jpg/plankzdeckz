@@ -3,6 +3,7 @@ import { queryOne, queryRows } from "@/server/db/client";
 import type { BoardProduct, BoardStyle, MerchProduct, Product, ProductCategory } from "./types";
 import { isBoardProduct, isMerchKind, isMerchProduct } from "./types";
 import { hasDisplayOnlyFlag, isPhotoReviewHandle, isPurchasableRecord } from "./sellability";
+import { hasValidHatPricing, isHatPricingFamily } from "./hat-pricing";
 
 export type ProductImage = { url: string; alt: string };
 export type PublicationStatus = "draft" | "published" | "archived";
@@ -69,7 +70,9 @@ export function toProduct(row: ProductRecord): Product {
     images,
     imageDetails: row.image_details,
     publicationStatus: row.publication_status,
-    displayOnly: hasDisplayOnlyFlag(row.metadata),
+    displayOnly:
+      hasDisplayOnlyFlag(row.metadata) ||
+      !hasValidHatPricing(row.merch_kind, row.price_amount, row.metadata.hat_pricing_family),
     stockUnderReview: row.pending_market_sale === true,
     stockBySize: row.stock_by_size,
     stockQuantity: row.stock_quantity,
@@ -120,6 +123,9 @@ export function toProduct(row: ProductRecord): Product {
     fitNotes: typeof row.metadata.fit_notes === "string" ? row.metadata.fit_notes : "",
     salesUnitLabel:
       typeof row.metadata.sales_unit_label === "string" ? row.metadata.sales_unit_label : "",
+    hatPricingFamily: isHatPricingFamily(row.metadata.hat_pricing_family)
+      ? row.metadata.hat_pricing_family
+      : null,
   };
 }
 

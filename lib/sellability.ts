@@ -1,5 +1,6 @@
 import type { Product } from "./types";
 import { isClothing, isMerchKind, isSizeLabel } from "./types";
+import { hasValidHatPricing, hatUnitAmount, isHatPricingFamily } from "./hat-pricing";
 
 interface SaleFacts {
   publicationStatus: unknown;
@@ -14,6 +15,7 @@ interface SaleFacts {
   stockBySize?: unknown;
   salesUnitLabel?: unknown;
   stockUnderReview?: unknown;
+  hatPricingFamily?: unknown;
 }
 
 export interface SaleRecord {
@@ -89,6 +91,7 @@ function hasSupportedFacts(facts: SaleFacts): boolean {
     facts.priceAmount > 0 &&
     typeof facts.currency === "string" &&
     facts.currency.toUpperCase() === "AUD" &&
+    hasValidHatPricing(facts.merchKind, facts.priceAmount, facts.hatPricingFamily) &&
     (facts.displayOnly === undefined || facts.displayOnly === false) &&
     knownStock(facts)
   );
@@ -121,6 +124,7 @@ function productFacts(product: Product): SaleFacts {
     sizes: product.productType === "merch" ? product.sizes : undefined,
     stockBySize: product.stockBySize,
     salesUnitLabel: product.productType === "merch" ? product.salesUnitLabel : undefined,
+    hatPricingFamily: product.productType === "merch" ? product.hatPricingFamily : undefined,
   };
 }
 
@@ -140,6 +144,10 @@ function recordFacts(record: SaleRecord): SaleFacts {
     salesUnitLabel:
       record.metadata && typeof record.metadata === "object"
         ? (record.metadata as Record<string, unknown>).sales_unit_label
+        : undefined,
+    hatPricingFamily:
+      record.metadata && typeof record.metadata === "object"
+        ? (record.metadata as Record<string, unknown>).hat_pricing_family
         : undefined,
   };
 }
@@ -164,12 +172,15 @@ export function canReserveLockedProduct(
     currency: unknown;
     selectedSize: string | null;
     quantity: number;
+    retailUnitAmount?: number;
+    hatPricingFamily?: unknown;
+    hatFamilyQuantity?: number;
   },
 ): boolean {
   if (
     !isPurchasableRecord(record) ||
     record.product_type !== item.productType ||
-    record.price_amount !== item.unitAmount ||
+    record.price_amount !== (item.retailUnitAmount ?? item.unitAmount) ||
     typeof item.currency !== "string" ||
     typeof record.currency !== "string" ||
     record.currency.toUpperCase() !== item.currency.toUpperCase() ||
@@ -177,6 +188,19 @@ export function canReserveLockedProduct(
     item.quantity < 1
   )
     return false;
+  const family =
+    record.metadata && typeof record.metadata === "object"
+      ? ((record.metadata as Record<string, unknown>).hat_pricing_family ?? null)
+      : null;
+  if (family !== (item.hatPricingFamily ?? null)) return false;
+  if (isHatPricingFamily(family)) {
+    if (
+      !Number.isSafeInteger(item.hatFamilyQuantity) ||
+      (item.hatFamilyQuantity ?? 0) < item.quantity ||
+      item.unitAmount !== hatUnitAmount(family, item.hatFamilyQuantity!)
+    )
+      return false;
+  } else if (item.unitAmount !== record.price_amount) return false;
   if (record.product_type === "board") return item.quantity === 1;
   return (
     item.selectedSize !== null &&

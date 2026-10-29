@@ -229,6 +229,18 @@ export async function POST(
       { status: 400 },
     );
   const total = validation.verifiedItems.reduce((sum, item) => sum + item.totalAmount, 0);
+  const expectedTotalAmount =
+    body && typeof body === "object"
+      ? (body as Record<string, unknown>).expectedTotalAmount
+      : undefined;
+  if (
+    expectedTotalAmount !== undefined &&
+    (!Number.isSafeInteger(expectedTotalAmount) || (expectedTotalAmount as number) < 0)
+  )
+    return NextResponse.json(
+      { error: "Expected total must be a whole number of cents." },
+      { status: 422 },
+    );
   if (
     !Number.isSafeInteger(total) ||
     total < 50 ||
@@ -238,6 +250,11 @@ export async function POST(
     return NextResponse.json(
       { error: "Checkout requires an AUD total of at least $0.50." },
       { status: 422 },
+    );
+  if (expectedTotalAmount !== undefined && expectedTotalAmount !== total)
+    return NextResponse.json(
+      { error: "Prices changed. Review your cart before checking out.", code: "PRICE_CHANGED" },
+      { status: 409 },
     );
   const requestHash = createHash("sha256").update(JSON.stringify(body)).digest("hex");
   try {
@@ -273,6 +290,15 @@ export async function POST(
     if (!prepared.rowCount) throw new Error("Checkout reservation is closed.");
     const attempt = await getCheckoutAttempt(holdToken);
     if (!attempt?.stripe_params) throw new Error("Checkout attempt could not be recovered.");
+    if (expectedTotalAmount !== undefined && attempt.expected_amount !== expectedTotalAmount)
+      return NextResponse.json(
+        {
+          error:
+            "This checkout retains an earlier price. Its reservation needs owner reconciliation before starting a new checkout.",
+          code: "PRICE_CHANGED",
+        },
+        { status: 409 },
+      );
     if (Date.now() - new Date(attempt.created_at).getTime() > 23 * 60 * 60 * 1000)
       return NextResponse.json(
         {
