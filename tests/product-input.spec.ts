@@ -71,7 +71,7 @@ test("publish requires complete product facts and rejects unknown categories and
     { priceAmount: 0 },
     { salesUnitLabel: "" },
     { description: "" },
-    { merchKind: "wheel" },
+    { merchKind: "helmet" },
     { stockBySize: { XS: -1 } },
     { stockBySize: { XS: 1.5 } },
     { stockBySize: { "": 1 } },

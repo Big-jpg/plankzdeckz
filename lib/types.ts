@@ -8,7 +8,15 @@ export type BoardAvailabilityStatus = "available" | "sold" | "reserved";
 
 export type BoardStyle = "cruiser" | "surfskate" | "longboard";
 
-export const MERCH_KINDS = ["tee", "hat", "jacket", "bearings", "sticker"] as const;
+export const MERCH_KINDS = [
+  "tee",
+  "hat",
+  "jacket",
+  "bearings",
+  "sticker",
+  "truck",
+  "wheel",
+] as const;
 export type MerchKind = (typeof MERCH_KINDS)[number];
 
 export type MerchSize = string;

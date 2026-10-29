@@ -12,7 +12,8 @@ export default async function AdminProductsPage() {
           <p className="text-xs font-bold uppercase tracking-[.2em] text-copper">Catalogue</p>
           <h2 className="font-display text-4xl text-charcoal">Products</h2>
           <p className="mt-2 text-charcoal/70">
-            Add boards, tees, hats, jackets, bearings and stickers. Drafts stay off the shop.
+            Add boards, tees, hats, jackets, bearings, stickers, trucks and wheels. Drafts stay off
+            the shop.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">

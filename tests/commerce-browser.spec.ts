@@ -131,11 +131,20 @@ test.afterAll(async () => {
   }
 });
 
-test("authenticated HTTP product lifecycle persists and publishes all six commerce categories", async ({
+test("authenticated HTTP product lifecycle persists and publishes all commerce categories", async ({
   page,
 }, testInfo) => {
   const inputs: Array<ProductInput & { id: string; revision: number }> = [];
-  for (const kind of ["board", "tee", "hat", "jacket", "bearings", "sticker"] as const) {
+  for (const kind of [
+    "board",
+    "tee",
+    "hat",
+    "jacket",
+    "bearings",
+    "sticker",
+    "truck",
+    "wheel",
+  ] as const) {
     const valid = product(kind, kind);
     const draft = {
       ...valid,
@@ -206,6 +215,61 @@ test("authenticated HTTP product lifecycle persists and publishes all six commer
   await expect(page.getByRole("button", { name: "XXL", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "XS", exact: true }).click();
   await expect(page.getByRole("button", { name: "Add merch to cart", exact: true })).toBeEnabled();
+});
+
+test("WARES preset fills an unsaved draft and leaves stock, unit and photos unresolved", async ({
+  page,
+}) => {
+  await page.goto("/admin/products/new");
+  const editor = page.getByRole("region", { name: "Product editor", exact: true });
+  await expect(editor.getByRole("heading", { name: "Add product", exact: true })).toBeVisible();
+  const presets = editor.getByRole("combobox", {
+    name: "Start from the supplied WARES list",
+    exact: true,
+  });
+  await expect(presets).toBeEnabled();
+  await presets.selectOption("puente-trucks");
+  await expect(presets).toBeDisabled();
+  await expect(editor.getByRole("textbox", { name: "Name", exact: true })).toHaveValue(
+    "7-inch PUENTE Trucks",
+  );
+  const handle = `${fixturePrefix}-preset-trucks`;
+  await editor.getByRole("textbox", { name: "URL handle", exact: true }).fill(handle);
+  await editor.getByRole("button", { name: "Next", exact: true }).click();
+  await expect(editor.getByRole("spinbutton", { name: "Price (AUD)", exact: true })).toHaveValue(
+    "100",
+  );
+  await expect(editor.getByRole("textbox", { name: "Unit or pack sold", exact: true })).toHaveValue(
+    "",
+  );
+  await expect(editor.getByRole("spinbutton", { name: "Stock quantity", exact: true })).toHaveValue(
+    "",
+  );
+  const saveResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/admin/products") && response.request().method() === "POST",
+  );
+  await editor.getByRole("button", { name: "Save draft", exact: true }).click();
+  const response = await saveResponse;
+  expect(response.status(), await response.text()).toBe(201);
+  const saved = await response.json();
+  await page.waitForURL(`**/admin/products/${saved.id}`);
+  await expect(
+    editor.getByRole("combobox", { name: "Start from the supplied WARES list", exact: true }),
+  ).toHaveCount(0);
+  const stored = (
+    await database.query(
+      "SELECT publication_status,price_amount,image_details,stock_by_size,metadata FROM products WHERE id=$1",
+      [saved.id],
+    )
+  ).rows[0];
+  expect(stored).toMatchObject({
+    publication_status: "draft",
+    price_amount: 10000,
+    image_details: [],
+    stock_by_size: {},
+    metadata: { sales_unit_label: "" },
+  });
 });
 
 test("editor saves update their revision and stale photo edits cannot resurrect a sold deck", async ({

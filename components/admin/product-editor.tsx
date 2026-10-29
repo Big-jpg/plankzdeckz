@@ -3,9 +3,10 @@ import { upload } from "@vercel/blob/client";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, type ChangeEvent } from "react";
+import { useId, useState, type ChangeEvent } from "react";
 import type { ProductInput } from "@/server/catalogue/product-input";
 import { MERCH_KINDS, isClothing, isSizeLabel, type MerchKind } from "@/lib/types";
+import { applyWaresPreset, canApplyWaresPreset, WARES_PRESETS } from "./wares-presets";
 
 const blank: ProductInput = {
   revision: 0,
@@ -64,6 +65,9 @@ export function isPhotoOnlyProductSave(
 
 export function ProductEditor({ id, initial }: { id?: string; initial?: ProductInput }) {
   const router = useRouter();
+  const fieldId = useId();
+  const presetId = `${fieldId}-wares-preset`;
+  const salesUnitId = `${fieldId}-sales-unit`;
   const [data, setData] = useState<ProductInput>(initial ?? blank);
   const [saved, setSaved] = useState<ProductInput>(initial ?? blank);
   const [step, setStep] = useState(0);
@@ -166,7 +170,7 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
     update("images", images);
   }
   return (
-    <section className="mx-auto max-w-4xl space-y-7">
+    <section aria-label="Product editor" className="mx-auto max-w-4xl space-y-7">
       <Link href="/admin/products" className="text-sm font-semibold underline">
         ← Products
       </Link>
@@ -189,6 +193,34 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
       <div className="rounded-3xl border border-charcoal/15 bg-ivory/60 p-5 sm:p-8">
         {step === 0 && (
           <div className="space-y-5">
+            {!id && !initial && (
+              <div className="font-semibold">
+                <label htmlFor={presetId} className="block">
+                  Start from the supplied WARES list
+                </label>
+                <select
+                  id={presetId}
+                  aria-describedby={`${presetId}-help`}
+                  className={field}
+                  defaultValue=""
+                  disabled={busy || !canApplyWaresPreset(data)}
+                  onChange={(event) =>
+                    setData((current) => applyWaresPreset(current, event.target.value, id))
+                  }
+                >
+                  <option value="">Choose a product, or enter your own below</option>
+                  {WARES_PRESETS.map((preset) => (
+                    <option key={preset.handle} value={preset.handle}>
+                      {preset.title} — proposed AUD ${(preset.priceAmount / 100).toFixed(2)}
+                    </option>
+                  ))}
+                </select>
+                <p id={`${presetId}-help`} className="mt-2 text-sm font-normal">
+                  Starts an unsaved draft with the supplied description and proposed retail price.
+                  Confirm the colour, sale unit, sizes, stock and photos before publishing.
+                </p>
+              </div>
+            )}
             <fieldset>
               <legend className="mb-2 font-bold">What are you adding?</legend>
               <div className="flex flex-wrap gap-3">
@@ -243,6 +275,8 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
                           jacket: "Jackets",
                           bearings: "Bearings",
                           sticker: "Stickers",
+                          truck: "Trucks",
+                          wheel: "Wheels",
                         }[kind]
                       }
                     </option>
@@ -387,51 +421,58 @@ export function ProductEditor({ id, initial }: { id?: string; initial?: ProductI
               </>
             ) : (
               <>
-                <label className="block font-semibold sm:col-span-2">
-                  Unit or pack sold
+                <div className="font-semibold sm:col-span-2">
+                  <label htmlFor={salesUnitId} className="block">
+                    Unit or pack sold
+                  </label>
                   <input
+                    id={salesUnitId}
+                    aria-describedby={`${salesUnitId}-help`}
                     className={field}
                     value={data.salesUnitLabel}
                     maxLength={120}
                     placeholder="For example: one cap, set of 8 bearings, pack of 3 stickers"
                     onChange={(event) => update("salesUnitLabel", event.target.value)}
                   />
-                  <span className="mt-1 block text-sm font-normal">
+                  <p id={`${salesUnitId}-help`} className="mt-1 text-sm font-normal">
                     The price and stock count apply to this exact unit or pack.
-                  </span>
-                </label>
-                {Object.keys(data.stockBySize).map((size) => (
-                  <div key={size}>
-                    <label className="block font-semibold">
-                      {isClothing(data.merchKind) ? `Size ${size} stock` : "Stock quantity"}
-                      <input
-                        type="number"
-                        min="0"
-                        className={field}
-                        value={data.stockBySize[size] ?? 0}
-                        onChange={(event) =>
-                          update("stockBySize", {
-                            ...data.stockBySize,
-                            [size]: Number(event.target.value),
-                          })
-                        }
-                      />
-                    </label>
-                    {isClothing(data.merchKind) && (
-                      <button
-                        type="button"
-                        className="mt-2 text-sm underline"
-                        onClick={() => {
-                          const stock = { ...data.stockBySize };
-                          delete stock[size];
-                          update("stockBySize", stock);
-                        }}
-                      >
-                        Remove size {size}
-                      </button>
-                    )}
-                  </div>
-                ))}
+                  </p>
+                </div>
+                {(isClothing(data.merchKind) ? Object.keys(data.stockBySize) : ["One size"]).map(
+                  (size) => (
+                    <div key={size}>
+                      <label className="block font-semibold">
+                        {isClothing(data.merchKind) ? `Size ${size} stock` : "Stock quantity"}
+                        <input
+                          type="number"
+                          min="0"
+                          className={field}
+                          value={data.stockBySize[size] ?? ""}
+                          placeholder="Confirm quantity"
+                          onChange={(event) => {
+                            const stock = { ...data.stockBySize };
+                            if (event.target.value === "") delete stock[size];
+                            else stock[size] = Number(event.target.value);
+                            update("stockBySize", stock);
+                          }}
+                        />
+                      </label>
+                      {isClothing(data.merchKind) && (
+                        <button
+                          type="button"
+                          className="mt-2 text-sm underline"
+                          onClick={() => {
+                            const stock = { ...data.stockBySize };
+                            delete stock[size];
+                            update("stockBySize", stock);
+                          }}
+                        >
+                          Remove size {size}
+                        </button>
+                      )}
+                    </div>
+                  ),
+                )}
                 {isClothing(data.merchKind) && (
                   <div className="sm:col-span-2">
                     <label className="block font-semibold">

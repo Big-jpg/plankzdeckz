@@ -102,6 +102,7 @@ export function parseProductInput(value: unknown): ProductInput {
   if (
     productType === "merch" &&
     !isClothing(merchKind) &&
+    (publicationStatus === "published" || Object.keys(stockBySize).length > 0) &&
     (Object.keys(stockBySize).length !== 1 || !Object.hasOwn(stockBySize, "One size"))
   )
     throw new Error("Enter a stock quantity for this merchandise product.");

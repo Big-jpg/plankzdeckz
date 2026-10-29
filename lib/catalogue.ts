@@ -126,7 +126,7 @@ export function toProduct(row: ProductRecord): Product {
 export async function getProducts(): Promise<Product[]> {
   const rows = await queryRows<ProductRecord>(
     `SELECT ${columns} FROM products WHERE publication_status = 'published'
-     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind IN ('tee','hat','jacket','bearings','sticker'))) ORDER BY created_at DESC`,
+     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind IN ('tee','hat','jacket','bearings','sticker','truck','wheel'))) ORDER BY created_at DESC`,
   );
   return rows.map(toProduct);
 }
@@ -140,7 +140,7 @@ export async function getProductByHandle(
   if (isPhotoReviewHandle(handle)) return null;
   const row = await queryOne<ProductRecord>(
     `SELECT ${columns} FROM products WHERE handle = $1 AND ($2 OR publication_status = 'published')
-     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind IN ('tee','hat','jacket','bearings','sticker')))`,
+     AND (product_type = 'board' OR (product_type = 'merch' AND merch_kind IN ('tee','hat','jacket','bearings','sticker','truck','wheel')))`,
     [handle, includeDraft],
   );
   return row ? toProduct(row) : null;

@@ -133,4 +133,10 @@ test("merchandise reconciliation checks the selected variant and cannot make sto
   expect(() => assertMarketStock(product, { ...item, size: "M" })).toThrow("variant");
   expect(() => assertMarketStock({ ...product, merch_kind: "unknown" }, item)).toThrow("variant");
   expect(() => assertMarketStock({ ...product, metadata: {} }, item)).toThrow("sales unit");
+  for (const merch_kind of ["truck", "wheel"]) {
+    expect(assertMarketStock({ ...product, merch_kind }, item)).toBe(2);
+    expect(() => assertMarketStock({ ...product, merch_kind, metadata: {} }, item)).toThrow(
+      "sales unit",
+    );
+  }
 });

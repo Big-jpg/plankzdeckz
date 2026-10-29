@@ -165,7 +165,7 @@ test("unknown stock is blocked while known zero stock can be displayed as unavai
   expect(hasSupportedSaleDetails({ ...board(), displayOnly: true })).toBe(false);
 });
 
-for (const kind of ["flanno", "sticker_pack", "wheel", "unknown", undefined]) {
+for (const kind of ["flanno", "sticker_pack", "helmet", "unknown", undefined]) {
   test(`unsupported merchandise ${String(kind)} cannot check out`, () => {
     const product = { ...tee(), merchKind: kind } as Product;
     expect(isPurchasableProduct(product)).toBe(false);
@@ -303,7 +303,7 @@ test("locked unsupported merchandise and unknown variants fail the same gate", (
     quantity: 1,
     selectedSize: "S",
   };
-  for (const kind of ["flanno", "sticker_pack", "wheel", "unknown", null])
+  for (const kind of ["flanno", "sticker_pack", "helmet", "unknown", null])
     expect(canReserveLockedProduct({ ...teeRecord, merch_kind: kind }, verified)).toBe(false);
   expect(canReserveLockedProduct(teeRecord, { ...verified, selectedSize: "M" })).toBe(false);
   expect(canReserveLockedProduct(teeRecord, { ...verified, selectedSize: null })).toBe(false);
@@ -323,6 +323,9 @@ test("the release closes sales with no verified inventory or price claims", () =
     valid: false,
     errors: [{ handle: "", field: "sales", message: SALES_DISABLED_MESSAGE }],
     verifiedSubtotal: 0,
+    retailSubtotal: 0,
+    discountAmount: 0,
+    lineQuotes: [],
     claimedSubtotal: 0,
     currency: "AUD",
     itemCount: 0,
@@ -335,6 +338,8 @@ test("all merchandise categories use confirmed stock and declared sizes", () => 
     ["hat", "hats"],
     ["bearings", "bearings"],
     ["sticker", "stickers"],
+    ["truck", "trucks"],
+    ["wheel", "wheels"],
   ] as const) {
     const product: MerchProduct = {
       ...tee(),
@@ -352,6 +357,26 @@ test("all merchandise categories use confirmed stock and declared sizes", () => 
     expect(result.valid).toBe(true);
     expect(result.verifiedItems[0].selectedSize).toBe("One size");
     expect(result.verifiedItems[0].variantTitle).toBe("confirmed sale pack");
+    const stockRecord = {
+      publication_status: "published",
+      product_type: "merch",
+      merch_kind: kind,
+      price_amount: Math.round(product.price * 100),
+      currency: "AUD",
+      merch_sizes: ["One size"],
+      stock_by_size: { "One size": 2 },
+      metadata: { sales_unit_label: "confirmed sale pack" },
+    };
+    expect(canReserveLockedProduct(stockRecord, result.verifiedItems[0])).toBe(true);
+    expect(
+      canReserveLockedProduct(
+        { ...stockRecord, stock_by_size: { "One size": 0 } },
+        result.verifiedItems[0],
+      ),
+    ).toBe(false);
+    expect(canReserveLockedProduct({ ...stockRecord, metadata: {} }, result.verifiedItems[0])).toBe(
+      false,
+    );
   }
   const jacket: MerchProduct = {
     ...tee(),
