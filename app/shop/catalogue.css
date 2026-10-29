@@ -2,6 +2,8 @@
   --pc-cream: #f6f0e5;
   --pc-brown: #352c26;
   --pc-teal: #2f6963;
+  /* Restore #e7dfcf here to reverse the beige photo-surround trial. */
+  --pc-photo-surround: var(--pc-cream);
   color: var(--pc-brown);
   background: var(--pc-cream);
 }
@@ -129,7 +131,7 @@
   position: relative;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: #e7dfcf;
+  background: var(--pc-photo-surround);
 }
 .pc-contained-image {
   object-fit: contain;
@@ -197,7 +199,7 @@
 .pc-gallery-frame {
   position: relative;
   aspect-ratio: 4 / 5;
-  background: #e7dfcf;
+  background: var(--pc-photo-surround);
   touch-action: pan-y pinch-zoom;
 }
 .pc-full-photo {
@@ -243,7 +245,7 @@
   flex: 1;
   font-size: 11px;
 }
-.pc-gallery-thumbnails {
+:is(.pc-gallery-thumbnails, .pc-lightbox-thumbnails) {
   position: relative;
   display: flex;
   gap: 10px;
@@ -251,19 +253,19 @@
   padding: 5px 3px 10px;
   scrollbar-width: thin;
 }
-.pc-gallery-thumbnails button {
+:is(.pc-gallery-thumbnails, .pc-lightbox-thumbnails) button {
   position: relative;
   flex: 0 0 72px;
   height: 72px;
   padding: 0;
-  background: #e7dfcf;
+  background: var(--pc-photo-surround);
   border: 2px solid transparent;
   cursor: pointer;
 }
-.pc-gallery-thumbnails button[aria-pressed="true"] {
+:is(.pc-gallery-thumbnails, .pc-lightbox-thumbnails) button[aria-pressed="true"] {
   border-color: var(--pc-teal);
 }
-.pc-gallery-thumbnails button:focus-visible {
+:is(.pc-gallery-thumbnails, .pc-lightbox-thumbnails) button:focus-visible {
   outline-offset: 1px;
 }
 .pc-gallery-fallback {
@@ -317,7 +319,7 @@
   .pc-gallery-frame {
     aspect-ratio: 6 / 5;
   }
-  .pc-gallery-thumbnails button {
+  :is(.pc-gallery-thumbnails, .pc-lightbox-thumbnails) button {
     flex-basis: 80px;
     height: 80px;
   }
@@ -354,4 +356,155 @@
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+.pc-card-frame {
+  touch-action: pan-y pinch-zoom;
+}
+.pc-card-media {
+  position: relative;
+}
+.pc-card-photo-controls {
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 4 / 3;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+}
+.pc-card-photo-controls button {
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #f6f0e5eb;
+  border: 1px solid #352c2645;
+  cursor: pointer;
+}
+.pc-card-photo-count {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 9px;
+  background: #f6f0e5eb;
+  border-radius: 999px;
+  font-size: 11px;
+}
+.pc-logo-overlay {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  pointer-events: none;
+}
+.pc-image-unavailable {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 30px;
+  text-align: center;
+  font-size: 14px;
+}
+.pc-board-description {
+  font-size: 15px;
+  line-height: 1.9;
+  margin-block: 16px 24px;
+}
+.pc-board-facts {
+  display: grid;
+  gap: 16px;
+  margin-block: 24px;
+  border-block: 1px solid #352c2635;
+  padding-block: 20px;
+}
+.pc-board-facts dt {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 5px;
+}
+.pc-board-facts dd {
+  font-size: 15px;
+}
+.pc-expand-photo {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #f6f0e5ed;
+  font-size: 10px;
+  cursor: pointer;
+}
+.pc-lightbox {
+  width: min(96vw, 1400px);
+  max-width: 96vw;
+  max-height: 96dvh;
+  margin: auto;
+  padding: 12px 18px;
+  overflow: auto;
+  background: var(--pc-cream);
+  color: var(--pc-brown);
+  border: 1px solid #352c2645;
+}
+.pc-lightbox::backdrop {
+  background: #17120eda;
+}
+.pc-lightbox-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+.pc-lightbox-heading h2 {
+  font-size: 28px;
+}
+.pc-lightbox-heading button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid #352c2635;
+  cursor: pointer;
+}
+.pc-lightbox-frame {
+  position: relative;
+  height: min(65dvh, 900px);
+  min-height: 180px;
+  background: var(--pc-photo-surround);
+  touch-action: pan-y pinch-zoom;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pc-card-photo-controls {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .pc-card:hover .pc-card-photo-controls,
+  .pc-card:focus-within .pc-card-photo-controls {
+    opacity: 1;
+  }
+}
+
+.pc-empty-photos {
+  padding: 60px 20px;
+  text-align: center;
+  background: var(--pc-photo-surround);
+}
+
+.pc-grid--stickers .pc-card-photo-controls {
+  aspect-ratio: 1;
 }

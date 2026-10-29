@@ -13,7 +13,7 @@ import "./catalogue.css";
 
 export const metadata: Metadata = {
   title: "Deckz & wares",
-  description: "Plankz boards, hats, tees, jackets, bearings and stickers.",
+  description: "Plankz boards, hats, tees, jackets, hardware and stickers.",
   alternates: { canonical: "/shop" },
 };
 
@@ -28,7 +28,9 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   )?.key;
   const categories = selected
     ? PUBLIC_CATALOGUE_CATEGORIES.filter((category) => category.key === selected)
-    : PUBLIC_CATALOGUE_CATEGORIES;
+    : PUBLIC_CATALOGUE_CATEGORIES.filter((category) =>
+        PUBLIC_CATALOGUE.some((item) => item.category === category.key),
+      );
   let available: Product[] = [];
   let commerceUnavailable = false;
   if (SALES_ENABLED) {
@@ -137,6 +139,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
                   <h2 id={`heading-${category.key}`}>{category.title}</h2>
                 </FadeContent>
               )}
+              {items.length === 0 && <p>Photographs have not yet been supplied for this category.</p>}
               <div className={`pc-grid pc-grid--${category.key}`}>
                 {items.map((item) => (
                   <PublicCatalogueCard

@@ -71,13 +71,26 @@ export default async function PublicCatalogueDetail({
             <h1>{item.title}</h1>
           </FadeContent>
           <PublicCatalogueGallery title={item.title} images={item.images} />
-          <p className="pc-sales-status pc-detail-copy">
-            {SALES_ENABLED ? (
-              <Link href="/shop#available-products">View available products</Link>
-            ) : (
-              "Online sales are currently closed"
+          <div className="pc-detail-copy">
+            <p className="pc-board-description">{item.description}</p>
+            {item.boardFacts && item.boardFacts.length > 0 && (
+              <dl className="pc-board-facts">
+                {item.boardFacts.map((fact) => (
+                  <div key={fact.label}>
+                    <dt>{fact.label}</dt>
+                    <dd>{fact.value}</dd>
+                  </div>
+                ))}
+              </dl>
             )}
-          </p>
+            <p className="pc-sales-status">
+              {SALES_ENABLED ? (
+                <Link href="/shop#available-products">View available products</Link>
+              ) : (
+                "Online sales are currently closed"
+              )}
+            </p>
+          </div>
         </div>
 
         {related.length > 0 && (
