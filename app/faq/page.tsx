@@ -57,7 +57,9 @@ export default function Page() {
       <section className="border-b border-charcoal/10 bg-weathered-gray/35 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">Questions</p>
-          <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">FAQ</h1>
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-brown sm:text-6xl">
+            FAQ
+          </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-charcoal/75">
             Practical answers for finished boards, reclaimed timber variation, board care, and the
             current local-pickup-only fulfilment model.
@@ -72,7 +74,9 @@ export default function Page() {
               key={item.question}
               className="rounded-3xl border border-charcoal/10 bg-ivory/85 p-6 shadow-sm"
             >
-              <h2 className="font-display text-2xl tracking-wide text-amber">{item.question}</h2>
+              <h2 className="font-display text-2xl tracking-wide text-brand-brown">
+                {item.question}
+              </h2>
               <p className="mt-3 text-sm leading-7 text-charcoal/72">{item.answer}</p>
             </article>
           ))}
@@ -80,12 +84,12 @@ export default function Page() {
       </section>
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-charcoal p-8 text-warm-white sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 rounded-3xl bg-ivory p-8 text-brand-brown sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="font-display text-2xl tracking-wide text-amber">
+            <p className="font-display text-2xl tracking-wide text-brand-brown">
               Need a specific answer?
             </p>
-            <p className="mt-2 text-sm leading-7 text-warm-white/70">
+            <p className="mt-2 text-sm leading-7 text-brand-brown/70">
               Send the product name and your question, or ask about pickup arrangements.
             </p>
           </div>

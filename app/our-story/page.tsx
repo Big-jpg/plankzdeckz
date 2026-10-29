@@ -32,8 +32,10 @@ export default function Page() {
     <main className="bg-warm-white">
       <section className="border-b border-charcoal/10 bg-weathered-gray/35 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">PLANKZ DECKZ</p>
-          <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">
+            PLANKZ DECKZ
+          </p>
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-brown sm:text-6xl">
             How It Started
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-charcoal/75">
@@ -52,7 +54,9 @@ export default function Page() {
               key={section.title}
               className="rounded-3xl border border-charcoal/10 bg-ivory/85 p-6 shadow-sm"
             >
-              <h2 className="font-display text-2xl tracking-wide text-amber">{section.title}</h2>
+              <h2 className="font-display text-2xl tracking-wide text-brand-brown">
+                {section.title}
+              </h2>
               <p className="mt-3 text-sm leading-7 text-charcoal/72">{section.text}</p>
             </article>
           ))}
@@ -60,16 +64,16 @@ export default function Page() {
       </section>
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl rounded-3xl border border-teal/25 bg-charcoal p-8 text-warm-white shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal">
+        <div className="mx-auto max-w-5xl rounded-3xl border border-teal/25 bg-ivory p-8 text-brand-brown shadow-sm">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-brown/65">
             Recycle. Reclaim. Ride.
           </p>
-          <blockquote className="mt-4 max-w-3xl font-display text-3xl leading-tight tracking-wide text-amber sm:text-4xl">
+          <blockquote className="mt-4 max-w-3xl font-display text-3xl leading-tight tracking-wide text-brand-brown sm:text-4xl">
             We let the wood do the talking, then we make it better.
           </blockquote>
-          <p className="mt-5 max-w-3xl text-sm leading-7 text-warm-white/72">
-            The result is a one-of-a-kind deck shaped for people who value craft, coastline,
-            reuse, and the visible history of real timber over anonymous mass production.
+          <p className="mt-5 max-w-3xl text-sm leading-7 text-brand-brown/72">
+            The result is a one-of-a-kind deck shaped for people who value craft, coastline, reuse,
+            and the visible history of real timber over anonymous mass production.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
@@ -80,7 +84,7 @@ export default function Page() {
             </Link>
             <Link
               href="/process"
-              className="inline-flex rounded-full border border-warm-white/20 px-5 py-3 text-sm font-semibold text-warm-white hover:border-amber hover:text-amber"
+              className="inline-flex rounded-full border border-brand-brown/20 px-5 py-3 text-sm font-semibold text-brand-brown hover:border-brand-brown hover:text-brand-brown"
             >
               See the build process
             </Link>

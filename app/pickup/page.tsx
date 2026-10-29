@@ -35,7 +35,7 @@ export default function Page() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">
             Western Australia
           </p>
-          <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-brown sm:text-6xl">
             Local Pickup
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-charcoal/75">
@@ -53,7 +53,7 @@ export default function Page() {
               key={step.title}
               className="rounded-3xl border border-charcoal/10 bg-ivory/85 p-6 shadow-sm"
             >
-              <h2 className="font-display text-2xl tracking-wide text-amber">{step.title}</h2>
+              <h2 className="font-display text-2xl tracking-wide text-brand-brown">{step.title}</h2>
               <p className="mt-3 text-sm leading-7 text-charcoal/72">{step.text}</p>
             </article>
           ))}
@@ -62,7 +62,7 @@ export default function Page() {
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl rounded-3xl border border-teal/25 bg-teal/10 p-8">
-          <h2 className="font-display text-3xl tracking-wide text-amber">Before pickup</h2>
+          <h2 className="font-display text-3xl tracking-wide text-brand-brown">Before pickup</h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-charcoal/72">
             Bring any order notes or confirmation details, and inspect the finished deck before
             leaving. If you have questions about care, hardware, intended riding use, or display,

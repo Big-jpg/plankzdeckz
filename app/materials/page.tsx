@@ -32,8 +32,10 @@ export default function Page() {
     <main className="bg-warm-white">
       <section className="border-b border-charcoal/10 bg-weathered-gray/35 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">Reclaimed timber</p>
-          <h1 className="mt-4 font-display text-4xl tracking-wide text-amber sm:text-6xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.28em] text-teal">
+            Reclaimed timber
+          </p>
+          <h1 className="mt-4 font-display text-4xl tracking-wide text-brand-brown sm:text-6xl">
             The Timber Story
           </h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-charcoal/75">
@@ -51,7 +53,9 @@ export default function Page() {
               key={section.title}
               className="rounded-3xl border border-charcoal/10 bg-ivory/85 p-6 shadow-sm"
             >
-              <h2 className="font-display text-2xl tracking-wide text-amber">{section.title}</h2>
+              <h2 className="font-display text-2xl tracking-wide text-brand-brown">
+                {section.title}
+              </h2>
               <p className="mt-3 text-sm leading-7 text-charcoal/72">{section.text}</p>
             </article>
           ))}
@@ -60,20 +64,20 @@ export default function Page() {
 
       <section className="px-4 pb-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-3xl bg-charcoal p-8 text-warm-white">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-coral">
+          <div className="rounded-3xl bg-ivory p-8 text-brand-brown">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-brown/65">
               Material-led craft
             </p>
-            <blockquote className="mt-4 font-display text-3xl leading-tight tracking-wide text-amber sm:text-4xl">
+            <blockquote className="mt-4 font-display text-3xl leading-tight tracking-wide text-brand-brown sm:text-4xl">
               We let the wood do the talking, then we make it better.
             </blockquote>
-            <p className="mt-5 text-sm leading-7 text-warm-white/72">
+            <p className="mt-5 text-sm leading-7 text-brand-brown/72">
               Every deck starts as recovered timber and ends as a board that shows its grain,
               contrast, repairs, and handmade finish honestly.
             </p>
           </div>
           <div className="rounded-3xl border border-teal/25 bg-teal/10 p-8">
-            <h2 className="font-display text-2xl tracking-wide text-amber">Why it matters</h2>
+            <h2 className="font-display text-2xl tracking-wide text-brand-brown">Why it matters</h2>
             <p className="mt-3 text-sm leading-7 text-charcoal/72">
               Mass-manufactured boards are designed to be repeatable. PLANKZ DECKZ boards are
               designed to be individual: recycled, reclaimed, shaped by hand, and made from timber
@@ -83,7 +87,7 @@ export default function Page() {
               href="/process"
               className="mt-6 inline-flex rounded-full bg-charcoal px-5 py-3 text-sm font-semibold text-warm-white hover:bg-warm-black"
             >
-              See how boards are made
+              See how Plankz are made
             </Link>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublicCatalogueItems } from "@/lib/public-catalogue";
-import { ProductVisual } from "@/components/product-visual";
+import { HomepageCarousel } from "@/components/homepage-carousel";
 export const metadata: Metadata = {
   title: "Handcrafted one of a kind deckz",
   description:
@@ -9,7 +9,11 @@ export const metadata: Metadata = {
 };
 export default function HomePage() {
   const boards = getPublicCatalogueItems("boards");
-  const featured = boards[0];
+  const slides = boards.slice(0, 5).map((board) => ({
+    title: board.title,
+    href: `/shop/${board.handle}`,
+    image: { url: board.images[0].url, alt: board.images[0].alt },
+  }));
   return (
     <div className="bg-[#f8f2e5] text-[#332619]">
       <section className="border-b border-[#332619]/15 px-5 py-14 sm:py-20">
@@ -45,30 +49,7 @@ export default function HomePage() {
               Boards, wares & details · online sales currently closed
             </p>
           </div>
-          <div className="relative">
-            {featured ? (
-              <Link href={`/shop/${featured.handle}`} aria-label={`View ${featured.title}`}>
-                <ProductVisual
-                  productType="board"
-                  title={featured.title}
-                  images={featured.images.map((image) => image.url)}
-                  className="aspect-[4/3] rounded-sm border-0 bg-[#eadcc3] shadow-none"
-                  imageClassName="object-contain p-0 sm:p-0"
-                  priority
-                />
-                <div className="flex justify-between gap-4 border-b-2 border-[#332619] py-4">
-                  <span className="font-display text-2xl">{featured.title}</span>
-                  <span className="font-semibold">View photos →</span>
-                </div>
-              </Link>
-            ) : (
-              <div className="flex aspect-[4/3] items-end border border-[#332619]/15 bg-[#e7d6bd] p-8">
-                <p className="max-w-md font-display text-5xl leading-none">
-                  The next deck is being made. Come back for the first drop.
-                </p>
-              </div>
-            )}
-          </div>
+          <HomepageCarousel slides={slides} />
         </div>
       </section>
       <section className="mx-auto grid max-w-7xl gap-10 px-5 py-20 lg:grid-cols-[.7fr_1.3fr]">
@@ -80,8 +61,8 @@ export default function HomePage() {
         </div>
         <div>
           <p className="max-w-2xl text-xl leading-9">
-            We turn rescued timber into finished boards with their own grain, shape and feel. The
-            collection shows each photographed board from both sides and out in the world.
+            We turn recycled hardwood pallets into finished boards with their own grain, shape and
+            feel. The collection shows each photographed board from both sides and out in the world.
           </p>
           <Link
             href="/gallery"
