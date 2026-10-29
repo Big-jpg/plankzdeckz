@@ -10,19 +10,19 @@ The document includes example product screenshots from a different retailer. The
 
 ## Existing capabilities
 
-| Area | Verified implementation | Smallest necessary change |
-| --- | --- | --- |
-| Framework | Next.js 16 App Router, React 19, TypeScript, Tailwind 4; pnpm lockfile | Keep framework and dependencies |
-| Branding | Bangers and Inter; shared header/footer; homepage brown `#332619` and beige `#f8f2e5` | Supplied artwork derivative, exact tagline, scoped public text colour |
-| Homepage | Real board photographs with stable photo-detail links | One small carousel component, five existing photographs temporarily |
-| Photo catalogue | 18 canonical display-only sets, 54 selected photographs, stable `/shop/[handle]` routes | Supplied board copy, card controls, enlarged navigable viewer |
-| Commerce catalogue | Neon canonical products, `/products/[handle]`, existing admin wizard, drafts and revision checks | Retail-only WARES presets and truck/wheel allowlist entries |
-| Images | Committed public photography; Vercel Blob for administered products | Reuse existing storage; no new image service |
-| Cart and checkout | Local cart, trusted server validation, stock reservations, Stripe hosted Checkout, transactional payment finalisation | Explicit Trad/Cord family metadata and authoritative quantity quote |
-| Gallery | Sold boards read from canonical Neon records | Preserve sold archive and reuse canonical photo-board records without assuming commerce associations |
-| Supporting pages | Story, timber, process, pickup, FAQ and contact routes exist | Requested colours and process heading only |
-| Verification | ESLint, TypeScript, Next build, Playwright, isolated PostgreSQL commerce tests | Extend meaningful navigation and pricing checks |
-| Deployment | Documented Vercel/Next deployment; migrations are explicit operator actions; sales disabled by default | Preserve deployment model and production approval gate |
+| Area               | Verified implementation                                                                                               | Smallest necessary change                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Framework          | Next.js 16 App Router, React 19, TypeScript, Tailwind 4; pnpm lockfile                                                | Keep framework and dependencies                                                                      |
+| Branding           | Bangers and Inter; shared header/footer; homepage brown `#332619` and beige `#f8f2e5`                                 | Supplied artwork derivative, exact tagline, scoped public text colour                                |
+| Homepage           | Real board photographs with stable photo-detail links                                                                 | One small carousel component, five existing photographs temporarily                                  |
+| Photo catalogue    | 18 canonical display-only sets, 54 selected photographs, stable `/shop/[handle]` routes                               | Supplied board copy, card controls, enlarged navigable viewer                                        |
+| Commerce catalogue | Neon canonical products, `/products/[handle]`, existing admin wizard, drafts and revision checks                      | Retail-only WARES presets and truck/wheel allowlist entries                                          |
+| Images             | Committed public photography; Vercel Blob for administered products                                                   | Reuse existing storage; no new image service                                                         |
+| Cart and checkout  | Local cart, trusted server validation, stock reservations, Stripe hosted Checkout, transactional payment finalisation | Explicit Trad/Cord family metadata and authoritative quantity quote                                  |
+| Gallery            | Sold boards read from canonical Neon records                                                                          | Preserve sold archive and reuse canonical photo-board records without assuming commerce associations |
+| Supporting pages   | Story, timber, process, pickup, FAQ and contact routes exist                                                          | Requested colours and process heading only                                                           |
+| Verification       | ESLint, TypeScript, Next build, Playwright, isolated PostgreSQL commerce tests                                        | Extend meaningful navigation and pricing checks                                                      |
+| Deployment         | Documented Vercel/Next deployment; migrations are explicit operator actions; sales disabled by default                | Preserve deployment model and production approval gate                                               |
 
 No checked-in `.github` workflow, `vercel.json` or `.vercel` link was found. Hosted deployment and live database state were not queried. Local verification must not be represented as production acceptance.
 
@@ -50,12 +50,12 @@ Neon remains catalogue, order and inventory authority. Stripe remains payment an
 
 The original document's 3-hat tiers increased the unit price relative to the 2-hat tier. The user subsequently requested a general incentive model and expressly confirmed these replacement unit tiers in chat:
 
-| Family | Quantity | AUD per hat |
-| --- | --- | --- |
-| Trad | 1 | 25.00 |
-| Trad | 2 or more | 22.50 |
-| Cord | 1 | 40.00 |
-| Cord | 2–4 | 37.50 |
-| Cord | 5 or more | 31.00 |
+| Family | Quantity  | AUD per hat |
+| ------ | --------- | ----------- |
+| Trad   | 1         | 25.00       |
+| Trad   | 2 or more | 22.50       |
+| Cord   | 1         | 40.00       |
+| Cord   | 2–4       | 37.50       |
+| Cord   | 5 or more | 31.00       |
 
 Eligibility is explicit per canonical product, never inferred from a title, a client field or the fact that a product is a hat. Colours within the same explicitly assigned family share that family's quantity count; Trad and Cord counts remain separate. Existing promotion-code closure is preserved. Existing owner-controlled refund administration remains in place; payment records retain the paid amount and this increment does not introduce automatic return repricing.
